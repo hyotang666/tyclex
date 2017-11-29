@@ -227,12 +227,13 @@
 	 `((CHECK-SIGNATURE ',lambda-list (LIST ,@(mapcar (lambda(sym)
 							    `(DATA-TYPE-OF ,sym))
 							  gensyms)))))
-     (LET((INSTANCE(GET-INSTANCE ',method (LIST ,@gensyms))))
+     (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',method (LIST ,@(loop :for s :in gensyms
+								   :collect `(DATA-TYPE-OF ,s))))
+		       (INSTANCE-DEFAULT ',method))))
        (IF INSTANCE
-	   (FUNCALL (COERCE (INSERT-DECLARE INSTANCE
-					    (LIST ,@gensyms))
-			    'FUNCTION)
-		    ,@gensyms)
+	   (LET((DECLARED(INSERT-DECLARE INSTANCE (LIST ,@gensyms))))
+	     (FUNCALL (COERCE DECLARED 'FUNCTION)
+		      ,@gensyms))
 	   (ERROR "Instance is not found. ~S ~S"',method (LIST ,@gensyms))))))
 
 (defun insert-declare(form values)
@@ -325,27 +326,6 @@
 		   :test (lambda(ts1 ts2)
 			   (every #'%compatible-type-p ts1 ts2))))
 	(instance-default interface))))
-
-;;;; GET-INSTANCE
-(defun get-instance(interface value*)
-  (let*((default(instance-default interface))
-	(collected(collect-instance value* (instance-table interface))))
-    (compute-applicable-instance (if default
-				   (acons (mapcar (constantly t)(cadr default))
-					  default collected)
-				   collected))))
-
-;;;; COLLECT-INSTANCE
-(defun collect-instance(value* table)
-  (loop :for kv :in table
-	:when (every #'typep value* (car kv))
-	:collect kv))
-
-;;;; COMPUTE-APPLICABLE-INSTANCE
-(defun compute-applicable-instance(kvs)
-  (flet((type<(ts1 ts2)
-	  (every #'subtypep ts1 ts2)))
-    (cdar (sort kvs #'type< :key #'car))))
 
 ;;;; DEFISTANCE
 (defmacro definstance(interface instance-lambda-list &body body)
