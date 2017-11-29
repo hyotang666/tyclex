@@ -92,7 +92,7 @@
 
 ;;; <instance-compiler-macro>
 (defun <instance-compiler-macro>(method gensyms lambda-list return-type)
-  `(DEFINE-COMPILER-MACRO,method(,@gensyms &ENVIRONMENT ENV)
+  `(DEFINE-COMPILER-MACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (SETF ; as canonicalise. In order to retrieve return type.
        ,@(loop :for gensym :in gensyms
 	       :append `(,gensym (EXPANDER:EXPAND ,gensym))))
@@ -107,10 +107,14 @@
 		   (IF RETURN
 		       (LIST 'THE RETURN (LIST IL ,@gensyms))
 		       (LIST IL ,@gensyms))))
-	     ;; In order to avoid expanding macros twice.
-	     (LET((WHOLE(LIST ',method ,@gensyms)))
-	       (WARN "Can not get instance of ~S" WHOLE)
-	       WHOLE))))))
+	     (PROGN (WHEN *COMPILE-FILE-PATHNAME*
+		      (WARN "Can not get instance of ~S" WHOLE))
+		    ;; In order to avoid expanding macros twice,
+		    ;; we should use canonicalized `GENSYMS`.
+		    ;; And in order to trick `compiler-macroexpand-1` returns nil
+		    ;; as second value, we must destructively modify `WHOLE`.
+		    ;; Or `compiler-macroexpand` get into infinite expanding.
+		    (RPLACD WHOLE (LIST ,@gensyms))))))))
 
 (defstruct(constant (:constructor wrap-value(value))(:copier nil))
   (value nil :read-only t))
@@ -316,7 +320,7 @@
   (if(every (lambda(x)
 	      (eq t x))
 	    type*)
-    (instance-default interface)
+    nil
     (or (cdr(assoc type* (instance-table interface)
 		   :test (lambda(ts1 ts2)
 			   (every #'%compatible-type-p ts1 ts2))))
