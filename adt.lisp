@@ -147,10 +147,7 @@
 	(if(null types)
 	  (adt-type-of adt)
 	  (if(eq 'eql (car types))
-	    (let((type-of(adt-type-of adt)))
-	      (if(listp type-of)
-		type-of
-		types))
+	    (adt-type-of adt)
 	    (list* (car (adt-type-of adt))
 		   (mapcar (lambda(type value)
 			     (if(unify:variablep type)
@@ -159,7 +156,7 @@
 			   (adt-types adt)
 			   (cdr thing))))))
       (if(not(functionp thing))
-	(type-of thing)
+	(class-name(class-of thing))
 	(let((name(millet:function-name thing)))
 	  (if name
 	    (introspect-environment:function-type name)
