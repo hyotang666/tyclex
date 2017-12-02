@@ -31,7 +31,7 @@
 	      list))
 	  (type-name(args constructor)
 	    (cond
-	      ((symbolp constructor)`'(eql ,constructor))
+	      ((keywordp constructor)`'(eql ,constructor))
 	      (args (comma-type-specifier args constructor))
 	      ((list-constructor-p constructor)
 	       `',(apply #'cons-type-specifier
