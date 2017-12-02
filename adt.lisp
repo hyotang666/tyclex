@@ -201,9 +201,11 @@
 	      (if(unify:variablep type)
 		(if thing
 		  (rec pat-rest type-rest thing-rest
-		       (cons `(,thing ,pat) acc))
+		       (if(eq t thing)
+			 acc
+			 (cons `(TYPE ,thing ,pat) acc)))
 		  (rec pat-rest type-rest thing-rest
-		       (cons `(,type ,pat)acc))))))
+		       (cons `(TYPE ,type ,pat)acc))))))
 	  (do-return(acc)
 	    (when acc
 	      `((DECLARE ,@acc)))))
