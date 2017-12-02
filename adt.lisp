@@ -9,6 +9,10 @@
   (assert(every #'symbolp lambda-list))
   (dolist(constructor constructor*)
     (assert(symbolp(alexandria:ensure-car constructor))))
+  ;; as canonicalize
+  (dolist(c constructor*)
+    (when(listp c)
+      (rplaca c (make-symbol(symbol-name(car c))))))
   ;; body
   `(eval-when(:compile-toplevel :load-toplevel :execute)
      ,(<deftype> name lambda-list constructor*)
@@ -75,17 +79,21 @@
 	 `(,@(if args
 	       `((DECLAIM(FTYPE (FUNCTION ,(Ts (cdr constructor))
 					  ,(constructor-return-type name))
-				,(car constructor))))
-	       `((DECLAIM(FTYPE(FUNCTION,(cdr constructor),name),(car constructor)))))
-	    (DEFUN ,(car constructor),lambda-list
+				,(constructor-name constructor))))
+	       `((DECLAIM(FTYPE (FUNCTION,(cdr constructor),name)
+				,(constructor-name constructor)))))
+	    (DEFUN ,(constructor-name constructor),lambda-list
 	      (LIST ',(car constructor),@lambda-list)))))
       (t `((DEFSTRUCT(,(car constructor)
 		       :NAMED (:TYPE LIST) (:CONC-NAME NIL)
 		       (:COPIER NIL) (:PREDICATE NIL)
-		       (:CONSTRUCTOR ,(car constructor)
+		       (:CONSTRUCTOR ,(constructor-name constructor)
 				     ,@(when(find-if #'symbolp (cdr constructor))
 					 `(,(mapcar #'alexandria:ensure-car (cdr constructor))))))
 	     ,@(cdr constructor)))))))
+
+(defun constructor-name(constructor)
+  (intern(symbol-name(car constructor))))
 
 (defun constructor-return-type(name)
   (list name '*))
@@ -115,9 +123,8 @@
 ;;; <pattern-matcher>
 (defun <pattern-matcher>(constructor)
   (when(listp constructor)
-    (let((name(car constructor)))
-      `((TRIVIA:DEFPATTERN,name(&REST ARGS)
-	  `(LIST (EQ ',',name) ,@ARGS))))))
+    `((TRIVIA:DEFPATTERN,(constructor-name constructor)(&REST ARGS)
+	`(LIST (EQ ',',(car constructor)) ,@ARGS)))))
 
 ;;;; ADT data structure
 (defstruct(adt (:copier nil)(:predicate nil))
@@ -198,11 +205,21 @@
 	  (do-return(acc)
 	    (when acc
 	      `((DECLARE ,@acc)))))
-    (when(and (adt-p pattern)
-	      (not(symbolp pattern)))
-      (rec (cdr pattern)
-	   (data-types pattern)
-	   (thing-types thing (car pattern))))))
+    (let((adt-tag (adt-pattern-p pattern)))
+      (when adt-tag
+	(rec (cdr pattern)
+	     (adt-types (get adt-tag 'adt-meta-info))
+	     (thing-types thing adt-tag))))))
+
+(defun adt-pattern-p(pattern)
+  (let((pattern(trivia:pattern-expand-1 pattern)))
+    (when(typep pattern '(CONS (EQL LIST)
+			       (CONS (CONS (EQL EQ)
+					   (CONS (CONS (EQL QUOTE)
+						       *)
+						 NULL))
+				     *)))
+      (second(second(second pattern))))))
 
 (defun thing-types(thing name)
   (if(symbolp thing)
