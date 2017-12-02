@@ -325,11 +325,7 @@
   (flet((parse-lambda-list(lambda-list)
 	  (loop :for elt :in lambda-list
 		:collect (car elt) :into vars
-		:collect (let((type(cadr elt)))
-			   (if(find type '(#|list|# keyword):test #'eq)
-			     (ERROR "Invalid type. ~S"type)
-			     type))
-		:into types
+		:collect (cadr elt) :into types
 		:finally (return (values vars types)))))
     (multiple-value-bind(vars types)(parse-lambda-list instance-lambda-list)
       (let((scs(type-direct-superclasses(get(instance-type-class interface)'type-class))))
