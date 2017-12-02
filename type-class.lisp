@@ -315,10 +315,24 @@
 	      (eq t x))
 	    type*)
     nil
-    (or (cdr(assoc type* (instance-table interface)
-		   :test (lambda(ts1 ts2)
-			   (every #'%compatible-type-p ts1 ts2))))
+    (or (compute-applicable-instance(collect-instance type* interface))
 	(instance-default interface))))
+
+;;;; COLLECT-INSTANCE
+(defun collect-instance(type* interface)
+  (remove-if-not (lambda(ts2)
+		   (every #'%compatible-type-p type* ts2))
+		 (instance-table interface)
+		 :key #'car))
+
+;;;; COMPUTE-APPLICABLE-INSTANCE
+(defun compute-applicable-instance(list)
+  (cdar(sort-instance list)))
+
+(defun sort-instance(list)
+  (flet((type<(ts1 ts2)
+	  (every #'subtypep ts1 ts2)))
+    (sort list #'type< :key #'car)))
 
 ;;;; DEFISTANCE
 (defmacro definstance(interface instance-lambda-list &body body)
@@ -342,22 +356,21 @@
   (push(cons type* lambda-form)(instance-table interface)))
 
 #|
-(progn
-  (define-type-class(eq a)()
-    ((==(a a) boolean)
-     (/==(a a) boolean))
-    (:default == (x y)
-	      (not (/== x y)))
-    (:default /== (x y)
-	      (not (== x y))))
-  (definstance == ((a number)(b number))
-    (= a b))
-  (defdata maybe (a) :nothing (just a))
-  (named-readtables:in-readtable :cl-vs-haskell)
-  (definstance == ((a (maybe *))(b (maybe *)))
-    (trivia:match*(a b)
-      ((:nothing :nothing)T)
-      ((#[just x]#[just y])(== x y)) ; <--- == introduce error. why?
-      ((_ _) nil)))
-  )
-;|#
+(defdata maybe (a)
+  :nothing
+  (just a))
+(define-type-class(demo a)()
+  ((demo(a)t)))
+(definstance demo ((a bit)) 
+  (format nil "Bit ~S"a))
+(definstance demo ((a fixnum))
+  (format nil "Fixnum ~S" a))
+(definstance demo ((a integer))
+  (format nil "Integer ~S"a))
+(definstance demo ((a (maybe string)))
+  (format nil "(maybe string) ~S" a))
+(definstance demo ((a (maybe *)))
+  (format nil "(maybe *) ~S" a))
+(definstance demo ((a list))
+  (format nil "list ~S" a))
+|#
