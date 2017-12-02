@@ -42,7 +42,7 @@
   ;; trivial syntax checking.
   (assert(every #'symbolp vars))
   ;; as canonicalize
-  (map-into vars #'envar vars)
+  (map-into vars #'Envar vars)
   ;; body
   `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
      (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name))
@@ -50,7 +50,7 @@
 	 (<type-class-relation-setter> name super-classes))
      ,@(loop
 	 :for (method lambda-list return-type) :in methods
-	 :for gensyms = (gensyms lambda-list)
+	 :for gensyms = (Gensyms lambda-list)
 	 :do (setf ; as canonicalise
 	       lambda-list (patternize lambda-list)
 	       return-type (patternize return-type))
@@ -59,19 +59,12 @@
 	 :collect (<instance-interpreter> method gensyms lambda-list))
      ',name))
 
-(defun envar(thing)
-  (intern(format nil "?~A"thing)))
-
 (defun patternize(thing)
   (if(millet:type-specifier-p thing)
     thing
     (if(listp thing)
       (trestrul:mapleaf #'patternize thing)
-      (envar thing))))
-
-(defun gensyms (list)
-  (loop :repeat (length list)
-	:collect (gensym)))
+      (Envar thing))))
 
 ;;; <type-class-relation-setter>
 (defun <type-class-relation-setter>(name super-classes)
@@ -333,7 +326,7 @@
 	  (loop :for elt :in lambda-list
 		:collect (car elt) :into vars
 		:collect (let((type(cadr elt)))
-			   (if(find type '(list keyword):test #'eq)
+			   (if(find type '(#|list|# keyword):test #'eq)
 			     (ERROR "Invalid type. ~S"type)
 			     type))
 		:into types
