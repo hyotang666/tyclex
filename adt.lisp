@@ -183,7 +183,9 @@
 	       clauses)))
 
 (defun <match-clause>(thing clause)
-  `(,(car clause),@(<consequent-declares> thing(car clause)),@(cdr clause)))
+  `(,(car clause) ; <--- as pattern.
+     ,@(<consequent-declares> thing(car clause))
+     ,@(cdr clause))) ; <--- as body.
 
 (defun <consequent-declares>(thing pattern)
   (labels((rec(pattern data-types thing-types &optional acc)
@@ -229,10 +231,10 @@
     (let((types(third(introspect-environment:function-type (car thing)))))
       (unless(or (eq '* types)
 		 (eq T types)
-		 (typep types '(cons (eql values)
-				     (cons (or (eql *)
-					       (eql T))
-					   t))))
+		 (typep types '(CONS (EQL VALUES)
+				     (CONS (OR (EQL *)
+					       (EQL T))
+					   T))))
 	(list-type-specifier (find-type-specifier name(introspect-environment:typexpand types)))))))
 
 (defun find-type-specifier(name types)
