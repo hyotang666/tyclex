@@ -232,3 +232,18 @@
   `(,(car clause)
      ,@(mapcan #'<consequent-declares> things (car clause))
      ,@(cdr clause)))
+
+;;;; EMATCH
+(defmacro ematch (thing &rest clauses)
+  `(trivia:ematch ,thing
+     ,@(mapcar (lambda(clause)
+		 (<match-clause> thing clause))
+	       clauses)))
+
+;;;; EMATCH*
+(defmacro ematch*(things &rest clauses)
+  `(TRIVIA:EMATCH*,things
+     ,@(mapcar (lambda(clause)
+		 (<match*-clause> things clause))
+	       clauses)))
+
