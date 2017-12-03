@@ -130,7 +130,7 @@
 
 (defun compute-return-type(var &optional env)
   (cond
-    ((adt-p var) ; adt literal.
+    ((instance-p var) ; adt literal.
      (data-type-of var))
     ((constantp var) ; lisp object.
      (wrap-value(introspect-environment:constant-form-value var env)))
@@ -245,7 +245,7 @@
 	    )
     `(,@(subseq form 0 2)
        (DECLARE,@(mapcar (lambda(value var)
-			   (if(adt-p value)
+			   (if(instance-p value)
 			     (let((type(data-type-of value)))
 			       (if(listp type)
 				 `(TYPE ,(actual-type type value),var)
@@ -339,7 +339,12 @@
   (flet((parse-lambda-list(lambda-list)
 	  (loop :for elt :in lambda-list
 		:collect (car elt) :into vars
-		:collect (cadr elt) :into types
+		:collect (let((type(cadr elt)))
+			   (if(or (adt-p type)
+				  (find-class type nil))
+			     type
+			     (error "Invalid type")))
+		:into types
 		:finally (return (values vars types)))))
     (multiple-value-bind(vars types)(parse-lambda-list instance-lambda-list)
       (let((scs(type-direct-superclasses(get(instance-type-class interface)'type-class))))

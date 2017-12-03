@@ -16,6 +16,7 @@
   ;; body
   `(eval-when(:compile-toplevel :load-toplevel :execute)
      ,(<deftype> name lambda-list constructor*)
+     (SETF(GET ',name 'ADT)T)
      ,@(mapcan #`(% #'<constructors> name lambda-list)constructor*)
      ,@(loop :for c :in constructor*
 	     :for o :upfrom 0
@@ -133,15 +134,20 @@
   (order (error "required") :type fixnum :read-only t))
 
 ;;;; Trivial helpers
-(defun adt-p(thing)
+(defun instance-p(thing)
   (or (when(keywordp thing)
 	(get thing 'adt-meta-info))
       (when(and (listp thing)
 		(symbolp (car thing)))
 	(get (car thing) 'adt-meta-info))))
 
+(defun adt-p(thing)
+  (typecase thing
+    (symbol (get thing 'adt))
+    (list (adt-p (car thing)))))
+
 (defun data-type-of(thing)
-  (let((adt(adt-p thing)))
+  (let((adt(instance-p thing)))
     (if adt
       (let((types(adt-types adt)))
 	(if(null types)
@@ -163,12 +169,12 @@
 	    'function))))))
 
 (defun data-order(thing)
-  (let((adt(adt-p thing)))
+  (let((adt(instance-p thing)))
     (when adt
       (adt-order adt))))
 
 (defun data-types(thing)
-  (let((adt(adt-p thing)))
+  (let((adt(instance-p thing)))
     (when adt
       (adt-types adt))))
 
