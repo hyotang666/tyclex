@@ -35,13 +35,12 @@
 	      ((keywordp constructor)`'(eql ,constructor))
 	      (args (comma-type-specifier args constructor))
 	      ((list-constructor-p constructor)
-	       `',(apply #'cons-type-specifier
-			 `(eql ,(car constructor))
-			 (cdr constructor)))
-	      (t `',(apply #'cons-type-specifier
-			   `(eql ,(car constructor))
-			   (loop :for clause :in (cdr constructor)
-				 :collect (or(getf clause :type)T)))))))
+	       `',(cons-type-specifier `((eql ,(car constructor))
+					 ,@(cdr constructor))))
+	      (t `',(cons-type-specifier `((eql ,(car constructor))
+					   ,@(loop :for clause :in (cdr constructor)
+						   :collect (or (getf clause :type)
+								T))))))))
     `(DEFTYPE,name,(optional-lambda-list lambda-list)
        (LIST 'OR ,@(mapcar (lambda(constructor)
 			     (type-name lambda-list constructor))
@@ -50,10 +49,10 @@
 (defun list-constructor-p(constructor)
   (every #'millet:type-specifier-p (cdr constructor)))
 
-(defun cons-type-specifier(&rest types)
+(defun cons-type-specifier(types)
   (if(endp types)
     'null
-    `(cons ,(car types),(apply #'cons-type-specifier (cdr types)))))
+    `(cons ,(car types),(cons-type-specifier (cdr types)))))
 
 (defun comma-type-specifier(args constructor)
   ``(cons (eql ,',(car constructor))
