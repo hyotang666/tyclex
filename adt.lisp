@@ -70,14 +70,18 @@
 
 ;;; <constructors>
 (defun <constructors>(name args constructor)
-  (flet((Ts(args)
-	  (make-list(length args):initial-element t)))
+  (labels((arg-types(lambda-list arg-types &optional acc)
+	    (if(endp arg-types)
+	      (nreverse acc)
+	      (if(find(car arg-types)lambda-list :test #'eq)
+		(arg-types lambda-list (cdr arg-types)(push t acc))
+		(arg-types lambda-list (cdr arg-types)(push (car arg-types)acc))))))
     (cond
       ((keywordp constructor) nil)
       ((or args (list-constructor-p constructor))
        (let((lambda-list(Gensyms(cdr constructor))))
 	 `(,@(if args
-	       `((DECLAIM(FTYPE (FUNCTION ,(Ts (cdr constructor))
+	       `((DECLAIM(FTYPE (FUNCTION ,(arg-types args (cdr constructor))
 					  ,(constructor-return-type name))
 				,(constructor-name constructor))))
 	       `((DECLAIM(FTYPE (FUNCTION,(cdr constructor),name)
