@@ -245,7 +245,7 @@
 	    )
     `(,@(subseq form 0 2)
        (DECLARE,@(mapcar (lambda(value var)
-			   (if(instance-p value)
+			   (if(adv-p value)
 			     (let((type(data-type-of value)))
 			       (if(listp type)
 				 `(TYPE ,(actual-type type value),var)

@@ -138,7 +138,7 @@
   (order (error "required") :type fixnum :read-only t))
 
 ;;;; Trivial helpers
-(defun instance-p(thing)
+(defun adv-p(thing)
   (or (when(keywordp thing)
 	(get thing 'adt-meta-info))
       (when(and (listp thing)
@@ -151,7 +151,7 @@
     (list (adt-p (car thing)))))
 
 (defun data-type-of(thing)
-  (let((adt(instance-p thing)))
+  (let((adt(adv-p thing)))
     (if adt
       (let((types(adt-types adt)))
 	(if(null types)
@@ -173,12 +173,12 @@
 	    'function))))))
 
 (defun data-order(thing)
-  (let((adt(instance-p thing)))
+  (let((adt(adv-p thing)))
     (when adt
       (adt-order adt))))
 
 (defun data-types(thing)
-  (let((adt(instance-p thing)))
+  (let((adt(adv-p thing)))
     (when adt
       (adt-types adt))))
 
