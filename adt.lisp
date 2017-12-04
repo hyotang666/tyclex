@@ -39,8 +39,9 @@
 					 ,@(cdr constructor))))
 	      (t `',(cons-type-specifier `((eql ,(car constructor))
 					   ,@(loop :for clause :in (cdr constructor)
-						   :collect (or (getf clause :type)
-								T))))))))
+						   :collect (typecase clause
+							      (SYMBOL T)
+							      (LIST (getf clause :type T))))))))))
     `(DEFTYPE,name,(optional-lambda-list lambda-list)
        (LIST 'OR ,@(mapcar (lambda(constructor)
 			     (type-name lambda-list constructor))
@@ -91,9 +92,7 @@
       (t `((DEFSTRUCT(,(car constructor)
 		       :NAMED (:TYPE LIST) (:CONC-NAME NIL)
 		       (:COPIER NIL) (:PREDICATE NIL)
-		       (:CONSTRUCTOR ,(constructor-name constructor)
-				     ,@(when(find-if #'symbolp (cdr constructor))
-					 `(,(mapcar #'alexandria:ensure-car (cdr constructor))))))
+		       (:CONSTRUCTOR ,(constructor-name constructor)))
 	     ,@(cdr constructor)))))))
 
 (defun constructor-name(constructor)
@@ -121,7 +120,9 @@
 		     args)
 	     (cdr constructor)))
     (t (mapcar (lambda(slot)
-		 (getf slot :type t))
+		 (if(symbolp slot)
+		   t
+		   (getf slot :type t)))
 	       (cdr constructor)))))
 
 ;;; <pattern-matcher>
