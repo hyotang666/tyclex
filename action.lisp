@@ -21,7 +21,7 @@
        (DEFUN,name,vars
 	 (MAKE-INSTANCE 'IO-ACTION
 			:INSTANCE (LAMBDA(),@body)
-			:TYPE '(io ,return))))))
+			:TYPE '(IO ,return))))))
 
 (eval-when(:compile-toplevel :load-toplevel :execute)
   (defun parse-signature(signature)
