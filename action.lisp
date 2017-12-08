@@ -129,7 +129,8 @@
 		      ,@(rec (nthcdr 3 exp*)))))
 		(T (rec (cdr exp*)(cons `(MAY-CALL ,(first exp*))acc))))))
 	  )
-    `(MAKE-INSTANCE 'IO-ACTION :INSTANCE (LAMBDA(),@(rec exp*)))))
+    `(MAKE-INSTANCE 'IO-ACTION :INSTANCE (LAMBDA(),@(rec exp*))
+		    :TYPE '(IO *))))
 
 (defio(.return ((value T))T)
   value)
