@@ -1,57 +1,88 @@
 (in-package :vs-haskell)
 
 (defclass io-action ()
-  ((instance :initarg :instance :reader action-of))
+  ((instance :initarg :instance :reader action-of)
+   (type :initarg :type :reader io-type))
   (:metaclass closer-mop:funcallable-standard-class))
 
 (defmethod initialize-instance :after ((c io-action) &key)
   (closer-mop:set-funcallable-instance-function c (action-of c)))
 
-(defmacro defio (name lambda-list declarations &body body)
-  `(LOCALLY
-     ;; SBCL emits compiler note about return type `IO-ACTION`.
-     ;; note: type assertion too complex to check:
-     #+sbcl(declare (sb-ext:muffle-conditions sb-ext:compiler-note))
-     (DECLAIM(FTYPE(FUNCTION,declarations IO-ACTION),name))
-     (DEFUN,name,lambda-list
-       (MAKE-INSTANCE 'IO-ACTION :INSTANCE (LAMBDA(),@body)))))
+(deftype io(&optional return)
+  `(and io-action (function * ,return)))
 
-(defio put-string (string)(string)
+(defmacro defio ((name signature return) &body body)
+  (multiple-value-bind(vars types)(parse-signature signature)
+    `(LOCALLY
+       ;; SBCL emits compiler note about return type `IO-ACTION`.
+       ;; note: type assertion too complex to check:
+       #+sbcl(declare (sb-ext:muffle-conditions sb-ext:compiler-note))
+       (DECLAIM(FTYPE(FUNCTION,types IO-ACTION),name))
+       (DEFUN,name,vars
+	 (MAKE-INSTANCE 'IO-ACTION
+			:INSTANCE (LAMBDA(),@body)
+			:TYPE '(io ,return))))))
+
+(eval-when(:compile-toplevel :load-toplevel :execute)
+  (defun parse-signature(signature)
+    (labels((rec(signature &optional vars types)
+	      (if(endp signature)
+		(do-return vars types)
+		(body (car signature)(cdr signature)vars types)))
+	    (do-return(vars types)
+	      (values (nreverse vars)
+		      (nreverse types)))
+	    (body(sig sig-rest vars types)
+	      (if(find sig lambda-list-keywords :test #'eq)
+		(rec sig-rest (push sig vars) (push sig types))
+		(rec sig-rest
+		     (push (car sig)vars)
+		     (push (cadr sig)types)))))
+      (rec signature))))
+
+(defio(put-string((string string))null)
   (write-string string)(force-output)(values))
 
-(defio put-char(char)(character)
+(defio(put-char((char character))null)
   (write-char char)(values))
 
-(defio .print (arg)(t)
+(defio(.print((arg t))null)
   (print arg)(values))
 
-(defio put-string-line(string)(string)
+(defio(put-string-line((string string))null)
   (write-line string)(values))
 
-(defio get-line()()
-  (read-line))
+(defio(get-line()string)
+  (values(read-line)))
 
-(defio .sequence(ios)(list)
+(defio(.sequence((ios list))list)
   (mapcar #'funcall ios))
 
 (defun mapmonad (io arg*)
   (.sequence (mapcar io arg*)))
 
-(defio mapm (io arg*)((and io-action (function(t)io-action)) list)
+(defio(mapm ((io (and io-action (function(t)io-action)))
+	     (arg* list))
+	    null)
   (map nil (lambda(arg)(funcall(funcall io arg)))arg*))
 
-(defio forever (io)(io-action)
+(defio(forever((io io-action))null)
   (loop (funcall io)))
 
-(defio for-monad(args io)(list(and io-action (function(t)io-action)))
+(defio(for-monad ((args list)
+		  (io(and io-action (function(t)io-action))))
+		 list)
   (mapcar (lambda(x)(funcall(funcall io x))) args))
 
-(defio interact (&optional(function #'identity))(&optional function)
+(defio(interact(&optional((function #'identity)function))null)
   (loop :for content = (read-line nil nil)
 	:while content
 	:do (write-line(funcall function content))))
 
-(defio bracket(prologue epilogue body)(io-action (function(t)io-action)(function(t)io-action))
+(defio(bracket ((prologue io-action)
+		(epilogue (function(t)io-action))
+		(body(function(t)io-action)))
+	       T)
   (let(handle)
     (unwind-protect(progn (setf handle(funcall prologue))
 			  (funcall(funcall body handle)))
@@ -60,14 +91,16 @@
 (defdata io-mode()
   :read-mode :write-mode :append-mode :read-write-mode)
 
-(defio open-file(path mode)(trivial-types:pathname-designator io-mode)
+(defio(open-file ((path trivial-types:pathname-designator)
+		  (mode io-mode))
+		 stream)
   (apply #'open path (ecase mode
 		       (:read-mode)
 		       (:write-mode `(:direction :output :if-does-not-exist :create :if-exists :supersede))
 		       (:append-mode `(:direction :output :if-exists :append :if-does-not-exist :create))
 		       (:read-write-mode `(:direction :io :if-does-not-exist :create :if-exists :supersede)))))
 
-(defio h-close(handle)(stream)
+(defio(h-close ((handle stream))T)
   (close handle))
 
 (defmacro defaction(name lambda-list &body body)
@@ -98,7 +131,7 @@
 	  )
     `(MAKE-INSTANCE 'IO-ACTION :INSTANCE (LAMBDA(),@(rec exp*)))))
 
-(defio .return(value)(t)
+(defio(.return ((value T))T)
   value)
 
 (defmacro do-contents((var &optional(reader '#'read)(stream '*standard-input*))&body body)
@@ -108,7 +141,10 @@
 	                `(MAY-CALL ,form))
 		      body)))
 
-(defio with-file(file-path io-mode function)(trivial-types:pathname-designator io-mode (function(stream)io-action))
+(defio(with-file ((file-path trivial-types:pathname-designator)
+		  (io-mode io-mode)
+		  (function(function(stream)io-action)))
+		 T)
   (let((*terminal-io* *terminal-io*))
     (unwind-protect(progn (setq *terminal-io* (apply #'open file-path (ecase io-mode
 									(:read-mode)
@@ -123,4 +159,3 @@
 
 (defun unlines(string*)
   (format nil "~{~A~^~%~}"string*))
-
