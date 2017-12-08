@@ -165,12 +165,13 @@
 			       type))
 			   (adt-types adt)
 			   (cdr thing))))))
-      (if(not(functionp thing))
-	(class-name(class-of thing))
-	(let((name(millet:function-name thing)))
-	  (if name
-	    (introspect-environment:function-type name)
-	    'function))))))
+      (typecase thing
+	(io-action (io-type thing))
+	(function (let((name(millet:function-name thing)))
+		    (if name
+		      (introspect-environment:function-type name)
+		      'function)))
+	(t (class-name(class-of thing)))))))
 
 (defun data-order(thing)
   (let((adt(adv-p thing)))

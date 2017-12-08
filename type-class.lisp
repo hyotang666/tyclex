@@ -308,7 +308,16 @@
       (typep (constant-value t1)t2))
     (if(constant-p t2)
       (typep (constant-value t2)t1)
-      (subtypep t1 t2))))
+      (subtype? t1 t2))))
+
+(defun subtype?(t1 t2)
+  (if(millet:type-specifier-p t1)
+    (if(millet:type-specifier-p t2)
+      (subtypep t1 t2)
+      (unify:unify t1 (patternize t2)))
+    (if(millet:type-specifier-p t2)
+      (unify:unify (patternize t1)t2)
+      (unify:unify (patternize t1)(patternize t2)))))
 
 ;;;; GET-INSTANCE-LAMBDA
 (defun get-instance-lambda(interface type*)
