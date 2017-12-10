@@ -70,9 +70,12 @@
 #?(fboundp 'model) :satisfies identity
 #?(fboundp 'year) :satisfies identity
 
-#?(fboundp '(setf company)) :satisfies identity
-#?(fboundp '(setf model)) :satisfies identity
-#?(fboundp '(setf year)) :satisfies identity
+#?(let((.car(.car :company "company" :model "model" :year 1)))
+    (setf (company .car) "foo"
+	  (model .car) "bar"
+	  (year .car) 2)
+    .car)
+:satisfies #`(equal '("foo" "bar" 2) (cdr $result))
 
 ; Example of reader.
 #?(company (.car :company "hoge"))
