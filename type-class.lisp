@@ -315,7 +315,7 @@
 
 (defun compatible-type-p(type type*)
   (loop :for t1 :in type*
-	:always (%compatible-type-p t1 type)))
+	:always (%compatible-type-p type t1)))
 
 (defun %compatible-type-p(t1 t2)
   (if(constant-p t1)
