@@ -151,8 +151,8 @@
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
-    ((and (listp var) ; instance call.
-	  (instance-p (car var)))
+    ((and (listp var)
+	  (instance-p (car var))) ; instance call.
      (compute-instance-call-return-type var))
     ((and (listp var)
 	  (action-boundp (car var))) ; action call.
@@ -278,7 +278,7 @@
   (labels((rec(pattern type* acc)
 	    (if(endp pattern)
 	      (if(endp type*)
-		T
+		acc ; <--- For debug use.
 		(error "Unmatch length ~S ~S" $pattern $type*))
 	      (if(endp type*)
 		(error "Unmatch length ~S ~S" $pattern $type*)

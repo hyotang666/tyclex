@@ -1,5 +1,6 @@
 (in-package :vs-haskell)
 
+;;;; IO-ACTION data structure.
 (defclass io-action ()
   ((instance :initarg :instance :reader action-of)
    (type :initarg :type :reader io-type))
@@ -8,15 +9,19 @@
 (defmethod initialize-instance :after ((c io-action) &key)
   (closer-mop:set-funcallable-instance-function c (action-of c)))
 
+;;; IO type constructor.
 (deftype io(&optional return)
   `(and io-action (function * ,return)))
 
+;;;; ACTION data structure.
 (defstruct(action (:copier nil)(:predicate nil)(:constructor action-meta-info))
   (type (error "required") :type (cons (eql io)(cons * null)) :read-only t))
 
+;; Trivial helpers
 (defun action-boundp(symbol)
   (get symbol 'action))
 
+;;;; DEFIO
 (defmacro defio ((name signature return) &body body)
   (multiple-value-bind(vars types)(parse-signature signature)
     `(LOCALLY
