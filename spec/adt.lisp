@@ -65,15 +65,14 @@
 => .CAR
 ,:before (mapc #'fmakunbound '(.car company model year))
 
-; Record has reader.
+; Record has accessor.
 #?(fboundp 'company) => T
 #?(fboundp 'model) => T
 #?(fboundp 'year) => T
 
-; Does not have writer.
-#?(fboundp '(setf company)) => NIL
-#?(fboundp '(setf model)) => NIL
-#?(fboundp '(setf year)) => NIL
+#?(fboundp '(setf company)) => T
+#?(fboundp '(setf model)) => T
+#?(fboundp '(setf year)) => T
 
 ; Example of reader.
 #?(company (.car :company "hoge"))
