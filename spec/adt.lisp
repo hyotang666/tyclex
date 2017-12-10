@@ -58,9 +58,10 @@
 => T
 
 ; We can define record data.
-#?(defdata .car (.car (company "" :type string)
-		      (model "" :type string)
-		      (year 0 :type fixnum)))
+#?(defdata .car ()
+    (.car (company "" :type string)
+	  (model "" :type string)
+	  (year 0 :type fixnum)))
 => .CAR
 ,:before (mapc #'fmakunbound '(.car company model year))
 
@@ -78,7 +79,7 @@
 #?(company (.car :company "hoge"))
 => "hoge"
 ,:test equal
-#?(company (.car :model "hoge"))
+#?(model (.car :model "hoge"))
 => "hoge"
 ,:test equal
 #?(year (.car :year 1))
