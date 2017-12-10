@@ -11,13 +11,20 @@
 (deftype io(&optional return)
   `(and io-action (function * ,return)))
 
+(defstruct(action (:copier nil)(:predicate nil)(:constructor action-meta-info))
+  (type (error "required") :type (cons (eql io)(cons * null)) :read-only t))
+
+(defun action-boundp(symbol)
+  (get symbol 'action))
+
 (defmacro defio ((name signature return) &body body)
   (multiple-value-bind(vars types)(parse-signature signature)
     `(LOCALLY
        ;; SBCL emits compiler note about return type `IO-ACTION`.
        ;; note: type assertion too complex to check:
        #+sbcl(declare (sb-ext:muffle-conditions sb-ext:compiler-note))
-       (DECLAIM(FTYPE(FUNCTION,types IO-ACTION),name))
+       (DECLAIM(FTYPE(FUNCTION,types(IO ,return)),name))
+       (SETF(GET ',name 'ACTION)(ACTION-META-INFO :TYPE '(IO ,return)))
        (DEFUN,name,vars
 	 (MAKE-INSTANCE 'IO-ACTION
 			:INSTANCE (LAMBDA(),@body)

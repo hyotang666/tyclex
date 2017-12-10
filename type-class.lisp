@@ -109,6 +109,19 @@
 		    ;; Or `compiler-macroexpand` get into infinite expanding.
 		    (RPLACD WHOLE (LIST ,@gensyms))))))))
 
+(defmethod unify:unify :around ((a symbol)(b symbol)
+				&optional (env (unify:make-empty-environment))
+				&key &allow-other-keys)
+  (cond ((unify:variable-any-p a)env)
+	((unify:variablep a)(unify::var-unify a b env))
+	((unify:variable-any-p b) env)
+	((unify:variablep b)(unify::var-unify b a env))
+	((eq a b)env)
+	((%compatible-type-p b a)env)
+	(t (error 'unify::unification-failure
+		  :format-control "Cannot unify two different symbols: ~S ~S"
+		  :format-arguments (list a b)))))
+
 (defstruct(constant (:constructor wrap-value(value))(:copier nil))
   (value nil :read-only t))
 
@@ -141,6 +154,9 @@
     ((and (listp var) ; instance call.
 	  (instance-p (car var)))
      (compute-instance-call-return-type var))
+    ((and (listp var)
+	  (action-boundp (car var))) ; action call.
+     (action-type(action-boundp (car var))))
     ((and (listp var)
 	  (symbolp (car var)))
      (compute-standard-form-return-type var env))
