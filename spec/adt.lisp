@@ -38,8 +38,8 @@
 ,:before (mapc #'fmakunbound '(circle rectangle))
 
 ; Constructors are defined.
-#?(fboundp 'circle) => T
-#?(fboundp 'rectangle) => T
+#?(fboundp 'circle) :satisfies identity
+#?(fboundp 'rectangle) :satisfies identity
 
 ; Type is defined.
 #?(millet:type-specifier-p 'shape) => T
@@ -66,13 +66,13 @@
 ,:before (mapc #'fmakunbound '(.car company model year))
 
 ; Record has accessor.
-#?(fboundp 'company) => T
-#?(fboundp 'model) => T
-#?(fboundp 'year) => T
+#?(fboundp 'company) :satisfies identity
+#?(fboundp 'model) :satisfies identity
+#?(fboundp 'year) :satisfies identity
 
-#?(fboundp '(setf company)) => T
-#?(fboundp '(setf model)) => T
-#?(fboundp '(setf year)) => T
+#?(fboundp '(setf company)) :satisfies identity
+#?(fboundp '(setf model)) :satisfies identity
+#?(fboundp '(setf year)) :satisfies identity
 
 ; Example of reader.
 #?(company (.car :company "hoge"))
