@@ -16,3 +16,7 @@
    (:file "action" :depends-on ("adt"))
    (:file "type-class" :depends-on ("adt"))
    ))
+
+;; Perform method below is added by JINGOH.GENERATOR.
+(defmethod perform ((o test-op) (c (eql (find-system "vs-haskell"))))
+  (test-system :vs-haskell.test))
