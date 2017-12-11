@@ -103,13 +103,16 @@
 
 ;;; <meta-info-setter>
 (defun <meta-info-setter>(constructor order lambda-list name)
-  (let((c (alexandria:ensure-car constructor)))
-    `(SETF (GET ',c 'adt-meta-info)
-	   (MAKE-ADT :TYPE-OF ',(if lambda-list
-				  (constructor-return-type name)
-				  name)
-		     :TYPES ',(arg-types constructor lambda-list)
-		     :ORDER ,order))))
+  (let((c (alexandria:ensure-car constructor))
+       (meta-info `(MAKE-ADT :TYPE-OF ',(if lambda-list
+					  (constructor-return-type name)
+					  name)
+			     :TYPES ',(arg-types constructor lambda-list)
+			     :ORDER ,order)))
+    `(SETF (GET ',c 'adt-meta-info),meta-info
+	   ,@(unless(keywordp c)
+	       `((GET ',(constructor-name constructor) 'ADT-META-INFO)
+		 ,meta-info)))))
 
 (defun arg-types(constructor args)
   (cond

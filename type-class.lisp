@@ -157,6 +157,8 @@
     ((and (listp var)
 	  (action-boundp (car var))) ; action call.
      (action-type(action-boundp (car var))))
+    ((adv-p var) ; constructor call.
+     (data-type-of var))
     ((and (listp var)
 	  (symbolp (car var)))
      (compute-standard-form-return-type var env))
