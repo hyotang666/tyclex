@@ -333,9 +333,11 @@
   (if(millet:type-specifier-p t1)
     (if(millet:type-specifier-p t2)
       (subtypep t1 t2)
-      (unify:unify t1 (patternize t2)))
+      (or (eql t t1)
+	  (unify:unify t1 (patternize t2))))
     (if(millet:type-specifier-p t2)
-      (unify:unify (patternize t1)t2)
+      (unless(eql t t2)
+	(unify:unify (patternize t1)t2))
       (unify:unify (patternize t1)(patternize t2)))))
 
 ;;;; GET-INSTANCE-LAMBDA
