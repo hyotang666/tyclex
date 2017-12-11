@@ -36,6 +36,7 @@
     (rectangle real real real real))
 => SHAPE
 ,:before (mapc #'fmakunbound '(circle rectangle))
+,:lazy T
 
 ; Constructors are defined.
 #?(fboundp 'circle) :satisfies identity
@@ -93,6 +94,7 @@
     (just a))
 => MAYBE
 ,:before (fmakunbound 'just)
+,:lazy T
 
 #?(typep :nothing '(maybe *)) => T
 #?(typep (just 0) '(maybe *)) => T
