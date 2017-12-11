@@ -1,5 +1,7 @@
 (defpackage :vs-haskell.spec
-  (:use :cl :jingoh #:vs-haskell))
+  (:use :cl :jingoh #:vs-haskell)
+  (:import-from :vs-haskell #:data-order #:data-type-of)
+  )
 (in-package :vs-haskell.spec)
 (setup :vs-haskell)
 

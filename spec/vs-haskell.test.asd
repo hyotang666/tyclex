@@ -5,6 +5,8 @@
   (:jingoh "vs-haskell" "millet")
   :components
   ((:file "vs-haskell")
-   (:file "adt"))
+   ;; Mid
+   (:file "adt" :depends-on ("vs-haskell"))
+   (:file "type-class" :depends-on ("vs-haskell")))
   :perform
   (test-op (o c) (symbol-call :jingoh :examine :vs-haskell)))

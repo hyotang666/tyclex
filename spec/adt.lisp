@@ -1,7 +1,5 @@
-(defpackage :vs-haskell.spec
-  (:use :cl :jingoh #:vs-haskell))
 (in-package :vs-haskell.spec)
-(setup :vs-haskell)
+(named-readtables:in-readtable jingoh.reader:syntax)
 
 (requirements-about DEFDATA)
 
