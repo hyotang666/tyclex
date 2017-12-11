@@ -122,6 +122,26 @@
 		  :format-control "Cannot unify two different symbols: ~S ~S"
 		  :format-arguments (list a b)))))
 
+(defmethod unify:unify ((a (eql t))(b list)
+			&optional (env (unify:make-empty-environment))
+			&key &allow-other-keys)
+  (trestrul:traverse (lambda(x)
+		       (when(and (unify:variablep x)
+				 (null (nth-value 1 (unify:find-variable-value x env))))
+			 (unify:extend-environment x a env)))
+		     b)
+  env)
+
+(defmethod unify:unify ((b list)(a (eql t))
+			&optional (env (unify:make-empty-environment))
+			&key &allow-other-keys)
+  (trestrul:traverse (lambda(x)
+		       (when(and (unify:variablep x)
+				 (null (nth-value 1 (unify:find-variable-value x env))))
+			 (unify:extend-environment x a env)))
+		     b)
+  env)
+
 (defstruct(constant (:constructor wrap-value(value))(:copier nil))
   (value nil :read-only t))
 
