@@ -63,7 +63,7 @@
 	  (model "" :type string)
 	  (year 0 :type fixnum)))
 => .CAR
-,:before (mapc #'fmakunbound '(.car company model year))
+,:before (mapc #'fmakunbound '(.car company model year (setf company)(setf model)(setf year)))
 
 ; Record has accessor.
 #?(fboundp 'company) :satisfies identity
