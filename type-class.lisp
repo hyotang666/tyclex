@@ -354,7 +354,8 @@
 	 (unify:unify pattern (subst '_ '* type))
 	 (list pattern type))
 	((or (eq t type)(eq 'function type))
-	 (warn "Could not match ~S ~S"pattern type)
+	 (when *compile-file-pathname*
+	   (warn "Could not match ~S ~S"pattern type))
 	 (list pattern type))
 	(t (error "%CHECK: Unknown type comes.~%TYPE: ~S" type)))
       (progn (unify:unify pattern (subst '_ '* type))
