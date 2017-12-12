@@ -343,8 +343,11 @@
     (rec (cdr $pattern)(cdr $type*)`(,(%check(car $pattern)(car $type*))))))
 
 (defun %check(pattern type)
-  (if(listp pattern)
-    (if(eq 'function (car pattern))
+  (if(atom pattern)
+    (list pattern type)
+    (if(not(eq 'function (car pattern)))
+      (progn (unify:unify pattern (subst '_ '* type))
+	     (list pattern type))
       (cond
 	((constant-p type)
 	 (let((ftype(cdr(assoc 'ftype (nth-value 2 (introspect-environment:function-information (constant-value type)))))))
@@ -357,10 +360,7 @@
 	 (when *compile-file-pathname*
 	   (warn "Could not match ~S ~S"pattern type))
 	 (list pattern type))
-	(t (error "%CHECK: Unknown type comes.~%TYPE: ~S" type)))
-      (progn (unify:unify pattern (subst '_ '* type))
-	     (list pattern type)))
-    (list pattern type)))
+	(t (error "%CHECK: Unknown type comes.~%TYPE: ~S" type))))))
 
 (defun compatible-type-p(type type*)
   (loop :for t1 :in type*
