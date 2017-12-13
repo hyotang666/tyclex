@@ -168,6 +168,22 @@
 	  (extend-environment-with-t (cdr b)
 				     (unify:extend-environment (car b) a env)))))))
 
+(defmethod unify:unify ((a (eql 'cons))(b list)
+			&optional(env(unify:make-empty-environment))
+			&key &allow-other-keys)
+  (if(unify:variablep(car b))
+    (extend-environment-with-t (cdr b)
+			       (unify:extend-environment(car b)a env))
+    (call-next-method)))
+
+(defmethod unify:unify ((b list)(a (eql 'cons))
+			&optional(env(unify:make-empty-environment))
+			&key &allow-other-keys)
+  (if(unify:variablep(car b))
+    (extend-environment-with-t (cdr b)
+			       (unify:extend-environment(car b)a env))
+    (call-next-method)))
+
 (defstruct(constant (:constructor wrap-value(value))(:copier nil))
   (value nil :read-only t))
 
