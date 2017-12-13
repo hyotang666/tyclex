@@ -32,7 +32,7 @@
 	      list))
 	  (type-name(args constructor)
 	    (cond
-	      ((keywordp constructor)`'(eql ,constructor))
+	      ((symbolp constructor)`'(eql ,constructor))
 	      (args (comma-type-specifier args constructor))
 	      ((list-constructor-p constructor)
 	       `',(cons-type-specifier `((eql ,(car constructor))
@@ -78,7 +78,8 @@
 		(arg-types lambda-list (cdr arg-types)(push t acc))
 		(arg-types lambda-list (cdr arg-types)(push (car arg-types)acc))))))
     (cond
-      ((keywordp constructor) nil)
+      ((symbolp constructor)
+       `((ALEXANDRIA:DEFINE-CONSTANT ,constructor ',constructor)))
       ((or args (list-constructor-p constructor))
        (let((lambda-list(Gensyms(cdr constructor))))
 	 `(,@(if args
@@ -110,13 +111,13 @@
 			     :TYPES ',(arg-types constructor lambda-list)
 			     :ORDER ,order)))
     `(SETF (GET ',c 'adt-meta-info),meta-info
-	   ,@(unless(keywordp c)
+	   ,@(unless(symbolp constructor)
 	       `((GET ',(constructor-name constructor) 'ADT-META-INFO)
 		 ,meta-info)))))
 
 (defun arg-types(constructor args)
   (cond
-    ((keywordp constructor) `(eql ,constructor))
+    ((symbolp constructor) `(eql ,constructor))
     ((or args (list-constructor-p constructor))
      (sublis (mapcar (lambda(elt)
 		       (cons elt (Envar elt)))
@@ -142,7 +143,7 @@
 
 ;;;; Trivial helpers
 (defun adv-p(thing)
-  (or (when(keywordp thing)
+  (or (when(symbolp thing)
 	(get thing 'adt-meta-info))
       (when(and (listp thing)
 		(symbolp (car thing)))

@@ -43,39 +43,39 @@
 ,:before (mapc #'fmakunbound '(== /==))
 
 #?(defdata traffic-light()
-     :red :yellow :green)
+     red yellow green)
 => TRAFFIC-LIGHT
 
 #?(definstance == ((a traffic-light)(b traffic-light))
     (trivia:match*(a b)
-      ((:red :red)T)
-      ((:green :green)T)
-      ((:yellow :yellow)T)
+      ((red red)T)
+      ((green green)T)
+      ((yellow yellow)T)
       ((_ _) nil)))
 => ==
 
-#?(== :red :red) => T
-#?(== :green :green) => T
-#?(== :yellow :yellow) => T
-#?(== :red :green) => NIL
-#?(== :red :yellow) => NIL
-#?(== :green :red) => NIL
-#?(== :green :yellow) => NIL
+#?(== red red) => T
+#?(== green green) => T
+#?(== yellow yellow) => T
+#?(== red green) => NIL
+#?(== red yellow) => NIL
+#?(== green red) => NIL
+#?(== green yellow) => NIL
 
-#?(== :red :not-traffic-light) :signals error
+#?(== red 'not-traffic-light) :signals error
 ,:lazy t
 
 #?(definstance == ((a (maybe *))(b (maybe *)))
     (trivia:match*(a b)
-      ((:nothing :nothing)T)
+      ((nothing nothing)T)
       (((just x)(just y))(== x y))
       ((_ _)nil)))
 => ==
 
-#?(== :nothing :nothing) => T
-#?(== (just :red)(just :red)) => T
-#?(== :nothing (just :red)) => NIL
-#?(== (just :red)(just :green)) => NIL
+#?(== nothing nothing) => T
+#?(== (just red)(just red)) => T
+#?(== nothing (just red)) => NIL
+#?(== (just red)(just green)) => NIL
 
 #?(define-type-class(yes-no a)()
     ((yes-no(a)boolean)))
@@ -95,12 +95,12 @@
 => YES-NO
 
 #?(definstance yes-no ((a (maybe *)))
-    (unless(eq :nothing a)
+    (unless(eq nothing a)
       T))
 => YES-NO
 
 #?(definstance yes-no ((a traffic-light))
-    (unless(eq :red a)
+    (unless(eq red a)
       T))
 => YES-NO
 
@@ -109,13 +109,13 @@
 #?(yes-no nil) => NIL
 #?(yes-no '(a)) => T
 #?(yes-no T) => T
-#?(yes-no :nothing) => NIL
+#?(yes-no nothing) => NIL
 #?(yes-no (just 0)) => T
-#?(yes-no :red) => NIL
-#?(yes-no :yellow) => T
-#?(yes-no :green) => T
+#?(yes-no red) => NIL
+#?(yes-no yellow) => T
+#?(yes-no green) => T
 
-#?(defdata bool () :false :true)
+#?(defdata bool () false true)
 => BOOL
 
 #?(define-type-class(ord a)()
@@ -157,12 +157,12 @@
       (t :gt)))
 => COMPARE
 
-#?(compare :true :false) => :GT
-#?(gt :true :false) => T
-#?(lt :true :false) => NIL
+#?(compare true false) => :GT
+#?(gt true false) => T
+#?(lt true false) => NIL
 
 #?(defdata week ()
-    :monday :tuesday :wednesday :thursday :friday :saturday :sunday)
+    monday tuesday wednesday thursday friday saturday sunday)
 => WEEK
 
 #?(define-type-class(bounded a)()
@@ -187,16 +187,16 @@
 => ENUM
 ,:before (mapc #'fmakunbound '(succ pred))
 
-#?(gt :saturday :friday) => T
-#?(compare :monday :wednesday) => :LT
+#?(gt saturday friday) => T
+#?(compare monday wednesday) => :LT
 
-#?(min-bound 'week) => (EQL :MONDAY)
+#?(min-bound 'week) => (EQL MONDAY)
 ,:test equal
-#?(max-bound 'week) => (EQL :SUNDAY)
+#?(max-bound 'week) => (EQL SUNDAY)
 ,:test equal
 
-#?(succ :monday) => :TUESDAY
-#?(pred :saturday) => :FRIDAY
+#?(succ monday) => TUESDAY
+#?(pred saturday) => FRIDAY
 
 #?(define-type-class(functor f)()
     ((fmap((function(a)b)(f a))(f b))))
@@ -206,8 +206,8 @@
 #?(definstance fmap ((f function)(m (maybe *)))
     (trivia:ematch m
       ((just x)(just(funcall f x)))
-      (:nothing :nothing)))
+      (nothing nothing)))
 => FMAP
 
-#?(fmap #'1+ :nothing) => :NOTHING
+#?(fmap #'1+ nothing) => NOTHING
 #?(fmap #'1+ (just 0)) :be-the (maybe (eql 1))

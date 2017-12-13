@@ -88,17 +88,17 @@
 
 ; DEFDATA support type variable.
 #?(defdata maybe(a)
-    :nothing
+    nothing
     (just a))
 => MAYBE
 ,:before (fmakunbound 'just)
 ,:lazy T
 
-#?(typep :nothing '(maybe *)) => T
+#?(typep nothing '(maybe *)) => T
 #?(typep (just 0) '(maybe *)) => T
-#?(typep :nothing '(maybe fixnum)) => T
+#?(typep nothing '(maybe fixnum)) => T
 #?(typep (just 0) '(maybe fixnum)) => T
-#?(typep :nothing '(maybe string)) => T
+#?(typep nothing '(maybe string)) => T
 #?(typep (just 0) '(maybe string)) => NIL
 
 #?(defdata .vector(a)
@@ -109,8 +109,8 @@
 ;; TODO signature checking.
 
 ; DATAs can be checked equality by EQUAL.
-#?(equal :nothing :nothing) => T
-#?(equal :nothing (just 0)) => NIL
+#?(equal nothing nothing) => T
+#?(equal nothing (just 0)) => NIL
 #?(equal (just 0) (just 0)) => T
 #?(equal (just 0) (just 1)) => NIL
 

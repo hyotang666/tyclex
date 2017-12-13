@@ -101,16 +101,16 @@
       (funcall epilogue handle))))
 
 (defdata io-mode()
-  :read-mode :write-mode :append-mode :read-write-mode)
+  read-mode write-mode append-mode read-write-mode)
 
 (defio(open-file ((path trivial-types:pathname-designator)
 		  (mode io-mode))
 		 stream)
   (apply #'open path (ecase mode
-		       (:read-mode)
-		       (:write-mode `(:direction :output :if-does-not-exist :create :if-exists :supersede))
-		       (:append-mode `(:direction :output :if-exists :append :if-does-not-exist :create))
-		       (:read-write-mode `(:direction :io :if-does-not-exist :create :if-exists :supersede)))))
+		       (read-mode)
+		       (write-mode `(:direction :output :if-does-not-exist :create :if-exists :supersede))
+		       (append-mode `(:direction :output :if-exists :append :if-does-not-exist :create))
+		       (read-write-mode `(:direction :io :if-does-not-exist :create :if-exists :supersede)))))
 
 (defio(h-close ((handle stream))T)
   (close handle))
@@ -160,10 +160,10 @@
 		 T)
   (let((*terminal-io* *terminal-io*))
     (unwind-protect(progn (setq *terminal-io* (apply #'open file-path (ecase io-mode
-									(:read-mode)
-									(:write-mode `(:DIRECTION :OUTPUT))
-									(:append-mode `(:DIRECTION :OUTPUT :IF-EXISTS :APPEND))
-									(:read-write-mode `(:DIRECTION :IO)))))
+									(read-mode)
+									(write-mode `(:DIRECTION :OUTPUT))
+									(append-mode `(:DIRECTION :OUTPUT :IF-EXISTS :APPEND))
+									(read-write-mode `(:DIRECTION :IO)))))
 			  (funcall(funcall function *terminal-io*)))
       (close *terminal-io*))))
 
