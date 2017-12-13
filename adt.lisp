@@ -108,6 +108,11 @@
        (meta-info `(MAKE-ADT :TYPE-OF ',(if lambda-list
 					  (constructor-return-type name)
 					  name)
+			     :LAMBDA-LIST ',(mapcar (lambda(elt)
+						      (if(millet:type-specifier-p elt)
+							elt
+							(Envar elt)))
+						    lambda-list)
 			     :TYPES ',(arg-types constructor lambda-list)
 			     :ORDER ,order)))
     `(SETF (GET ',c 'adt-meta-info),meta-info
@@ -139,6 +144,7 @@
 (defstruct(adt (:copier nil)(:predicate nil))
   (type-of (error "required") :read-only t :type (or symbol list))
   (types (error "required") :read-only t :type (or symbol list))
+  (lambda-list (error "required") :read-only t :type list)
   (order (error "required") :type fixnum :read-only t))
 
 ;;;; Trivial helpers
@@ -163,12 +169,17 @@
 	  (if(eq 'eql (car types))
 	    (adt-type-of adt)
 	    (list* (car (adt-type-of adt))
-		   (mapcar (lambda(type value)
-			     (if(unify:variablep type)
-			       (data-type-of value)
-			       type))
-			   (adt-types adt)
-			   (cdr thing))))))
+		   (let((env(loop :with env = (unify:make-empty-environment)
+				  :for v :in (cdr thing)
+				  :for type :in (adt-types adt)
+				  :when (unify:variablep type)
+				  :do (setf env (unify:extend-environment type
+									  (data-type-of v)
+									  env))
+				  :finally (return env))))
+		     (mapcar (lambda(elt)
+			       (unify:find-variable-value elt env))
+			     (adt-lambda-list adt)))))))
       (typecase thing
 	(io-action (io-type thing))
 	(function (let((name(millet:function-name thing)))
