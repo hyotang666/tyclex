@@ -204,6 +204,18 @@
       (extend-environment-with-t (cdr b)
 				 (unify:extend-environment(car b)'list env)))))
 
+(defmethod unify:unify :around ((a list)(b list)
+				&optional(env(unify:make-empty-environment))
+				&key &allow-other-keys)
+  (trivia:match*((car a)(car b))
+    (((satisfies unify:variablep)(eq 'function))
+     (unify:unify (cdr a)(cddr b)
+		  (unify:extend-environment (car a) (car b) env)))
+    (((eq 'function)(satisfies unify:variablep))
+     (unify:unify (cddr a)(cdr b)
+		  (unify:extend-environment (car a)(car b)env)))
+    ((_ _)(call-next-method))))
+
 (define-condition internal-logical-error(cell-error)
   ((datum :initarg :datum :accessor error-datum))
   (:report(lambda(c *standard-output*)
