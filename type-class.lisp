@@ -184,9 +184,6 @@
 			       (unify:extend-environment(car b)a env))
     (call-next-method)))
 
-(defstruct(constant (:constructor wrap-value(value))(:copier nil))
-  (value nil :read-only t))
-
 (define-condition internal-logical-error(cell-error)
   ((datum :initarg :datum :accessor error-datum))
   (:report(lambda(c *standard-output*)
@@ -209,7 +206,7 @@
      (let((value(introspect-environment:constant-form-value var env)))
        (if(adv-p value) ; literal adt.
 	 (data-type-of value)
-	 (wrap-value value))))
+	 (type-of value))))
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
@@ -365,10 +362,6 @@
       (progn (unify:unify pattern (subst '_ '* type))
 	     (list pattern type))
       (cond
-	((constant-p type)
-	 (let((ftype(cdr(assoc 'ftype (nth-value 2 (introspect-environment:function-information (constant-value type)))))))
-	   (unify:unify pattern (subst '_ '* ftype))
-	   (list pattern ftype)))
 	((typep type '(cons (eql function) t))
 	 (unify:unify pattern (subst '_ '* type))
 	 (list pattern type))
@@ -383,16 +376,6 @@
 	:always (%compatible-type-p type t1)))
 
 (defun %compatible-type-p(t1 t2)
-  (if(constant-p t1)
-    (if(constant-p t2)
-      (%compatible-type-p (type-of(constant-value t1))
-			  (type-of(constant-value t2)))
-      (typep (constant-value t1)t2))
-    (if(constant-p t2)
-      (typep (constant-value t2)t1)
-      (subtype? t1 t2))))
-
-(defun subtype?(t1 t2)
   (if(millet:type-specifier-p t1)
     (if(millet:type-specifier-p t2)
       (subtypep t1 t2)
