@@ -211,3 +211,46 @@
 
 #?(fmap #'1+ nothing) => NOTHING
 #?(fmap #'1+ (just 0)) :be-the (maybe (eql 1))
+#?(fmap #'identity (just 0)) :equivalents (identity (just 0))
+
+#?(definstance fmap ((f (function(a)b))(action (io a)))
+    (action result <- action
+            (.return (funcall f result))))
+=> FMAP
+
+#?(fmap #'reverse (vs-haskell::get-line))
+:satisfies #`(with-input-from-string(*standard-input* "hoge")
+	       (& (functionp $result)
+		  (typep $result 'vs-haskell::io-action)
+		  (equal "egoh" (funcall $result))))
+
+#?(definstance fmap ((f function)(g function))
+     #`(+ f g))
+=> FMAP
+#?(fmap #'1+ #'1+)
+:satisfies #`(& (functionp $result)
+		(eql 3 (funcall $result 1)))
+
+#?(definstance fmap ((f function)(l list))
+    (mapcar f l))
+=> FMAP
+#?(fmap #'1+ '(1 2 3)) => (2 3 4)
+,:test equal
+#?(fmap #'1+ nil) => NIL
+#?(fmap #'identity '(1 2 3)) :equivalents (identity '(1 2 3))
+#?(fmap #'identity nil) :equivalents (identity nil)
+
+#?(defdata counter-maybe(a)
+    counter-nothing
+    (counter-just fixnum a))
+=> COUNTER-MAYBE
+
+#?(definstance fmap ((f function)(cm (counter-maybe *)))
+    (trivia:ematch cm
+      (counter-nothing counter-nothing)
+      ((counter-just counter x)(counter-just (1+ counter)(funcall f x)))))
+=> FMAP
+
+#?(fmap #'1+ (counter-just 0 1))
+:satisfies #`(not (equal $result)
+		  (counter-just 0 1))
