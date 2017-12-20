@@ -212,6 +212,7 @@
 #?(fmap #'1+ nothing) => NOTHING
 #?(fmap #'1+ (just 0)) :be-the (maybe (eql 1))
 #?(fmap #'identity (just 0)) :equivalents (identity (just 0))
+,:test equal
 
 #?(definstance fmap ((f (function(a)b))(action (io a)))
     (action result <- action
