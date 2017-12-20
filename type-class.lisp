@@ -117,7 +117,7 @@
 	((unify:variable-any-p b) env)
 	((unify:variablep b)(unify::var-unify b a env))
 	((eq a b)env)
-	((%compatible-type-p b a)env)
+	((subtype? b a)env)
 	(t (error 'unify::unification-failure
 		  :format-control "Cannot unify two different symbols: ~S ~S"
 		  :format-arguments (list a b)))))
@@ -379,10 +379,12 @@
 	  (body(pat pat-rest type type-rest acc)
 	    (let((seen(assoc pat acc :test #'equal)))
 	      (if seen
-		(if(compatible-type-p type (cdr seen))
+		(if(every (lambda(seen)
+			    (subtype? type seen))
+			  (cdr seen))
 		  (rec pat-rest type-rest (progn (pushnew type (cdr seen):test #'equalp)
 						 acc))
-		  (error "Uncompatible type ~S ~S"type seen))
+		  (error "~S is not subtype of ~S"type seen))
 		(rec pat-rest type-rest (push(%check pat type)acc)))))
 	  )
     (rec (cdr $pattern)(cdr $type*)`(,(%check(car $pattern)(car $type*))))))
@@ -403,11 +405,7 @@
 	 (list pattern type))
 	(t (error "%CHECK: Unknown type comes.~%TYPE: ~S" type))))))
 
-(defun compatible-type-p(type type*)
-  (loop :for t1 :in type*
-	:always (%compatible-type-p type t1)))
-
-(defun %compatible-type-p(t1 t2)
+(defun subtype?(t1 t2)
   (if(millet:type-specifier-p t1)
     (if(millet:type-specifier-p t2)
       (subtypep t1 t2)
@@ -430,7 +428,7 @@
 ;;;; COLLECT-INSTANCE
 (defun collect-instance(type* interface)
   (remove-if-not (lambda(ts2)
-		   (every #'%compatible-type-p type* ts2))
+		   (every #'subtype? type* ts2))
 		 (instance-table interface)
 		 :key #'car))
 
