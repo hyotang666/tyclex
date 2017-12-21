@@ -226,7 +226,7 @@
 		  (equal "egoh" (funcall $result))))
 
 #?(definstance fmap ((f function)(g function))
-     #`(+ f g))
+     (alexandria:compose f g))
 => FMAP
 #?(fmap #'1+ #'1+)
 :satisfies #`(& (functionp $result)
