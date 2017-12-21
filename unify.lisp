@@ -1,5 +1,7 @@
 (in-package :vs-haskell)
 
+(cogef:copy 'unify:unify 'unify)
+
 (defun envar(thing)
   (intern(format nil "?~A"thing)))
 
@@ -10,7 +12,7 @@
       (trestrul:mapleaf #'patternize thing)
       (Envar thing))))
 
-(defmethod unify:unify :around ((a symbol)(b symbol)
+(defmethod unify :around ((a symbol)(b symbol)
 				&optional (env (unify:make-empty-environment))
 				&key &allow-other-keys)
   (cond ((unify:variable-any-p a)env)
@@ -23,7 +25,7 @@
 		  :format-control "Cannot unify two different symbols: ~S ~S"
 		  :format-arguments (list a b)))))
 
-(defmethod unify:unify ((a (eql t))(b list)
+(defmethod unify ((a (eql t))(b list)
 			&optional (env (unify:make-empty-environment))
 			&key &allow-other-keys)
   (extend-environment-with-t b env))
@@ -36,16 +38,16 @@
 		     pattern)
   env)
 
-(defmethod unify:unify ((b list)(a (eql t))
+(defmethod unify ((b list)(a (eql t))
 			&optional (env (unify:make-empty-environment))
 			&key &allow-other-keys)
   (extend-environment-with-t b env))
 
-(defmethod unify:unify ((a (eql 'function))(b list)
+(defmethod unify ((a (eql 'function))(b list)
 			&optional (env (unify:make-empty-environment))
 			&key &allow-other-keys)
   (if(eq 'function (car b))
-    (unify:unify t b env)
+    (unify t b env)
     (if(not(unify:variablep(car b)))
       (call-next-method)
       (if(cdddr b)
@@ -55,11 +57,11 @@
 	  (extend-environment-with-t (cdr b)
 				     (unify:extend-environment (car b) a env)))))))
 
-(defmethod unify:unify ((b list)(a (eql 'function))
+(defmethod unify ((b list)(a (eql 'function))
 			&optional (env (unify:make-empty-environment))
 			&key &allow-other-keys)
   (if(eq 'function (car b))
-    (unify:unify t b env)
+    (unify t b env)
     (if(not(unify:variablep(car b)))
       (call-next-method)
       (if(cdddr b)
@@ -69,7 +71,7 @@
 	  (extend-environment-with-t (cdr b)
 				     (unify:extend-environment (car b) a env)))))))
 
-(defmethod unify:unify ((a (eql 'cons))(b list)
+(defmethod unify ((a (eql 'cons))(b list)
 			&optional(env(unify:make-empty-environment))
 			&key &allow-other-keys)
   (if(unify:variablep(car b))
@@ -77,7 +79,7 @@
 			       (unify:extend-environment(car b)a env))
     (call-next-method)))
 
-(defmethod unify:unify ((b list)(a (eql 'cons))
+(defmethod unify ((b list)(a (eql 'cons))
 			&optional(env(unify:make-empty-environment))
 			&key &allow-other-keys)
   (if(unify:variablep(car b))
@@ -85,7 +87,7 @@
 			       (unify:extend-environment(car b)a env))
     (call-next-method)))
 
-(defmethod unify:unify ((a (eql 'null))(b list)
+(defmethod unify ((a (eql 'null))(b list)
 			&optional(env(unify:make-empty-environment))
 			&key &allow-other-keys)
   (if(not(unify:variablep(car b)))
@@ -95,7 +97,7 @@
       (extend-environment-with-t (cdr b)
 				 (unify:extend-environment(car b)'list env)))))
 
-(defmethod unify:unify ((b list)(a (eql 'null))
+(defmethod unify ((b list)(a (eql 'null))
 			&optional(env(unify:make-empty-environment))
 			&key &allow-other-keys)
   (if(not(unify:variablep(car b)))
@@ -105,15 +107,15 @@
       (extend-environment-with-t (cdr b)
 				 (unify:extend-environment(car b)'list env)))))
 
-(defmethod unify:unify :around ((a list)(b list)
+(defmethod unify :around ((a list)(b list)
 				&optional(env(unify:make-empty-environment))
 				&key &allow-other-keys)
   (trivia:match*((car a)(car b))
     (((satisfies unify:variablep)(eq 'function))
-     (unify:unify (cdr a)(cddr b)
+     (unify (cdr a)(cddr b)
 		  (unify:extend-environment (car a) (car b) env)))
     (((eq 'function)(satisfies unify:variablep))
-     (unify:unify (cddr a)(cdr b)
+     (unify (cddr a)(cdr b)
 		  (unify:extend-environment (car a)(car b)env)))
     ((_ _)(call-next-method))))
 
@@ -122,9 +124,9 @@
     (if(millet:type-specifier-p t2)
       (subtypep t1 t2)
       (or (eql t t1)
-	  (unify:unify t1 (patternize t2))))
+	  (unify t1 (patternize t2))))
     (if(millet:type-specifier-p t2)
       (unless(eql t t2)
-	(unify:unify (patternize t1)t2))
-      (unify:unify (patternize t1)(patternize t2)))))
+	(unify (patternize t1)t2))
+      (unify (patternize t1)(patternize t2)))))
 

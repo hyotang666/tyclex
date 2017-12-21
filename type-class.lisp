@@ -143,7 +143,7 @@
 
 (defun compute-instance-call-return-type(call-form)
   (let((pattern(instance-return-type(car call-form)))
-       (environment(unify:unify (instance-lambda-list(car call-form))
+       (environment(unify (instance-lambda-list(car call-form))
 				(subst '_ '* (compute-return-types(cdr call-form))))))
     (substitute-pattern pattern environment)))
 
@@ -279,11 +279,11 @@
   (if(atom pattern)
     (list pattern type)
     (if(not(eq 'function (car pattern)))
-      (progn (unify:unify pattern (subst '_ '* type))
+      (progn (unify pattern (subst '_ '* type))
 	     (list pattern type))
       (cond
 	((typep type '(cons (eql function) t))
-	 (unify:unify pattern (subst '_ '* type))
+	 (unify pattern (subst '_ '* type))
 	 (list pattern type))
 	((or (eq t type)(eq 'function type))
 	 (when *compile-file-pathname*
