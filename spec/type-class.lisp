@@ -219,10 +219,10 @@
             (.return (funcall f result))))
 => FMAP
 
-#?(fmap #'reverse (vs-haskell::get-line))
+#?(fmap #'reverse (get-line))
 :satisfies #`(with-input-from-string(*standard-input* "hoge")
 	       (& (functionp $result)
-		  (typep $result 'vs-haskell::io-action)
+		  (typep $result 'io-action)
 		  (equal "egoh" (funcall $result))))
 
 #?(definstance fmap ((f function)(g function))
