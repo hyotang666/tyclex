@@ -12,6 +12,12 @@
       (trestrul:mapleaf #'patternize thing)
       (Envar thing))))
 
+(defun enwild (type-spec)
+  (sublis'((* . _)(T . _))type-spec))
+
+(defun dewild (pattern)
+  (subst '* '_ pattern))
+
 (defmethod unify :around ((a symbol)(b symbol)
 				&optional (env (unify:make-empty-environment))
 				&key &allow-other-keys)

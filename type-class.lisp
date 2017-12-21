@@ -89,7 +89,7 @@
 	 (IF IL
 	     ,(if(millet:type-specifier-p return-type)
 		`(LIST 'THE ',return-type (LIST IL ,@gensyms))
-		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (UNIFY:UNIFY ',lambda-list (SUBST '_ '* INFOS)))))
+		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
 		   (IF RETURN
 		       (LIST 'THE RETURN (LIST IL ,@gensyms))
 		       (LIST IL ,@gensyms))))
@@ -148,14 +148,13 @@
     (substitute-pattern pattern environment)))
 
 (defun substitute-pattern(pattern environment)
-  (subst '* '_
-	 (trestrul:asubst-if (lambda(var)
-			       (let((return-type (unify:find-variable-value var environment)))
-				 (if(typep return-type '(cons (eql values)t))
-				   (cadr return-type)
-				   return-type)))
-			     #'unify:variablep
-			     pattern)))
+  (dewild (trestrul:asubst-if (lambda(var)
+				(let((return-type (unify:find-variable-value var environment)))
+				  (if(typep return-type '(cons (eql values)t))
+				    (cadr return-type)
+				    return-type)))
+			      #'unify:variablep
+			      pattern)))
 
 (defun compute-standard-form-return-type(form env)
   (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
@@ -279,11 +278,11 @@
   (if(atom pattern)
     (list pattern type)
     (if(not(eq 'function (car pattern)))
-      (progn (unify pattern (subst '_ '* type))
+      (progn (unify pattern (enwild type))
 	     (list pattern type))
       (cond
 	((typep type '(cons (eql function) t))
-	 (unify pattern (subst '_ '* type))
+	 (unify pattern (enwild type))
 	 (list pattern type))
 	((or (eq t type)(eq 'function type))
 	 (when *compile-file-pathname*
