@@ -10,8 +10,9 @@
    (:file "util" :depends-on ("package"))
    (:file "qualified-use" :depends-on ("package"))
    (:file "readtables" :depends-on ("package"))
+   (:file "unify" :depends-on ("package"))
    ;;
-   (:file "adt" :depends-on ("readtables" "util"))
+   (:file "adt" :depends-on ("readtables" "util" "unify"))
    ;;
    (:file "action" :depends-on ("adt"))
    (:file "type-class" :depends-on ("adt"))
