@@ -256,5 +256,4 @@
 => FMAP
 
 #?(fmap #'1+ (counter-just 0 1))
-:satisfies #`(not (equal $result)
-		  (counter-just 0 1))
+:satisfies #`(not (equal $result (counter-just 0 1)))
