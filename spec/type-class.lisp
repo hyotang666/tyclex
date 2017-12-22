@@ -239,12 +239,15 @@
 ,:test equal
 #?(fmap #'1+ nil) => NIL
 #?(fmap #'identity '(1 2 3)) :equivalents (identity '(1 2 3))
+,:test equal
 #?(fmap #'identity nil) :equivalents (identity nil)
 
 #?(defdata counter-maybe(a)
     counter-nothing
     (counter-just fixnum a))
 => COUNTER-MAYBE
+,:before (fmakunbound 'counter-just)
+,:lazy t
 
 #?(definstance fmap ((f function)(cm (counter-maybe *)))
     (trivia:ematch cm
