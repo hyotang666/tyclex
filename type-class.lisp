@@ -155,9 +155,12 @@
 						    return-type)))
 					      #'unify:variablep
 					      pattern))))
-    (if(typep type-spec '(cons (eql function)(cons * null)))
-      `(FUNCTION * ,(cadr type-spec))
-      type-spec)))
+    (typecase type-spec
+      ((cons (eql function)(cons * null))
+       `(FUNCTION * ,(cadr type-spec)))
+      ((cons (eql list)(cons * null))
+       'list)
+      (otherwise type-spec))))
 
 (defun compute-standard-form-return-type(form env)
   (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
