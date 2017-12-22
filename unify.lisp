@@ -116,12 +116,20 @@
 				     &key &allow-other-keys)
   (trivia:match*((car a)(car b))
     (((satisfies type-unify:variablep)(eq 'function))
+     (setf b (ensure-value b))
      (type-unify:unify (cdr a)(cddr b)
 		       (type-unify:extend-environment (car a) (car b) env)))
     (((eq 'function)(satisfies type-unify:variablep))
+     (setf a (ensure-value a))
      (type-unify:unify (cddr a)(cdr b)
 		       (type-unify:extend-environment (car a)(car b)env)))
     ((_ _)(call-next-method))))
+
+(defun ensure-value(ftype-spec)
+  (trestrul:asubst-if #'second
+		      (lambda(elt)
+			(typep elt '(cons (eql values) *)))
+		      ftype-spec))
 
 (defun subtype?(t1 t2)
   (if(millet:type-specifier-p t1)
