@@ -89,7 +89,7 @@
 	 (IF IL
 	     ,(if(millet:type-specifier-p return-type)
 		`(LIST 'THE ',return-type (LIST IL ,@gensyms))
-		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
+		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (UNIFY ',lambda-list (ENWILD INFOS)))))
 		   (IF RETURN
 		       (LIST 'THE RETURN (LIST IL ,@gensyms))
 		       (LIST IL ,@gensyms))))
