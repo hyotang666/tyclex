@@ -148,13 +148,16 @@
     (substitute-pattern pattern environment)))
 
 (defun substitute-pattern(pattern environment)
-  (dewild (trestrul:asubst-if (lambda(var)
-				(let((return-type (unify:find-variable-value var environment)))
-				  (if(typep return-type '(cons (eql values)t))
-				    (cadr return-type)
-				    return-type)))
-			      #'unify:variablep
-			      pattern)))
+  (let((type-spec (dewild (trestrul:asubst-if (lambda(var)
+						(let((return-type (unify:find-variable-value var environment)))
+						  (if(typep return-type '(cons (eql values)t))
+						    (cadr return-type)
+						    return-type)))
+					      #'unify:variablep
+					      pattern))))
+    (if(typep type-spec '(cons (eql function)(cons * null)))
+      `(FUNCTION * ,(cadr type-spec))
+      type-spec)))
 
 (defun compute-standard-form-return-type(form env)
   (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
