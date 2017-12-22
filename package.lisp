@@ -1,3 +1,9 @@
+(in-package :cl-user)
+(eval-when(:compile-toplevel :load-toplevel :execute)
+  (unless(find-package :type-unify)
+    (rename-package :unify :type-unify)
+    (asdf:load-system :cl-unification :force t)))
+
 (defpackage #:vs-haskell
   (:use #:cl)
   (:export

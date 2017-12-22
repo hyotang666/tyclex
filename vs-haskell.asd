@@ -3,7 +3,7 @@
 (defsystem "vs-haskell"
   :depends-on
   ("named-readtables" "trivia" "alexandria" "millet" "introspect-environment"
-   "closer-mop" "trivial-types" "trestrul" "cl-unification" "expander" "cogef")
+   "closer-mop" "trivial-types" "trestrul" "cl-unification" "expander")
   :components
   ((:file "package")
    ;; bottoms

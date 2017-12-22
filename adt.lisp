@@ -169,16 +169,17 @@
 	  (if(eq 'eql (car types))
 	    (adt-type-of adt)
 	    (list* (car (adt-type-of adt))
-		   (let((env(loop :with env = (unify:make-empty-environment)
+		   (let((env(loop :with env = (type-unify:make-empty-environment)
 				  :for v :in (cdr thing)
 				  :for type :in (adt-types adt)
-				  :when (unify:variablep type)
-				  :do (setf env (unify:extend-environment type
-									  (data-type-of v)
-									  env))
+				  :when (type-unify:variablep type)
+				  :do (setf env (type-unify:extend-environment
+						  type
+						  (data-type-of v)
+						  env))
 				  :finally (return env))))
 		     (mapcar (lambda(elt)
-			       (unify:find-variable-value elt env))
+			       (type-unify:find-variable-value elt env))
 			     (adt-lambda-list adt)))))))
       (typecase thing
 	(io-action (io-type thing))
@@ -221,7 +222,7 @@
 	  (body(pat pat-rest type type-rest thing thing-rest acc)
 	    (if(string= '#:_ pat)
 	      (rec pat-rest type-rest thing-rest acc)
-	      (if(unify:variablep type)
+	      (if(type-unify:variablep type)
 		(if thing
 		  (rec pat-rest type-rest thing-rest
 		       (if(eq t thing)
