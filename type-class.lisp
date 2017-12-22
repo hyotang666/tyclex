@@ -144,7 +144,7 @@
 (defun compute-instance-call-return-type(call-form)
   (let((pattern(instance-return-type(car call-form)))
        (environment(type-unify:unify (instance-lambda-list(car call-form))
-				     (subst '_ '* (compute-return-types(cdr call-form))))))
+				     (enwild (compute-return-types(cdr call-form))))))
     (substitute-pattern pattern environment)))
 
 (defun substitute-pattern(pattern environment)
