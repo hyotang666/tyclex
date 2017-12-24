@@ -135,7 +135,7 @@
 	  (action-boundp (car var))) ; action call.
      (action-type(action-boundp (car var))))
     ((adv-p var) ; constructor call.
-     (data-type-of var))
+     (compute-constructor-form-return-type var env))
     ((and (listp var)
 	  (symbolp (car var)))
      (compute-standard-form-return-type var env))
@@ -214,6 +214,17 @@
       (if(eq 'values (car return-type))
 	(ensure-t (cadr return-type))
 	return-type))))
+
+(defun compute-constructor-form-return-type(var env)
+  (let*((meta-info(adv-p var))
+	(type(adt-type-of meta-info)))
+    (if(atom type)
+      type
+      (cons (car type)
+	    (substitute-pattern (adt-types meta-info)
+				(type-unify:unify (adt-lambda-list meta-info)
+						  (loop :for v :in (cdr var)
+							:collect (compute-return-type v env))))))))
 
 ;;; <instance-interpreter>
 (defun <instance-interpreter>(method gensyms lambda-list)
