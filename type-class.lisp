@@ -64,7 +64,7 @@
   `((SETF (TYPE-DIRECT-SUPERCLASSES(GET ',name 'TYPE-CLASS))',super-classes)
     ,@(loop :for type-class :in super-classes
 	    :collect
-	    `(PUSH ',name (TYPE-DIRECT-SUBCLASSES(GET ',type-class 'TYPE-CLASS))))))
+	    `(PUSHNEW ',name (TYPE-DIRECT-SUBCLASSES(GET ',type-class 'TYPE-CLASS))))))
 
 ;;; <instance-info-setter>
 (defun <instance-info-setter>(method name lambda-list return-type rest)
