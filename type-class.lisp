@@ -315,8 +315,7 @@
     (multiple-value-bind(vars types)(parse-lambda-list instance-lambda-list)
       (let((scs(type-direct-superclasses(get(instance-type-class interface)'type-class))))
 	(dolist(sc scs)
-	  (assert(or (get-instance-lambda sc types)
-		     (instance-default sc)))))
+	  (assert(get sc 'type-class))))
       `(progn (add-instance ',interface
 			    ',types
 			    '(lambda,vars,@body))
