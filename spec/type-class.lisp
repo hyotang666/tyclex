@@ -257,3 +257,33 @@
 
 #?(fmap #'1+ (counter-just 0 1))
 :satisfies #`(not (equal $result (counter-just 0 1)))
+
+#?(defvar *a* (fmap (curried-function::section * _ _)'(1 2 3 4)))
+=> *A*
+,:lazy nil
+
+#?(fmap (lambda(f)(funcall f 9)) *a*)
+=> (9 18 27 36)
+,:test equal
+
+;;;; applicative
+#?(define-type-class(applicative f)(functor)
+    ((pure(a)(f a))
+     (<*>((function(a)b)(f a))(f b))))
+=> APPLICATIVE
+,:before (mapc #'fmakunbound '(pure <*>))
+
+#?(definstance <*> ((functor (maybe function))(arg t))
+    (trivia:ematch functor
+      (nothing nothing)
+      ((just f)(fmap f arg))))
+=> <*>
+
+#?(<*> (just (curried-function::section + 3 _)) (just 9))
+:satisfies #`(equal $result (just 12))
+
+#?(<*> (just (curried-function::section + 3 _) nothing))
+=> NOTHING
+
+#?(<*> nothing (just "woot"))
+=> NOTHING

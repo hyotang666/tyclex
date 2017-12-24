@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :vs-haskell.test
   :depends-on
-  (:jingoh "vs-haskell" "millet")
+  (:jingoh "vs-haskell" "millet" "curried-function")
   :components
   ((:file "vs-haskell")
    ;; Mid
