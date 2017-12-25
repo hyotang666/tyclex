@@ -176,7 +176,8 @@
        `(FUNCTION * ,(cadr type-spec)))
       ((cons (eql list)(cons * null))
        'list)
-      (otherwise type-spec))))
+      (otherwise (when(millet:type-specifier-p type-spec)
+		   type-spec)))))
 
 (defun compute-standard-form-return-type(form env)
   (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
