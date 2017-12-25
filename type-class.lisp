@@ -237,8 +237,8 @@
     (if(atom type)
       type
       (cons (car type)
-	    (substitute-pattern (adt-types meta-info)
-				(type-unify:unify (adt-lambda-list meta-info)
+	    (substitute-pattern (adt-lambda-list meta-info)
+				(type-unify:unify (adt-types meta-info)
 						  (loop :for v :in (cdr var)
 							:collect (compute-return-type v env))))))))
 
