@@ -136,6 +136,8 @@
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
+    ((typep var '(cons (cons (eql lambda) *) *))
+     (compute-standard-form-return-type (car(last(cddar var))) env))
     ((and (listp var)
 	  (instance-p (car var))) ; instance call.
      (compute-instance-call-return-type var))
