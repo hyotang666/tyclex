@@ -89,9 +89,9 @@
 	     ,(if(millet:type-specifier-p return-type)
 		``(THE ,',return-type (,IL ,,@gensyms))
 		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
-		   (IF RETURN
-		       `(THE ,RETURN (,IL ,,@gensyms))
-		       `(,IL ,,@gensyms))))
+		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
+		     `(THE ,RETURN (,IL ,,@gensyms))
+		     `(,IL ,,@gensyms))))
 	     (PROGN (WHEN *COMPILE-FILE-PATHNAME*
 		      (WARN "Can not get instance of ~S" WHOLE))
 		    ,(if(millet:type-specifier-p return-type)
@@ -99,11 +99,11 @@
 			      (,',(<interpreter> method gensyms)
 				,,@gensyms))
 		       `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
-			  (IF RETURN
-			      `(THE ,RETURN (,',(<interpreter> method gensyms)
-					      ,,@gensyms))
-			      `(,',(<interpreter> method gensyms)
-				 ,,@gensyms))))))))))
+			  (IF(MILLET:TYPE-SPECIFIER-P RETURN)
+			    `(THE ,RETURN (,',(<interpreter> method gensyms)
+					    ,,@gensyms))
+			    `(,',(<interpreter> method gensyms)
+			       ,,@gensyms))))))))))
 
 (defun <interpreter>(method gensyms)
   `(LAMBDA,gensyms
