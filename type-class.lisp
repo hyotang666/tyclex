@@ -87,28 +87,34 @@
        (LET((IL(GET-INSTANCE-LAMBDA ',method INFOS)))
 	 (IF IL
 	     ,(if(millet:type-specifier-p return-type)
-		`(LIST 'THE ',return-type (LIST IL ,@gensyms))
+		``(THE ,',return-type (,IL ,,@gensyms))
 		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
 		   (IF RETURN
-		       (LIST 'THE RETURN (LIST IL ,@gensyms))
-		       (LIST IL ,@gensyms))))
+		       `(THE ,RETURN (,IL ,,@gensyms))
+		       `(,IL ,,@gensyms))))
 	     (PROGN (WHEN *COMPILE-FILE-PATHNAME*
 		      (WARN "Can not get instance of ~S" WHOLE))
-		    ,(<interpreter> method gensyms lambda-list)))))))
+		    ,(if(millet:type-specifier-p return-type)
+		       ``(THE ,',return-type
+			      (,',(<interpreter> method gensyms lambda-list)
+				,,@gensyms))
+		       `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
+			  (IF RETURN
+			      `(THE ,RETURN (,',(<interpreter> method gensyms lambda-list)
+					      ,,@gensyms))
+			      `(,',(<interpreter> method gensyms lambda-list)
+				 ,,@gensyms))))))))))
 
 (defun <interpreter>(method gensyms lambda-list)
-  (flet((enquote(list)
-	  (loop :for s :in list :collect `',s)))
-    ``((LAMBDA,',gensyms
-	 (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',',method (LIST ,,@(loop :for s :in gensyms
-									  :collect `'(DATA-TYPE-OF ,s))))
-			   (INSTANCE-DEFAULT ',',method))))
-	   (IF INSTANCE
-	       (LET((DECLARED(INSERT-DECLARE INSTANCE (LIST ,,@(enquote gensyms)))))
-		 (FUNCALL (COERCE DECLARED 'FUNCTION)
-			  ,,@(enquote gensyms)))
-	       (ERROR "Instance is not found. ~S ~S"',',method (LIST ,,@(enquote gensyms))))))
-       ,,@gensyms)))
+  `(LAMBDA,gensyms
+     (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',method (LIST ,@(loop :for s :in gensyms
+								   :collect `(DATA-TYPE-OF ,s))))
+		       (INSTANCE-DEFAULT ',method))))
+       (IF INSTANCE
+	   (LET((DECLARED(INSERT-DECLARE INSTANCE (LIST ,@gensyms))))
+	     (FUNCALL (COERCE DECLARED 'FUNCTION)
+		      ,@ gensyms))
+	   (ERROR "Instance is not found. ~S ~S"',method (LIST ,@gensyms))))))
 
 (define-condition internal-logical-error(cell-error)
   ((datum :initarg :datum :accessor error-datum))
