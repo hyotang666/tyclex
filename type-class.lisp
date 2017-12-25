@@ -55,8 +55,7 @@
 	       lambda-list (patternize lambda-list)
 	       return-type (patternize return-type))
 	 :collect (<instance-info-setter> method name lambda-list return-type rest)
-	 :collect (<instance-compiler-macro> method gensyms lambda-list return-type)
-	 :collect (<instance-interpreter> method gensyms lambda-list))
+	 :collect (<defmacro> method gensyms lambda-list return-type))
      ',name))
 
 ;;; <type-class-relation-setter>
@@ -76,9 +75,9 @@
 			    (when default
 			      `(:DEFAULT '(LAMBDA,@(cddr default))))))))
 
-;;; <instance-compiler-macro>
-(defun <instance-compiler-macro>(method gensyms lambda-list return-type)
-  `(DEFINE-COMPILER-MACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
+;;; <defmacro>
+(defun <defmacro>(method gensyms lambda-list return-type)
+  `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (SETF ; as canonicalise. In order to retrieve return type.
        ,@(loop :for gensym :in gensyms
 	       :append `(,gensym (EXPANDER:EXPAND ,gensym))))
@@ -95,12 +94,21 @@
 		       (LIST IL ,@gensyms))))
 	     (PROGN (WHEN *COMPILE-FILE-PATHNAME*
 		      (WARN "Can not get instance of ~S" WHOLE))
-		    ;; In order to avoid expanding macros twice,
-		    ;; we should use canonicalized `GENSYMS`.
-		    ;; And in order to trick `compiler-macroexpand-1` returns nil
-		    ;; as second value, we must destructively modify `WHOLE`.
-		    ;; Or `compiler-macroexpand` get into infinite expanding.
-		    (RPLACD WHOLE (LIST ,@gensyms))))))))
+		    ,(<interpreter> method gensyms lambda-list)))))))
+
+(defun <interpreter>(method gensyms lambda-list)
+  (flet((enquote(list)
+	  (loop :for s :in list :collect `',s)))
+    ``((LAMBDA,',gensyms
+	 (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',',method (LIST ,,@(loop :for s :in gensyms
+									  :collect `'(DATA-TYPE-OF ,s))))
+			   (INSTANCE-DEFAULT ',',method))))
+	   (IF INSTANCE
+	       (LET((DECLARED(INSERT-DECLARE INSTANCE (LIST ,,@(enquote gensyms)))))
+		 (FUNCALL (COERCE DECLARED 'FUNCTION)
+			  ,,@(enquote gensyms)))
+	       (ERROR "Instance is not found. ~S ~S"',',method (LIST ,,@(enquote gensyms))))))
+       ,,@gensyms)))
 
 (define-condition internal-logical-error(cell-error)
   ((datum :initarg :datum :accessor error-datum))
@@ -225,22 +233,6 @@
 				(type-unify:unify (adt-lambda-list meta-info)
 						  (loop :for v :in (cdr var)
 							:collect (compute-return-type v env))))))))
-
-;;; <instance-interpreter>
-(defun <instance-interpreter>(method gensyms lambda-list)
-  `(DEFUN,method,gensyms
-     ,@(when(cdr lambda-list)
-	 `((CHECK-SIGNATURE ',lambda-list (LIST ,@(mapcar (lambda(sym)
-							    `(DATA-TYPE-OF ,sym))
-							  gensyms)))))
-     (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',method (LIST ,@(loop :for s :in gensyms
-								   :collect `(DATA-TYPE-OF ,s))))
-		       (INSTANCE-DEFAULT ',method))))
-       (IF INSTANCE
-	   (LET((DECLARED(INSERT-DECLARE INSTANCE (LIST ,@gensyms))))
-	     (FUNCALL (COERCE DECLARED 'FUNCTION)
-		      ,@gensyms))
-	   (ERROR "Instance is not found. ~S ~S"',method (LIST ,@gensyms))))))
 
 (defun insert-declare(form values)
   `(,@(subseq form 0 2)
