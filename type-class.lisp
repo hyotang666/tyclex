@@ -96,16 +96,16 @@
 		      (WARN "Can not get instance of ~S" WHOLE))
 		    ,(if(millet:type-specifier-p return-type)
 		       ``(THE ,',return-type
-			      (,',(<interpreter> method gensyms lambda-list)
+			      (,',(<interpreter> method gensyms)
 				,,@gensyms))
 		       `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
 			  (IF RETURN
-			      `(THE ,RETURN (,',(<interpreter> method gensyms lambda-list)
+			      `(THE ,RETURN (,',(<interpreter> method gensyms)
 					      ,,@gensyms))
-			      `(,',(<interpreter> method gensyms lambda-list)
+			      `(,',(<interpreter> method gensyms)
 				 ,,@gensyms))))))))))
 
-(defun <interpreter>(method gensyms lambda-list)
+(defun <interpreter>(method gensyms)
   `(LAMBDA,gensyms
      (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',method (LIST ,@(loop :for s :in gensyms
 								   :collect `(DATA-TYPE-OF ,s))))
