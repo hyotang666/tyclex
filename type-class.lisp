@@ -206,8 +206,13 @@
        (compute-return-type(car(last(second form)))env)
        (introspect-environment:function-type(second form)env)))
     ((if)
-     `(or ,(compute-return-type(third form)env)
-	  ,(compute-return-type(fourth form)env)))
+     (let((then(compute-return-type(third form)env))
+	  (else(compute-return-type(fourth form)env)))
+       (if then
+	 (if else
+	   `(or ,then ,else)
+	   then)
+	 else)))
     ((quote)
      (error 'unexpected-quote :datum form :name 'special-operator-return-type))
     ((macrolet symbol-macrolet)
