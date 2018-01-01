@@ -21,3 +21,10 @@
 ;; Perform method below is added by JINGOH.GENERATOR.
 (defmethod perform ((o test-op) (c (eql (find-system "vs-haskell"))))
   (test-system :vs-haskell.test))
+(defmethod operate :around ((o test-op)(c (eql (find-system "vs-haskell")))
+                            &rest keys)
+  (let((verbose(getf keys :examine))
+       (on-fails(getf keys :on-fails)))
+    (declare(special verbose on-fails))
+    (call-next-method)))
+                                

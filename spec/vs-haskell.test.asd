@@ -9,4 +9,6 @@
    (:file "adt" :depends-on ("vs-haskell"))
    (:file "type-class" :depends-on ("vs-haskell")))
   :perform
-  (test-op (o c) (symbol-call :jingoh :examine :vs-haskell)))
+  (test-op(o c)
+    (declare(special verbose on-fails))
+    (symbol-call :jingoh :examine :vs-haskell :verbose verbose :on-fails on-fails)))
