@@ -166,9 +166,10 @@
 (defun substitute-pattern(pattern environment)
   (let((type-spec (dewild (trestrul:asubst-if (lambda(var)
 						(let((return-type (type-unify:find-variable-value var environment)))
-						  (if(typep return-type '(cons (eql values)t))
-						    (cadr return-type)
-						    return-type)))
+						  (typecase return-type
+						    ((cons (eql values)t) (cadr return-type))
+						    (null var)
+						    (t return-type))))
 					      #'type-unify:variablep
 					      pattern))))
     (typecase type-spec
