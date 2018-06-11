@@ -308,8 +308,8 @@
 
 ;;;; COLLECT-INSTANCE
 (defun collect-instance(type* interface)
-  (remove-if-not (lambda(ts2)
-		   (ignore-errors(every #'subtype? type* ts2)))
+  (remove-if-not (lambda(type)
+		   (every #'subtype? type* type))
 		 (instance-table interface)
 		 :key #'car))
 
