@@ -27,9 +27,7 @@
 	((type-unify:variablep b)(type-unify::var-unify b a env))
 	((eq a b)env)
 	((subtype? b a)env)
-	(t (error 'type-unify::unification-failure
-		  :format-control "Cannot unify two different symbols: ~S ~S"
-		  :format-arguments (list a b)))))
+	(t (call-next-method))))
 
 (defmethod type-unify:unify ((a (eql t))(b list)
 			     &optional (env (type-unify:make-empty-environment))
