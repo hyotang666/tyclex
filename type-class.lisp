@@ -299,7 +299,7 @@
 ;;;; GET-INSTANCE-LAMBDA
 (defun get-instance-lambda(interface type*)
   (if(every (lambda(x)
-	      (eq t x))
+	      (eq T x))
 	    type*)
     nil
     (or (compute-applicable-instance(collect-instance type* interface))
