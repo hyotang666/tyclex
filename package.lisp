@@ -2,7 +2,8 @@
 (eval-when(:compile-toplevel :load-toplevel :execute)
   (unless(find-package :type-unify)
     (rename-package :unify :type-unify)
-    (asdf:load-system :cl-unification :force t)))
+    (let((asdf::*asdf-session* nil))
+      (asdf:load-system :cl-unification :force t))))
 
 (defpackage #:vs-haskell
   (:use #:cl)
