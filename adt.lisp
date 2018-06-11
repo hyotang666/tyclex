@@ -9,10 +9,6 @@
   (assert(every #'symbolp lambda-list))
   (dolist(constructor constructor*)
     (assert(symbolp(alexandria:ensure-car constructor))))
-  ;; as canonicalize
-  (dolist(c constructor*)
-    (when(listp c)
-      (rplaca c (make-symbol(symbol-name(car c))))))
   ;; body
   `(eval-when(:compile-toplevel :load-toplevel :execute)
      ,(<deftype> name lambda-list constructor*)
@@ -115,10 +111,7 @@
 						    lambda-list)
 			     :TYPES ',(arg-types constructor lambda-list)
 			     :ORDER ,order)))
-    `(SETF (GET ',c 'adt-meta-info),meta-info
-	   ,@(unless(symbolp constructor)
-	       `((GET ',(constructor-name constructor) 'ADT-META-INFO)
-		 ,meta-info)))))
+    `(SETF (GET ',c 'adt-meta-info),meta-info)))
 
 (defun arg-types(constructor args)
   (cond

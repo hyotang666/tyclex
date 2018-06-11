@@ -3,7 +3,8 @@
 ;;;; TYPE-CLASS OBJECT
 (defstruct(type-class(:constructor make-info)(:copier nil)
                      (:predicate nil)(:conc-name type-))
-  (name (error "Name is required.") :type symbol :read-only t)
+  (name (error "Name is required.") :type (or symbol list) :read-only t)
+  (var (error "Var is required.") :type symbol :read-only t)
   (direct-superclasses nil :type list)
   (direct-subclasses nil :type list))
 
@@ -38,14 +39,17 @@
   (setf(type-class-instance-table(get interface 'instance))new))
 
 ;;;; DEFINE-TYPE-CLASS
-(defmacro define-type-class((name &rest vars)super-classes methods &rest rest)
+(defmacro define-type-class((name type-var)super-classes methods &rest rest)
   ;; trivial syntax checking.
-  (assert(every #'symbolp vars))
+  (assert(symbolp name))
+  (assert(symbolp type-var))
+  (assert(listp super-classes))
+  (assert(every #'symbolp super-classes))
   ;; as canonicalize
-  (map-into vars #'Envar vars)
+  (setf type-var (Envar type-var))
   ;; body
   `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-     (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name))
+     (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name :VAR ',type-var))
      ,@(when super-classes
 	 (<type-class-relation-setter> name super-classes))
      ,@(loop
@@ -73,48 +77,39 @@
 			:RETURN-TYPE ',return-type
 			,@(let((default(find method rest :key #'cadr)))
 			    (when default
-			      `(:DEFAULT '(LAMBDA,@(cddr default))))))))
+			      `(:DEFAULT '(,(cdr default))))))))
 
 ;;; <defmacro>
-(defun <defmacro>(method gensyms lambda-list return-type)
+(defvar *sub-expand* nil)
+(defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
-     (SETF ; as canonicalise. In order to retrieve return type.
-       ,@(loop :for gensym :in gensyms
-	       :append `(,gensym (EXPANDER:EXPAND ,gensym))))
-     (LET((INFOS(COMPUTE-RETURN-TYPES (list ,@gensyms) ENV)))
-       ,@(when(cdr lambda-list)
-	   `((CHECK-SIGNATURE ',lambda-list INFOS)))
-       (LET((IL(GET-INSTANCE-LAMBDA ',method INFOS)))
-	 (IF IL
-	     ,(if(millet:type-specifier-p return-type)
-		``(THE ,',return-type (,IL ,,@gensyms))
+     (IF *SUB-EXPAND*
+	 WHOLE
+	 (LET*((*SUB-EXPAND* T)
+	       (EXPANDED(LOOP :FOR FORM :IN (LIST ,@gensyms)
+			      :COLLECT (AGNOSTIC-LIZARD:MACROEXPAND-ALL FORM ENV)))
+	       (INFOS(CHECK-SIGNATURE ',lambda-list (COMPUTE-RETURN-TYPES EXPANDED ENV)))
+	       (IL(GET-INSTANCE-LAMBDA ',method INFOS))
+	       (MACROS(LOOP :FOR (NAME . REST) :IN IL
+			    :COLLECT (CONS (SUB-NAME NAME) REST)))
+	       (BODY`(,',sub-name
+		       ,@(LOOP :FOR FORM :IN (TRESTRUL:ASUBST-IF
+					       #'SUB-NAME
+					       (LAMBDA(X)(FIND X IL :KEY #'CAR :TEST #'EQ))
+					       EXPANDED)
+			       :COLLECT (expander:expand
+					  `(MACROLET,MACROS,FORM) env)))))
+	   (IF IL
+	      ,(if(millet:type-specifier-p return-type)
+		 ``(MACROLET,MACROS (THE ,',return-type ,BODY))
 		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
 		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
-		     `(THE ,RETURN (,IL ,,@gensyms))
-		     `(,IL ,,@gensyms))))
-	     (PROGN (WHEN *COMPILE-FILE-PATHNAME*
-		      (WARN "Can not get instance of ~S" WHOLE))
-		    ,(if(millet:type-specifier-p return-type)
-		       ``(THE ,',return-type
-			      (,',(<interpreter> method gensyms)
-				,,@gensyms))
-		       `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
-			  (IF(MILLET:TYPE-SPECIFIER-P RETURN)
-			    `(THE ,RETURN (,',(<interpreter> method gensyms)
-					    ,,@gensyms))
-			    `(,',(<interpreter> method gensyms)
-			       ,,@gensyms))))))))))
+		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
+		     `(MACROLET,MACROS ,BODY))))
+	      (ERROR "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))))))
 
-(defun <interpreter>(method gensyms)
-  `(LAMBDA,gensyms
-     (LET((INSTANCE(OR (GET-INSTANCE-LAMBDA ',method (LIST ,@(loop :for s :in gensyms
-								   :collect `(DATA-TYPE-OF ,s))))
-		       (INSTANCE-DEFAULT ',method))))
-       (IF INSTANCE
-	   (LET((DECLARED(INSERT-DECLARE INSTANCE (LIST ,@gensyms))))
-	     (FUNCALL (COERCE DECLARED 'FUNCTION)
-		      ,@ gensyms))
-	   (ERROR "Instance is not found. ~S ~S"',method (LIST ,@gensyms))))))
+(defun sub-name(symbol)
+  (intern(format nil "%~A"symbol)))
 
 (define-condition internal-logical-error(cell-error)
   ((datum :initarg :datum :accessor error-datum))
@@ -124,9 +119,8 @@
 		    (cell-error-name c)
 		    (error-datum c)))))
 (define-condition exhausts-clauses(internal-logical-error)())
-(define-condition unexpected-macro(internal-logical-error)())
 (define-condition unexpected-quote(internal-logical-error)())
-(define-condition unexpected-local-macro(internal-logical-error)())
+(define-condition unknown-special-operator(internal-logical-error)())
 
 (defun compute-return-types(var* &optional env)
   (loop :for var :in var*
@@ -185,8 +179,8 @@
     (case type
       ((nil) (warn "Undefined function ~S. ~S"(car form)form))
       (:special-form (special-operator-return-type form env))
-      (:macro (error 'unexpected-macro :name 'compute-standard-form-return-type
-		     :datum form))
+      (:macro (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)
+				   env))
       (:function
 	(let((ftype(assoc 'ftype declaration)))
 	  (if ftype
@@ -217,9 +211,9 @@
     ((quote)
      (error 'unexpected-quote :datum form :name 'special-operator-return-type))
     ((macrolet symbol-macrolet)
-     (error 'unexpected-local-macro :datum form :name 'special-operator-return-type))
-    (otherwise ; give up. (go throw catch return-from block)
-      t)))
+     (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)env))
+    ((go throw catch return-from block) t) ; give up.
+    (otherwise (error 'unknown-special-operator :datum form :name 'special-operator-return-type))))
 
 (defun ftype-return-type(form)
   (if(symbolp form)
@@ -259,43 +253,10 @@
      ,@(subseq form 2)))
 
 ;;;; CHECK-SIGNATURE
-(defun check-signature($pattern $type*)
-  (labels((rec(pattern type* acc)
-	    (if(endp pattern)
-	      (if(endp type*)
-		acc ; <--- For debug use.
-		(error "Unmatch length ~S ~S" $pattern $type*))
-	      (if(endp type*)
-		(error "Unmatch length ~S ~S" $pattern $type*)
-		(body (car pattern)(cdr pattern)(car type*)(cdr type*)acc))))
-	  (body(pat pat-rest type type-rest acc)
-	    (let((seen(assoc pat acc :test #'equal)))
-	      (if seen
-		(if(every (lambda(seen)
-			    (subtype? type seen))
-			  (cdr seen))
-		  (rec pat-rest type-rest (progn (pushnew type (cdr seen):test #'equalp)
-						 acc))
-		  (error "~S is not subtype of ~S"type seen))
-		(rec pat-rest type-rest (push(%check pat type)acc)))))
-	  )
-    (rec (cdr $pattern)(cdr $type*)`(,(%check(car $pattern)(car $type*))))))
-
-(defun %check(pattern type)
-  (if(atom pattern)
-    (list pattern type)
-    (if(not(eq 'function (car pattern)))
-      (progn (type-unify:unify pattern (enwild type))
-	     (list pattern type))
-      (cond
-	((typep type '(cons (eql function) t))
-	 (type-unify:unify pattern (enwild type))
-	 (list pattern type))
-	((or (eq t type)(eq 'function type))
-	 (when *compile-file-pathname*
-	   (warn "Could not match ~S ~S"pattern type))
-	 (list pattern type))
-	(t (error "%CHECK: Unknown type comes.~%TYPE: ~S" type))))))
+(defun check-signature(lambda-list type*)
+  (dewild (substitute-pattern lambda-list
+			      (type-unify:unify (enwild type*)
+						(enwild lambda-list)))))
 
 ;;;; GET-INSTANCE-LAMBDA
 (defun get-instance-lambda(interface type*)
@@ -323,24 +284,19 @@
     (sort list #'type< :key #'car)))
 
 ;;;; DEFISTANCE
-(defmacro definstance(interface instance-lambda-list &body body)
-  (flet((parse-lambda-list(lambda-list)
-	  (loop :for elt :in lambda-list
-		:collect (car elt) :into vars
-		:collect (cadr elt):into types
-		:finally (return (values vars types)))))
-    (multiple-value-bind(vars types)(parse-lambda-list instance-lambda-list)
-      (let((scs(type-direct-superclasses(get(instance-type-class interface)'type-class))))
-	(dolist(sc scs)
-	  (assert(get sc 'type-class))))
-      `(progn (add-instance ',interface
-			    ',types
-			    '(lambda,vars,@body))
-	      ',interface))))
+(defmacro definstance((type-class type) definition)
+  `(progn ,@(loop :for (name) :in definition
+		  :collect `(add-instance ',name
+					  ',(subst type
+						   (type-var (get type-class 'type-class))
+						   (instance-lambda-list name))
+					  ',definition))
+
+	  ',type-class))
 
 ;;;; ADD-INSTANCE
-(defun add-instance(interface type* lambda-form)
-  (push(cons type* lambda-form)(instance-table interface)))
+(defun add-instance(interface signature definition)
+  (push(cons signature definition)(instance-table interface)))
 
 #|
 (defdata maybe (a)
