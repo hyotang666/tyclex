@@ -319,7 +319,7 @@
 
 (defun sort-instance(list)
   (flet((type<(ts1 ts2)
-	  (every #'subtypep ts1 ts2)))
+	  (every #'subtype?  ts1 ts2)))
     (sort list #'type< :key #'car)))
 
 ;;;; DEFISTANCE
