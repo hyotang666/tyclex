@@ -149,14 +149,31 @@
 			(typep elt '(cons (eql values) *)))
 		      ftype-spec))
 
+
+(defparameter *subtype-verbose* T)
+
+(defmacro with-subtype-verbose(form)
+  `(handler-case,form
+     (error()(when *subtype-verbose*
+	       (warn "Unify fails. ~S" (list ',(car form)
+					     ,@(cdr form)))))))
 (defun subtype?(t1 t2)
   (if(millet:type-specifier-p t1)
     (if(millet:type-specifier-p t2)
       (subtypep t1 t2)
-      (or (eql t t1)
-	  (type-unify:unify t1 (patternize t2))))
+      (if(adt-p t2)
+	(eq (alexandria:ensure-car t1)(alexandria:ensure-car t2))
+	(or (eql t t1)
+	    (with-subtype-verbose(type-unify:unify t1 (patternize t2))))))
     (if(millet:type-specifier-p t2)
-      (unless(eql t t2)
-	(type-unify:unify (patternize t1)t2))
-      (type-unify:unify (patternize t1)(patternize t2)))))
-
+      (if(adt-p t1)
+	(eq (alexandria:ensure-car t1)(alexandria:ensure-car t2))
+	(or (eql t t2)
+	    (with-subtype-verbose(type-unify:unify (patternize t1)t2))))
+      (if(adt-p t1)
+	(if(adt-p t2)
+	  (eq (alexandria:ensure-car t1)(alexandria:ensure-car t2)) ; TODO Is eq enough?
+	  nil)
+	(if(adt-p t2)
+	  nil
+	  (with-subtype-verbose(type-unify:unify (patternize t1)(patternize t2))))))))
