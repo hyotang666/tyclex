@@ -83,7 +83,9 @@
   (if(type-unify:variablep(car b))
     (extend-environment-with-t (cdr b)
 			       (type-unify:extend-environment(car b)a env))
-    (call-next-method)))
+    (if(eq 'list (car b))
+      env
+      (call-next-method))))
 
 (defmethod type-unify:unify ((b list)(a (eql 'cons))
 			     &optional(env(type-unify:make-empty-environment))
@@ -91,7 +93,9 @@
   (if(type-unify:variablep(car b))
     (extend-environment-with-t (cdr b)
 			       (type-unify:extend-environment(car b)a env))
-    (call-next-method)))
+    (if(eq 'list (car b))
+      env
+      (call-next-method))))
 
 (defmethod type-unify:unify ((a (eql 'null))(b list)
 			     &optional(env(type-unify:make-empty-environment))
