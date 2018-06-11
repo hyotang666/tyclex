@@ -1,9 +1,22 @@
 ; vim: ft=lisp et
 (in-package :asdf)
+
 (defsystem "vs-haskell"
   :depends-on
-  ("named-readtables" "trivia" "alexandria" "millet" "introspect-environment"
-   "closer-mop" "trivial-types" "trestrul" "cl-unification" "expander")
+  (
+   "named-readtables"
+   "trivia"                     ; pattern matcher.
+   "alexandria"                 ; pure cl utilities.
+   "millet"                     ; implementation dependent utilities.
+   "introspect-environment"     ; compiler introspection.
+   "closer-mop"                 ; mop wrapper.
+   "trivial-types"
+   "trestrul"                   ; tree structural list utils.
+   "agnostic-lizard"            ; macroexpand all.
+   "expander"                   ; macroexpand all.
+   "cl-unification"             ; unification.
+   "curried-function"
+   )
   :components
   ((:file "package")
    ;; bottoms
