@@ -135,6 +135,16 @@
 		       (type-unify:extend-environment (car a)(car b)env)))
     ((_ _)(call-next-method))))
 
+(defmethod type-unify:unify ((a (eql 'cons))(b (eql 'list))
+			     &optional(env(type-unify:make-empty-environment))
+			     &key &allow-other-keys)
+  env)
+
+(defmethod type-unify:unify ((a (eql 'list))(b (eql 'cons))
+			     &optional(env(type-unify:make-empty-environment))
+			     &key &allow-other-keys)
+  env)
+
 (defun ensure-value(ftype-spec)
   (trestrul:asubst-if #'second
 		      (lambda(elt)
