@@ -1,7 +1,9 @@
 (in-package :vs-haskell)
 
 (defun envar(thing)
-  (intern(format nil "?~A"thing)))
+  (if(char= #\? (char(string thing)0))
+    thing
+    (intern(format nil "?~A"thing))))
 
 (defun patternize(thing)
   (if(millet:type-specifier-p thing)
