@@ -123,11 +123,15 @@
   (trivia:match*((car a)(car b))
     (((satisfies type-unify:variablep)(eq 'function))
      (setf b (ensure-value b))
-     (type-unify:unify (cdr a)(cddr b)
+     (type-unify:unify (cdr a)
+		       (or (cddr b) ; lisp style, e.g. (function(arg)return)
+			   (cdr b)) ; probably haskell style, e.g. (function return).
 		       (type-unify:extend-environment (car a) (car b) env)))
     (((eq 'function)(satisfies type-unify:variablep))
      (setf a (ensure-value a))
-     (type-unify:unify (cddr a)(cdr b)
+     (type-unify:unify (or (cddr a) ; lisp style, e.g. (function(arg)return)
+			   (cdr a)) ; probably haskell style, e.g. (function return).
+		       (cdr b)
 		       (type-unify:extend-environment (car a)(car b)env)))
     ((_ _)(call-next-method))))
 
