@@ -16,7 +16,7 @@
   (sublis'((* . _)(T . _))type-spec))
 
 (defun dewild (pattern)
-  (subst '* '_ pattern))
+  (subst T '_ pattern))
 
 (defmethod type-unify:unify :around ((a symbol)(b symbol)
 				     &optional (env (type-unify:make-empty-environment))
