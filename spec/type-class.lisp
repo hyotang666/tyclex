@@ -339,3 +339,10 @@
 	  (call-body))
 ,:lazy t
 
+#?(<*> (<*> (pure (curried-function::section + _ _))
+	    (just 3))
+       nothing)
+=> NOTHING
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
