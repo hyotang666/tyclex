@@ -351,3 +351,52 @@
 	    nothing)
        (just 5))
 => NOTHING
+
+#?(defmacro <*>*(&rest body)
+    (labels((rec(body)
+	      (if(endp (cdr body))
+		(car body)
+		`(<*> ,(rec(cdr body))
+		      ,(car body)))))
+      (rec(reverse body))))
+=> <*>*
+,:before (fmakunbound '<*>*)
+
+#?(<*>* (pure (curried-function::section + _ _))
+	nothing
+	(just 5))
+:expanded-to
+(<*> (<*> (pure (curried-function::section + _ _))
+	  nothing)
+     (just 5))
+
+#?(defmacro <$>(function functor)
+    `(fmap ,function ,functor))
+=> <$>
+,:before (fmakunbound '<$>)
+
+#?(<*> (<$> (curried-function::section concatenate 'string _ _)
+	    (just "johntra"))
+       (just "volta"))
+=> (just "johntravolta")
+,:test equal
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
+;;; LIST
+#?(definstance(applicative list)
+    ((<*>(functor arg)
+       `(incf-cl:lc (funcall f x)
+		    (incf-cl:<- f ,functor)
+		    (incf-cl:<- x ,arg)))
+     (pure(x)
+       `(list ,x))))
+=> APPLICATIVE
+
+#?(<*> (list (curried-function::section * 0 _)
+	     (curried-function::section + 100 _)
+	     (curried-function::section expt _ 2))
+       '(1 2 3))
+=> (0 0 0 101 102 103 1 4 9)
+,:test equal
