@@ -466,3 +466,20 @@
 	  (call-body))
 ,:lazy t
 
+;;; FUNCTION
+#?(definstance(applicative function)
+    ((pure(x)
+       `(constantly ,x))
+     (<*>(f g)
+       `(lambda(x)
+	  (funcall (funcall ,f x) (funcall ,g x))))))
+=> APPLICATIVE
+
+#?(funcall (<*> (<$> (curried-function::section + _ _)
+		     (curried-function::section + _ 3))
+		(curried-function::section * _ 100))
+	   5)
+=> 508
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
