@@ -370,13 +370,18 @@
 	  nothing)
      (just 5))
 
-#?(defmacro <$>(function functor)
-    `(fmap ,function ,functor))
+#?(defmacro <$>(function &rest functors)
+    (labels((rec(body)
+	      (if(endp (cdr body))
+		`(fmap ,function ,(car body))
+		`(<*> ,(rec(cdr body))
+		      ,(car body)))))
+      (rec(reverse functors))))
 => <$>
 ,:before (fmakunbound '<$>)
 
-#?(<*> (<$> (curried-function::section concatenate 'string _ _)
-	    (just "johntra"))
+#?(<$> (curried-function::section concatenate 'string _ _)
+       (just "johntra")
        (just "volta"))
 => (just "johntravolta")
 ,:test equal
@@ -401,8 +406,8 @@
 => (0 0 0 101 102 103 1 4 9)
 ,:test equal
 
-#?(<*> (<$> (curried-function::section concatenate 'string _ _)
-	    '("ha" "heh" "hmm"))
+#?(<$> (curried-function::section concatenate 'string _ _)
+       '("ha" "heh" "hmm")
        '("?" "!" "."))
 => ("ha?" "ha!" "ha." "heh?" "heh!" "heh." "hmm?" "hmm!" "hmm.")
 ,:test equal
@@ -410,8 +415,8 @@
 	  (call-body))
 ,:lazy t
 
-#?(<*> (<$> (curried-function::section * _ _)
-	    '(2 5 10))
+#?(<$> (curried-function::section * _ _)
+       '(2 5 10)
        '(8 10 11))
 => (16 20 22 40 50 55 80 100 110)
 ,:test equal
@@ -420,8 +425,8 @@
 ,:lazy t
 
 #?(remove-if-not (curried-function::section > _ 50)
-		 (<*> (<$> (curried-function::section * _ _)
-			   '(2 5 10))
+		 (<$> (curried-function::section * _ _)
+		      '(2 5 10)
 		      '(8 10 11)))
 => (55 80 100 110)
 ,:test equal
@@ -439,8 +444,8 @@
        `(.return ,x))))
 => APPLICATIVE
 
-#?(<*> (<$> (curried-function::section concatenate 'string _ _)
-	    (get-line))
+#?(<$> (curried-function::section concatenate 'string _ _)
+       (get-line)
        (get-line))
 :satisfies #`(with-input-from-string(*standard-input* (format nil "one~%two"))
 	       (& (functionp $result)
@@ -450,8 +455,8 @@
 	  (call-body))
 ,:lazy t
 
-#?(action a <- (<*> (<$> (curried-function::section concatenate 'string _ _)
-			 (get-line))
+#?(action a <- (<$> (curried-function::section concatenate 'string _ _)
+		    (get-line)
 		    (get-line))
 	  (put-string-line (concatenate 'string
 					"The two lines concatenated turn out to be: "
@@ -475,8 +480,8 @@
 	  (funcall (funcall ,f x) (funcall ,g x))))))
 => APPLICATIVE
 
-#?(funcall (<*> (<$> (curried-function::section + _ _)
-		     (curried-function::section + _ 3))
+#?(funcall (<$> (curried-function::section + _ _)
+		(curried-function::section + _ 3)
 		(curried-function::section * _ 100))
 	   5)
 => 508
