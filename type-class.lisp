@@ -83,9 +83,9 @@
 (defvar *sub-expand* nil)
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
-     (IF *SUB-EXPAND*
+     (IF (EQ *SUB-EXPAND* WHOLE)
 	 WHOLE
-	 (LET*((*SUB-EXPAND* T)
+	 (LET*((*SUB-EXPAND* WHOLE)
 	       (EXPANDED(LOOP :FOR FORM :IN (LIST ,@gensyms)
 			      :COLLECT (AGNOSTIC-LIZARD:MACROEXPAND-ALL FORM ENV)))
 	       (INFOS(CHECK-SIGNATURE ',lambda-list (COMPUTE-RETURN-TYPES EXPANDED ENV)))
