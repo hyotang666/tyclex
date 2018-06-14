@@ -400,3 +400,69 @@
        '(1 2 3))
 => (0 0 0 101 102 103 1 4 9)
 ,:test equal
+
+#?(<*> (<$> (curried-function::section concatenate 'string _ _)
+	    '("ha" "heh" "hmm"))
+       '("?" "!" "."))
+=> ("ha?" "ha!" "ha." "heh?" "heh!" "heh." "hmm?" "hmm!" "hmm.")
+,:test equal
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
+#?(<*> (<$> (curried-function::section * _ _)
+	    '(2 5 10))
+       '(8 10 11))
+=> (16 20 22 40 50 55 80 100 110)
+,:test equal
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
+#?(remove-if-not (curried-function::section > _ 50)
+		 (<*> (<$> (curried-function::section * _ _)
+			   '(2 5 10))
+		      '(8 10 11)))
+=> (55 80 100 110)
+,:test equal
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
+;;; IO
+#?(definstance(applicative io)
+    ((<*>(functor arg)
+       `(action f <- ,functor
+		x <- ,arg
+		(.return (funcall f x))))
+     (pure(x)
+       `(.return ,x))))
+=> APPLICATIVE
+
+#?(<*> (<$> (curried-function::section concatenate 'string _ _)
+	    (get-line))
+       (get-line))
+:satisfies #`(with-input-from-string(*standard-input* (format nil "one~%two"))
+	       (& (functionp $result)
+		  (equal "onetwo"
+			 (funcall $result))))
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
+#?(action a <- (<*> (<$> (curried-function::section concatenate 'string _ _)
+			 (get-line))
+		    (get-line))
+	  (put-string-line (concatenate 'string
+					"The two lines concatenated turn out to be: "
+					a)))
+:satisfies
+#`(with-input-from-string(*standard-input*(format nil "one~%two"))
+    (& (functionp $result)
+       (equal #.(format nil "The two lines concatenated turn out to be: onetwo~%")
+	      (with-output-to-string(*standard-output*)
+		(funcall $result)))))
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
