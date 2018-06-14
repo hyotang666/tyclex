@@ -147,6 +147,11 @@
     ((adv-p var) ; constructor call.
      (compute-constructor-form-return-type var env))
     ((and (listp var)
+	  (eq 'make-instance (car var))
+	  (constantp (cadr var))
+	  (eq 'io-action (introspect-environment:constant-form-value (cadr var))))
+     '(io *))
+    ((and (listp var)
 	  (symbolp (car var)))
      (compute-standard-form-return-type var env))
     (t (error 'exhausts-clauses :name 'compute-return-type :datum var))))
