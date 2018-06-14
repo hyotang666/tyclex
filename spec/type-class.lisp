@@ -488,3 +488,14 @@
 ,:around(let((vs-haskell::*subtype-verbose* nil))
 	  (call-body))
 ,:lazy t
+
+#?(funcall (<$> (curried-function:section list _ _ _)
+		(curried-function:section + _ 3)
+		(curried-function:section * _ 2)
+		(curried-function:section / _ 2))
+	   5)
+=> (8 10 5/2)
+,:test equal
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
