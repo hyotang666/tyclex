@@ -93,7 +93,7 @@
      (type-unify:unify (or (cddr a) ; lisp style, e.g. (function(arg)return)
 			   (cdr a)) ; probably haskell style, e.g. (function return).
 		       (cdr b)
-		       (type-unify:extend-environment (car a)(car b)env)))
+		       (type-unify:extend-environment (car b)(car a)env)))
     ((_ _)(call-next-method))))
 
 (defunify((a (eql 'cons))(b (eql 'list)))
