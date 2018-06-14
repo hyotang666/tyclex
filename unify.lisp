@@ -143,6 +143,20 @@
 			     &key &allow-other-keys)
   env)
 
+(defmethod type-unify:unify ((a (eql 'list))(b list)
+			     &optional(env(type-unify:make-empty-environment))
+			     &key &allow-other-keys)
+  (if(type-unify:variablep(car b))
+    (type-unify:extend-environment a (car b)env)
+    (call-next-method)))
+
+(defmethod type-unify:unify ((b list)(a (eql 'list))
+			     &optional(env(type-unify:make-empty-environment))
+			     &key &allow-other-keys)
+  (if(type-unify:variablep(car b))
+    (type-unify:extend-environment a (car b)env)
+    (call-next-method)))
+
 (defun ensure-value(ftype-spec)
   (trestrul:asubst-if #'second
 		      (lambda(elt)
