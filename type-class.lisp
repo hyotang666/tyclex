@@ -291,12 +291,12 @@
 ;;;; DEFISTANCE
 (defmacro definstance((type-class type) definition)
   `(progn ,@(loop :for (name) :in definition
-		  :collect `(add-instance ',name
-					  ',(subst type
-						   (type-var (get type-class 'type-class))
-						   (instance-lambda-list name))
-					  ',definition))
-
+		  :for signature = (subst type
+					  (type-var (get type-class 'type-class))
+					  (instance-lambda-list name))
+		  :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
+					       signature)
+		  :collect `(add-instance ',name ',signature ',definition))
 	  ',type-class))
 
 ;;;; ADD-INSTANCE
