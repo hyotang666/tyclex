@@ -208,7 +208,7 @@
     ((tagbody)'null)
     ((function)
      (if(listp (second form))
-       (compute-return-type(car(last(cddr(second form))))env)
+       `(function * ,(compute-return-type(car(last(cddr(second form))))env))
        (introspect-environment:function-type(second form)env)))
     ((if)
      (let((then(compute-return-type(third form)env))
