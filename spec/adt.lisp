@@ -64,6 +64,7 @@
 => .CAR
 ,:before (mapc #'fmakunbound '(.car company model year (setf company)(setf model)(setf year)))
 ,:ignore-signals style-warning ; for sbcl.
+,:lazy t
 
 ; Record has accessor.
 #?(fboundp 'company) :satisfies identity
