@@ -101,7 +101,7 @@
 
 (defunify((a (eql 'list))(b list))
   (if(type-unify:variablep(car b))
-    (type-unify:extend-environment a (car b)env)
+    (type-unify:extend-environment (car b)a env)
     (call-next-method)))
 
 (defun ensure-value(ftype-spec)
