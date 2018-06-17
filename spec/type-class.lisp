@@ -503,6 +503,42 @@
 	  (call-body))
 ,:lazy t
 
+;;; ZIP LIST.
+#?(deftype zip-list(&optional a)
+    (declare(ignore a))
+    'list)
+=> ZIP-LIST
+#?(defmacro zip-list(form)
+    `(THE (ZIP-LIST *) ,form))
+=> ZIP-LIST
+,:before (fmakunbound 'zip-list)
+#?(setf (symbol-function 'get-zip-list)#'third)
+:be-the function
+
+#?(definstance(functor zip-list)
+    ((fmap(f zl)
+       `(zip-list (fmap ,f ,(get-zip-list zl))))))
+=> FUNCTOR
+
+#?(definstance(applicative zip-list)
+    ((pure(x)
+       `(series:series ,x))
+     (<*>(fs xs)
+       `(zip-list (let((fn ,fs))
+		    (series:collect(series:map-fn t #'funcall (series:scan fn)
+						  (series:scan ,xs))))))))
+=> APPLICATIVE
+
+#?(<$> (curried-function:section + _ _)
+       (zip-list '(1 2 3))
+       (zip-list '(100 100 100)))
+=> (101 102 103)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+
 ;;; 11.4
 #?(defmacro lift(function &rest functor*)
     `(<$> ,function ,@functor*))
