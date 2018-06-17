@@ -335,7 +335,7 @@
 
 #?(<*> (pure (curried-function::section + 3 _)) (just 9))
 :satisfies #`(equal $result (just 12))
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -343,7 +343,7 @@
 	    (just 3))
        nothing)
 => NOTHING
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -351,6 +351,9 @@
 	    nothing)
        (just 5))
 => NOTHING
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(defmacro <*>*(&rest body)
     (labels((rec(body)
@@ -385,7 +388,7 @@
        (just "volta"))
 => (just "johntravolta")
 ,:test equal
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -411,7 +414,7 @@
        '("?" "!" "."))
 => ("ha?" "ha!" "ha." "heh?" "heh!" "heh." "hmm?" "hmm!" "hmm.")
 ,:test equal
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -420,7 +423,7 @@
        '(8 10 11))
 => (16 20 22 40 50 55 80 100 110)
 ,:test equal
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -430,7 +433,7 @@
 		      '(8 10 11)))
 => (55 80 100 110)
 ,:test equal
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -451,7 +454,7 @@
 	       (& (functionp $result)
 		  (equal "onetwo"
 			 (funcall $result))))
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -467,7 +470,7 @@
        (equal #.(format nil "The two lines concatenated turn out to be: onetwo~%")
 	      (with-output-to-string(*standard-output*)
 		(funcall $result)))))
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -485,7 +488,7 @@
 		(curried-function::section * _ 100))
 	   5)
 => 508
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -496,6 +499,6 @@
 	   5)
 => (8 10 5/2)
 ,:test equal
-,:around(let((vs-haskell::*subtype-verbose* nil))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
