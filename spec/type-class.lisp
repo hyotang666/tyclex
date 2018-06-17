@@ -502,3 +502,72 @@
 ,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
+
+;;; 11.4
+#?(defmacro lift(function &rest functor*)
+    `(<$> ,function ,@functor*))
+=> LIFT
+,:before (fmakunbound 'lift)
+
+#?(fmap #'list (just 4))
+=> (JUST (4))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(lift (curried-function:section cons _ _) (just 3)(just '(4)))
+=> (just (3 4))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(<$> (curried-function:section cons _ _)
+       (just 3)
+       (just '(4)))
+=> (just (3 4))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(defmacro sequence-a(applicative*)
+    (trivia:ematch applicative*
+      ((null)`(pure nil))
+      ((cons x xs)`(<$> (curried-function:section cons _ _)
+			,x
+			(sequence-a ,xs)))))
+=> SEQUENCE-A
+,:before (fmakunbound 'sequence-a)
+
+#?(sequence-a ((just 1)(just 2)))
+=> (just (1 2))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(sequence-a ((just 3)(just 2)(just 1)))
+=> (just (3 2 1))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(sequence-a ((just 3)nothing(just 1)))
+=> NOTHING
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(funcall (sequence-a ((curried-function:section + _ 3)
+			(curried-function:section + _ 2)
+			(curried-function:section + _ 1)))
+	   3)
+=> (6 5 4)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
