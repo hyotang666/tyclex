@@ -81,6 +81,7 @@
 
 ;;; <defmacro>
 (defvar *sub-expand* nil)
+(defvar *expand-verbose* T)
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (IF (EQ *SUB-EXPAND* WHOLE)
@@ -106,7 +107,9 @@
 		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
 		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
 		     `(MACROLET,MACROS ,BODY))))
-	      (ERROR "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))))))
+	      (PROGN (WHEN *EXPAND-VERBOSE*
+		       (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
+		     WHOLE))))))
 
 (defun sub-name(symbol)
   (intern(format nil "%~A"symbol)))
