@@ -571,3 +571,72 @@
 	  (call-body))
 ,:lazy t
 
+#?(mapcar (lambda(f)
+	    (funcall f 7))
+	  (list (curried-function:section > _ 4)
+		(curried-function:section < _ 10)
+		#'oddp))
+=> (T T T)
+,:test equal
+
+#?(every #'identity (mapcar (lambda(f)
+			      (funcall f 7))
+			    (list (curried-function:section > _ 4)
+				  (curried-function:section < _ 10)
+				  #'oddp)))
+=> T
+
+#?(funcall (sequence-a ((curried-function:section > _ 4)
+			(curried-function:section < _ 10)
+			#'oddp))
+	   7)
+=> (T T T)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(every #'identity
+	 (funcall (sequence-a((curried-function:section > _ 4)
+			      (curried-function:section < _ 10)
+			      #'oddp))
+		  7))
+=> T
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(sequence-a ('(1 2 3)'(4 5 6)))
+=> ((1 4)(1 5)(1 6)(2 4)(2 5)(2 6)(3 4)(3 5)(3 6))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(sequence-a ('(1 2 3)'(4 5 6)'(3 4 4)nil))
+=> nil
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(sequence-a ('(1 2)'(3 4)))
+=> ((1 3)(1 4)(2 3)(2 4))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(sequence-a ('(1 2)'(3 4)'(5 6)))
+=> ((1 3 5)(1 3 6)(1 4 5)(1 4 6)(2 3 5)(2 3 6)(2 4 5)(2 4 6))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(with-input-from-string(*standard-input* (format nil "heyh~%ho~%woo"))
+    (funcall (sequence-a ((get-line)(get-line)(get-line)))))
+=> ("heyh" "ho" "woo")
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
