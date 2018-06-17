@@ -136,17 +136,17 @@
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
-    ((typep var '(cons (cons (eql lambda) *) *))
+    ((typep var '(cons (cons (eql lambda) *) *)) ; ((lambda(...)...)...)
      (compute-standard-form-return-type (car(last(cddar var))) env))
-    ((and (listp var)
-	  (instance-p (car var))) ; instance call.
+    ((and (listp var) ; instance call.
+	  (instance-p (car var)))
      (compute-instance-call-return-type var))
-    ((and (listp var)
-	  (action-boundp (car var))) ; action call.
+    ((and (listp var) ; action call.
+	  (action-boundp (car var)))
      (action-type(action-boundp (car var))))
     ((adv-p var) ; constructor call.
      (compute-constructor-form-return-type var env))
-    ((and (listp var)
+    ((and (listp var) ; (make-instance 'io-action ...) call
 	  (eq 'make-instance (car var))
 	  (constantp (cadr var))
 	  (eq 'io-action (introspect-environment:constant-form-value (cadr var))))
