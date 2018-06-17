@@ -132,10 +132,12 @@
 (defun compute-return-type(var &optional env)
   (cond
     ((constantp var) ; lisp object.
-     (let((value(introspect-environment:constant-form-value var env)))
-       (if(adv-p value) ; literal adt.
-	 (data-type-of value)
-	 (class-name(class-of value)))))
+     (if(typep var '(CONS (EQL THE)T))
+       (second var)
+       (let((value(introspect-environment:constant-form-value var env)))
+	 (if(adv-p value) ; literal adt.
+	   (data-type-of value)
+	   (class-name(class-of value))))))
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
