@@ -133,8 +133,16 @@
   (if(millet:type-specifier-p t1)
     (if(millet:type-specifier-p t2)
       (if(subtypep t1 t2)
-	(or (nth-value 1(millet:type-expand t1))
-	    (not (nth-value 1(millet:type-expand t2))))
+	(let((expanded?1 (nth-value 1(millet:type-expand t1)))
+	     (expanded?2 (nth-value 1(millet:type-expand t2))))
+	  (if expanded?1
+	    (if expanded?2
+	      (eq (alexandria:ensure-car t1)
+		  (alexandria:ensure-car t2))
+	      T)
+	    (if expanded?2
+	      nil
+	      T)))
 	nil)
       (if(adt-p t2)
 	(eq (alexandria:ensure-car t1)(alexandria:ensure-car t2))
