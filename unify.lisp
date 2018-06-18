@@ -109,7 +109,11 @@
     (if(eq 'function (car b)) ; ?B (FUNCTION(?A)?B)
       (type-unify:extend-environment a b env)
       (call-next-method))
-    (call-next-method)))
+    (if(newtypep a)
+      (if(type-unify:variablep (car b))
+	(type-unify:extend-environment (car b) a env)
+	(call-next-method))
+      (call-next-method))))
 
 (defun ensure-value(ftype-spec)
   (trestrul:asubst-if #'second
