@@ -16,6 +16,7 @@
    "expander"                   ; macroexpand all.
    "cl-unification"             ; unification.
    "curried-function"
+   "lambda-list"                ; lambda list parser.
    )
   :components
   ((:file "package")
@@ -25,6 +26,7 @@
    (:file "readtables" :depends-on ("package"))
    (:file "unify" :depends-on ("package"))
    (:file "haskell" :depends-on ("package"))
+   (:file "newtype" :depends-on ("package"))
    ;;
    (:file "adt" :depends-on ("readtables" "util" "unify"))
    ;;

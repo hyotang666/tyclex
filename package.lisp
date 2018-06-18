@@ -27,5 +27,7 @@
     #:h-close
     #:defaction
     )
+  (:export ; newtype
+    #:define-newtype #:denew)
   )
 (in-package #:vs-haskell)
