@@ -23,10 +23,10 @@
    (:file "util" :depends-on ("package"))
    (:file "qualified-use" :depends-on ("package"))
    (:file "readtables" :depends-on ("package"))
-   (:file "unify" :depends-on ("package"))
    (:file "haskell" :depends-on ("package"))
    (:file "newtype" :depends-on ("package"))
    ;;
+   (:file "unify" :depends-on ("package" "newtype"))
    (:file "adt" :depends-on ("readtables" "util" "unify"))
    ;;
    (:file "action" :depends-on ("adt"))
