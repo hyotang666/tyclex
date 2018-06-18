@@ -16,7 +16,6 @@
    "expander"                   ; macroexpand all.
    "cl-unification"             ; unification.
    "curried-function"
-   "lambda-list"                ; lambda list parser.
    )
   :components
   ((:file "package")
