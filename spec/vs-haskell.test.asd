@@ -7,7 +7,10 @@
   ((:file "vs-haskell")
    ;; Mid
    (:file "adt" :depends-on ("vs-haskell"))
-   (:file "type-class" :depends-on ("vs-haskell")))
+   ;; Top
+   (:file "type-class" :depends-on ("adt"))
+   (:file "newtype" :depends-on ("type-class"))
+   )
   :perform
   (test-op(o c)
     (symbol-call :jingoh :examine :vs-haskell)))
