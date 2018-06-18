@@ -85,7 +85,7 @@
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (IF (EQ *SUB-EXPAND* WHOLE)
-	 WHOLE
+	 (ERROR "Trap infinite expansion ~S" whole)
 	 (LET*((*SUB-EXPAND* WHOLE)
 	       (EXPANDED(LOOP :FOR FORM :IN (LIST ,@gensyms)
 			      :COLLECT (EXPANDER:EXPAND FORM ENV)))
