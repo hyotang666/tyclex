@@ -102,7 +102,9 @@
 (defunify((a (eql 'list))(b list))
   (if(type-unify:variablep(car b))
     (type-unify:extend-environment (car b)a env)
-    (call-next-method)))
+    (if(eq a (car b)) ; list (list *)
+      env
+      (call-next-method))))
 
 (defunify((a symbol)(b list))
   (if(type-unify:variablep a)
