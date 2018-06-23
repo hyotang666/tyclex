@@ -144,7 +144,10 @@
        (let((value(introspect-environment:constant-form-value var env)))
 	 (if(adv-p value) ; literal adt.
 	   (data-type-of value)
-	   (class-name(class-of value))))))
+	   (let((type (class-name(class-of value))))
+	     (if(not(eq 'cons type))
+	       type
+	       `(LIST ,(class-name(class-of(car value)))))))))) ; TODO
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
