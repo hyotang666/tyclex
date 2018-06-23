@@ -111,6 +111,10 @@
 #?(yes-no 1) => T
 #?(yes-no nil) => NIL
 #?(yes-no '(a)) => T
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
 #?(yes-no T) => T
 #?(yes-no nothing) => NIL
 #?(yes-no (just 0)) => T
@@ -166,12 +170,23 @@
 => COMPARE
 
 #?(compare true false) => :GT
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 #?(gt true false) => T
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 #?(lt true false) => NIL
-
-#?(defdata week ()
-    monday tuesday wednesday thursday friday saturday sunday)
-=> WEEK
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(define-type-class(bounded a)()
     ((min-bound(a)T)
@@ -197,16 +212,50 @@
 => ENUM
 ,:before (mapc #'fmakunbound '(succ pred))
 
+#?(defdata week ()
+    monday tuesday wednesday thursday friday saturday sunday)
+=> WEEK
+
 #?(gt saturday friday) => T
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 #?(compare monday wednesday) => :LT
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(min-bound 'week) => (EQL MONDAY)
 ,:test equal
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 #?(max-bound 'week) => (EQL SUNDAY)
 ,:test equal
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(succ monday) => TUESDAY
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 #?(pred saturday) => FRIDAY
+,:around(let(vs-haskell::*subtype-verbose*
+	      vs-haskell::*expand-verbose*
+	      vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(define-type-class(functor f)()
     ((fmap((function(a)b)(f a))(f b))))
