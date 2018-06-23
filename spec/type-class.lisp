@@ -745,3 +745,72 @@
 ,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
+
+;;; 12.2
+#?(define-type-class(monoid m)()
+    ((mempty()m)
+     (mappend(m m)m)
+     (mconcat((list m))m))
+    (:default mconcat(ms)
+      `(reduce (lambda(a m)(mappend a m))
+	       ,ms
+	       :from-end t
+	       :initial-value (mempty))))
+=> MONOID
+,:before (mapc #'fmakunbound '(mempty mappend mconcat))
+
+#?(definstance(monoid list)
+    ((mempty()nil)
+     (mappend(a b)
+       `(funcall (curried-function:section append _ _)
+		 ,a
+		 ,b))))
+=> MONOID
+
+#?(mappend '(1 2 3)'(4 5 6))
+=> (1 2 3 4 5 6)
+,:test equal
+
+#?(definstance(monoid string)
+    ((mempty()"")
+     (mappend(a b)
+       `(funcall (curried-function:section concatenate 'string _ _)
+		 ,a ,b))))
+=> MONOID
+
+#?(mappend "one" (mappend "two" "three"))
+=> "onetwothree"
+,:test equal
+
+#?(mappend (mappend "one" "two")
+	   "three")
+=> "onetwothree"
+,:test equal
+
+#?(defmacro mappend* (&body form*)
+    (labels((rec(form*)
+	      (if(endp(cdr form*))
+		(car form*)
+		`(mappend ,(car form*)
+			  ,(rec (cdr form*))))))
+      (rec form*)))
+=> MAPPEND*
+,:before (fmakunbound 'mappend*)
+
+#?(mappend* "one" "two" "three")
+=> "onetwothree"
+,:test equal
+
+#?(mappend "pang" (mempty))
+=> "pang"
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(mconcat '((1 2)(3 6)(9)))
+=> (1 2 3 6 9)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
