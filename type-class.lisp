@@ -139,6 +139,7 @@
   (loop :for var :in var*
 	:collect (compute-return-type var env)))
 
+(defvar *return-type-verbose* t)
 (defun compute-return-type(var &optional env)
   (cond
     ((constantp var) ; lisp object.
@@ -200,7 +201,8 @@
   (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
     (declare(ignore localp))
     (case type
-      ((nil) (warn "Undefined function ~S. ~S"(car form)form))
+      ((nil) (when *return-type-verbose*
+	       (warn "Undefined function ~S. ~S"(car form)form)))
       (:special-form (special-operator-return-type form env))
       (:macro (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)
 				   env))
@@ -208,7 +210,8 @@
 	(let((ftype(assoc 'ftype declaration)))
 	  (if ftype
 	    (ftype-return-type (cdr ftype))
-	    (progn (warn "Could not determine type of ~S"form)
+	    (progn (when *return-type-verbose*
+		     (warn "Could not determine type of ~S"form))
 		   T)))))))
 
 (defun special-operator-return-type(form env)
