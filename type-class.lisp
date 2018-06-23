@@ -94,12 +94,11 @@
 	       (INFOS(CHECK-SIGNATURE ',lambda-list (COMPUTE-RETURN-TYPES EXPANDED ENV)))
 	       (IL(GET-INSTANCE-LAMBDA ',method INFOS))
 	       (MACROS(LOOP :FOR (NAME . REST) :IN IL
-			    :COLLECT (CONS (SUB-NAME NAME) REST)))
+			    :WHEN (EQ NAME ',method)
+			    :COLLECT (CONS (SUB-NAME NAME) REST)
+			    :ELSE :COLLECT (CONS NAME REST)))
 	       (BODY`(,',sub-name
-		       ,@(LOOP :FOR FORM :IN (TRESTRUL:ASUBST-IF
-					       #'SUB-NAME
-					       (LAMBDA(X)(FIND X IL :KEY #'CAR :TEST #'EQ))
-					       EXPANDED)
+		       ,@(LOOP :FOR FORM :IN EXPANDED
 			       :COLLECT (expander:expand
 					  `(MACROLET,MACROS,FORM) env)))))
 	   (IF IL
