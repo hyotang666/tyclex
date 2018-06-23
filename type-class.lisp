@@ -115,7 +115,10 @@
 		    (PROGN
 		      (WHEN *EXPAND-VERBOSE*
 			    (WARN "The default is used. ~S ~S"',method DEFAULT))
-		      `(MACROLET(,DEFAULT),WHOLE))
+		      `(MACROLET(,(CONS (SUB-NAME(CAR DEFAULT))
+					(CDR DEFAULT)))
+			 ,(CONS (SUB-NAME(CAR WHOLE))
+				(CDR WHOLE))))
 		     WHOLE)))))))
 
 (defun sub-name(symbol)
