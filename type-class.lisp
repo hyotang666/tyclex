@@ -5,6 +5,7 @@
                      (:predicate nil)(:conc-name type-))
   (name (error "Name is required.") :type (or symbol list) :read-only t)
   (var (error "Var is required.") :type symbol :read-only t)
+  (instances nil :type list :read-only t)
   (direct-superclasses nil :type list)
   (direct-subclasses nil :type list))
 
@@ -49,7 +50,8 @@
   (setf type-var (Envar type-var))
   ;; body
   `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-     (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name :VAR ',type-var))
+     (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name :VAR ',type-var
+					     :INSTANCES ',(mapcar #'car methods)))
      ,@(when super-classes
 	 (<type-class-relation-setter> name super-classes))
      ,@(loop
@@ -77,7 +79,7 @@
 			:RETURN-TYPE ',return-type
 			,@(let((default(find method rest :key #'cadr)))
 			    (when default
-			      `(:DEFAULT '(,(cdr default))))))))
+			      `(:DEFAULT ',(cdr default)))))))
 
 ;;; <defmacro>
 (defvar *sub-expand* nil)
@@ -274,8 +276,7 @@
 	      (eq T x))
 	    type*)
     nil
-    (or (compute-applicable-instance(collect-instance type* interface))
-	(instance-default interface))))
+    (compute-applicable-instance(collect-instance type* interface))))
 
 ;;;; COLLECT-INSTANCE
 (defun collect-instance(type* interface)
@@ -295,14 +296,20 @@
 
 ;;;; DEFISTANCE
 (defmacro definstance((type-class type) definition)
-  `(progn ,@(loop :for (name) :in definition
-		  :for signature = (subst type
-					  (type-var (get type-class 'type-class))
-					  (instance-lambda-list name))
-		  :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
-					       signature)
-		  :collect `(add-instance ',name ',signature ',definition))
-	  ',type-class))
+  (let((defs(loop :for instance :in (set-difference (type-instances (get type-class 'type-class))
+						    (mapcar #'car definition))
+		  :collect (or (instance-default instance)
+			       (error "Default instance missing. ~S" instance))
+		  :into defaults
+		  :finally (return (append definition defaults)))))
+    `(progn ,@(loop :for (name) :in defs
+		    :for signature = (subst type
+					    (type-var (get type-class 'type-class))
+					    (instance-lambda-list name))
+		    :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
+						 signature)
+		    :collect `(add-instance ',name ',signature ',defs))
+	    ',type-class)))
 
 ;;;; ADD-INSTANCE
 (defun add-instance(interface signature definition)
