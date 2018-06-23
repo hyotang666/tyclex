@@ -379,11 +379,22 @@
 #?(<*> (just (curried-function::section + 3 _)) nothing)
 => NOTHING
 
+#?(<*> (just (curried-function:section uiop:strcat _ "hahaha")) nothing)
+=> NOTHING
 #?(<*> nothing (just "woot"))
 => NOTHING
 
 #?(<*> (pure (curried-function::section + 3 _)) (just 9))
 :satisfies #`(equal $result (just 12))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(<*> (<*> (pure (curried-function:section + _ _))
+	    (just 3))
+       (just 5))
+=> (JUST 8)
+,:test equal
 ,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
@@ -413,6 +424,15 @@
       (rec(reverse body))))
 => <*>*
 ,:before (fmakunbound '<*>*)
+
+#?(<*>* (pure (curried-function:section + _ _))
+	(just 3)
+	(just 5))
+=> (JUST 8)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(<*>* (pure (curried-function::section + _ _))
 	nothing
