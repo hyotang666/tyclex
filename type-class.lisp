@@ -109,9 +109,15 @@
 		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
 		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
 		     `(MACROLET,MACROS ,BODY))))
-	      (PROGN (WHEN *EXPAND-VERBOSE*
-		       (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
-		     WHOLE))))))
+	      (LET((DEFAULT(INSTANCE-DEFAULT(CAR WHOLE))))
+		(WHEN *EXPAND-VERBOSE*
+		      (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
+		(IF DEFAULT
+		    (PROGN
+		      (WHEN *EXPAND-VERBOSE*
+			    (WARN "The default is used. ~S ~S"',method DEFAULT))
+		      `(MACROLET(,DEFAULT),WHOLE))
+		     WHOLE)))))))
 
 (defun sub-name(symbol)
   (intern(format nil "%~A"symbol)))
