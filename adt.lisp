@@ -87,7 +87,7 @@
 	    (DEFUN ,(constructor-name constructor),lambda-list
 	      (LIST ',(car constructor),@lambda-list)))))
       (t `((DEFSTRUCT(,(car constructor)
-		       :NAMED (:TYPE LIST) (:CONC-NAME NIL)
+		       :NAMED (:TYPE CL:LIST) (:CONC-NAME NIL)
 		       (:COPIER NIL) (:PREDICATE NIL)
 		       (:CONSTRUCTOR ,(constructor-name constructor)))
 	     ,@(cdr constructor)))))))
@@ -131,7 +131,7 @@
 (defun <pattern-matcher>(constructor)
   (when(listp constructor)
     `((TRIVIA:DEFPATTERN,(constructor-name constructor)(&REST ARGS)
-	`(LIST (EQ ',',(car constructor)) ,@ARGS)))))
+	`(CL:LIST (EQ ',',(car constructor)) ,@ARGS)))))
 
 ;;;; ADT data structure
 (defstruct(adt (:copier nil)(:predicate nil))

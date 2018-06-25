@@ -7,6 +7,8 @@
 
 (defpackage #:vs-haskell
   (:use #:cl)
+  (:shadow #:list)
+  (:export #:list)
   (:export
     #:qualified-use
     
@@ -31,3 +33,9 @@
     #:define-newtype #:denew)
   )
 (in-package #:vs-haskell)
+
+(setf(symbol-function 'list)#'cl:list)
+
+(deftype list(&optional a)
+  (declare(ignore a))
+  'cl:list)

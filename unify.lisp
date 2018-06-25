@@ -39,7 +39,7 @@
 				       &KEY &ALLOW-OTHER-KEYS)
 		     ,@body)))
 
-(defunify((a (eql t))(b list))
+(defunify((a (eql t))(b cl:list))
   (extend-environment-with-t b env))
 
 (defun extend-environment-with-t(pattern env)
@@ -50,7 +50,7 @@
 		     pattern)
   env)
 
-(defunify((a (eql 'function))(b list))
+(defunify((a (eql 'function))(b cl:list))
   (if(eq 'function (car b))
     (type-unify:unify t b env)
     (if(not(type-unify:variablep(car b)))
@@ -62,7 +62,7 @@
 	  (extend-environment-with-t (cdr b)
 				     (type-unify:extend-environment (car b) a env)))))))
 
-(defunify((a (eql 'cons))(b list))
+(defunify((a (eql 'cons))(b cl:list))
   (if(type-unify:variablep(car b))
     (extend-environment-with-t (cdr b)
 			       (type-unify:extend-environment(car b)a env))
@@ -70,7 +70,7 @@
       env
       (call-next-method))))
 
-(defunify((a (eql 'null))(b list))
+(defunify((a (eql 'null))(b cl:list))
   (if(not(type-unify:variablep(car b)))
     (call-next-method)
     (if(cddr b)
@@ -78,7 +78,7 @@
       (extend-environment-with-t (cdr b)
 				 (type-unify:extend-environment(car b)'list env)))))
 
-(defmethod type-unify:unify :around ((a list)(b list)
+(defmethod type-unify:unify :around ((a cl:list)(b cl:list)
 				     &optional(env(type-unify:make-empty-environment))
 				     &key &allow-other-keys)
   (trivia:match*((car a)(car b))
@@ -99,14 +99,21 @@
 (defunify((a (eql 'cons))(b (eql 'list)))
   env)
 
-(defunify((a (eql 'list))(b list))
+(defunify((a (eql 'list))(b cl:list))
   (if(type-unify:variablep(car b))
     (type-unify:extend-environment (car b)a env)
     (if(eq a (car b)) ; list (list *)
       env
       (call-next-method))))
 
-(defunify((a symbol)(b list))
+(defunify((a (eql 'cl:list))(b cl:list))
+  (if(type-unify:variablep(car b))
+    (type-unify:extend-environment (car b)a env)
+    (if(string= a (car b)) ; list (list *)
+      env
+      (call-next-method))))
+
+(defunify((a symbol)(b cl:list))
   (if(type-unify:variablep a)
     (if(eq 'function (car b)) ; ?B (FUNCTION(?A)?B)
       (type-unify:extend-environment a b env)
