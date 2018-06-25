@@ -248,14 +248,10 @@
 
 (defun canonicalize-return-type(return-type)
   (flet((ensure-t(thing)
-	  (if(eq '* thing)
-	    T
-	    thing)))
-    (if(symbolp return-type)
-      (ensure-t return-type)
-      (if(eq 'values (car return-type))
-	(ensure-t (cadr return-type))
-	return-type))))
+	  (subst T '* thing)))
+    (if(typep return-type '(CONS (EQL VALUES)T))
+      (ensure-t (cadr return-type))
+      (ensure-t return-type))))
 
 (defun compute-constructor-form-return-type(var env)
   (let*((meta-info(adv-p var))
