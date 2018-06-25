@@ -16,6 +16,7 @@
    "expander"                   ; macroexpand all.
    "cl-unification"             ; unification.
    "curried-function"
+   "matrix-case"                ; control flow.
    )
   :components
   ((:file "package")

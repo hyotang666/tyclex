@@ -138,20 +138,26 @@
      (error()(when *subtype-verbose*
 	       (warn "Unify fails. ~S" (list ',(car form)
 					     ,@(cdr form)))))))
+
 (defun subtype?(t1 t2)
   (if(millet:type-specifier-p t1)
     (if(millet:type-specifier-p t2)
       (if(subtypep t1 t2)
-	(let((expanded?1 (nth-value 1(millet:type-expand t1)))
-	     (expanded?2 (nth-value 1(millet:type-expand t2))))
-	  (if expanded?1
-	    (if expanded?2
-	      (eq (alexandria:ensure-car t1)
-		  (alexandria:ensure-car t2))
-	      T)
-	    (if expanded?2
-	      nil
-	      T)))
+	(let((expanded?1 (nth-value 1(millet:type-expand t1))))
+	  (multiple-value-bind(expanded expanded?2)(millet:type-expand t2)
+	    (if expanded?1
+	      (if expanded?2
+		(matrix-case:matrix-etypecase(t1 t2)
+		  ((symbol symbol)(eq t1 t2))
+		  ((symbol list)(eq t1 (car t2)))
+		  ((list symbol)(eq (car t1)t2))
+		  ((list list)(loop :for e1 :in t1
+				    :for e2 :in t2
+				    :always (subtype? e1 e2))))
+		T)
+	      (if expanded?2
+		(string= t2 expanded)
+		T))))
 	nil)
       (if(adt-p t2)
 	(eq (alexandria:ensure-car t1)(alexandria:ensure-car t2))
