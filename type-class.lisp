@@ -295,7 +295,8 @@
 ;;;; COLLECT-INSTANCE
 (defun collect-instance(type* interface)
   (remove-if-not (lambda(type)
-		   (every #'subtype? type* type))
+		   (every #'subtype? (canonicalize-return-type type*)
+			  (canonicalize-return-type type)))
 		 (instance-table interface)
 		 :key #'car))
 
@@ -305,7 +306,8 @@
 
 (defun sort-instance(list)
   (flet((type<(ts1 ts2)
-	  (every #'subtype?  ts1 ts2)))
+	  (every #'subtype? (canonicalize-return-type ts1)
+		 (canonicalize-return-type ts2))))
     (sort list #'type< :key #'car)))
 
 ;;;; DEFISTANCE
