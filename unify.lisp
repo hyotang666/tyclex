@@ -156,7 +156,8 @@
 				    :always (subtype? e1 e2))))
 		T)
 	      (if expanded?2
-		(string= t2 expanded)
+		(handler-case(string= t2 expanded)
+		  (error()t))
 		T))))
 	nil)
       (if(adt-p t2)
