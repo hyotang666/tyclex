@@ -75,7 +75,8 @@
 		(arg-types lambda-list (cdr arg-types)(push (car arg-types)acc))))))
     (cond
       ((symbolp constructor)
-       `((ALEXANDRIA:DEFINE-CONSTANT ,constructor ',constructor)))
+       (unless(keywordp constructor)
+	 `((ALEXANDRIA:DEFINE-CONSTANT ,constructor ',constructor))))
       ((or args (list-constructor-p constructor))
        (let((lambda-list(Gensyms(cdr constructor))))
 	 `(,@(if args
