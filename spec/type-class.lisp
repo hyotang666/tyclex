@@ -477,6 +477,9 @@
        '(1 2 3))
 => (0 0 0 101 102 103 1 4 9)
 ,:test equal
+,:around(let(vs-haskell::*return-type-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(<$> (curried-function::section concatenate 'string _ _)
        '("ha" "heh" "hmm")
