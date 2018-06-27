@@ -7,9 +7,11 @@
   ((:file "vs-haskell")
    ;; Mid
    (:file "adt" :depends-on ("vs-haskell"))
-   ;; Top
+   ;; Mid2
    (:file "type-class" :depends-on ("adt"))
    (:file "newtype" :depends-on ("type-class"))
+   ;; Top
+   (:file "monoid" :depends-on ("type-class" "newtype"))
    )
   :perform
   (test-op(o c)
