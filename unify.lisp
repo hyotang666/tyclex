@@ -192,7 +192,7 @@
       (if(adt-p t1)
 	(if(adt-p t2)
 	  (eq (alexandria:ensure-car t1)(alexandria:ensure-car t2)) ; TODO Is eq enough?
-	  nil)
+	  (with-subtype-verbose(type-unify:unify t1 t2)))
 	(if(adt-p t2)
-	  nil
+	  (with-subtype-verbose(type-unify:unify t1 t2))
 	  (with-subtype-verbose(type-unify:unify (patternize t1)(patternize t2))))))))
