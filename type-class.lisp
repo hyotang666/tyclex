@@ -157,7 +157,25 @@
 	   (let((type (class-name(class-of value))))
 	     (if(not(eq 'cons type))
 	       type
-	       `(LIST ,(class-name(class-of(car value)))))))))) ; TODO
+	       (let((types(handler-case(mapcar (lambda(x)
+						 (class-name(class-of x)))
+					       value)
+			    (error() ; dot list comes
+			      (return-from compute-return-type
+					   (labels((rec(cons)
+						     (if(atom cons)
+						       (class-name(class-of cons))
+						       `(cons ,(class-name(class-of(car cons)))
+							      ,(rec (cdr cons))))))
+					     (rec value)))))))
+		 (if(null(cdr(remove-duplicates types)))
+		   `(LIST ,(class-name(class-of(car value))))
+		   (labels((rec(list)
+			     (if(endp(cdr list))
+			       (car list)
+			       `(CONS ,(car list)
+				      ,(rec(cdr list))))))
+		     (rec types))))))))))
     ((symbolp var) ; free variable.
      (or (introspect-environment:variable-type var env)
 	 T))
