@@ -148,7 +148,12 @@
 	    (if expanded?1
 	      (if expanded?2
 		(matrix-case:matrix-etypecase(t1 t2)
-		  ((symbol symbol)(eq t1 t2))
+		  ((symbol symbol)
+		   (if(eq 'list t1)
+		     (subtype? 'cl:list t2)
+		     (if(eq 'list t2)
+		       (subtype? t1 'cl:list)
+		       (eq t1 t2))))
 		  ((symbol list)(eq t1 (car t2)))
 		  ((list symbol)(eq (car t1)t2))
 		  ((list list)(loop :for e1 :in t1
