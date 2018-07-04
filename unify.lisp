@@ -164,7 +164,7 @@
 		(handler-case(string= t2 expanded)
 		  (error()t))
 		T))))
-	nil)
+	(eql t t1))
       (if(adt-p t2)
 	(eq (alexandria:ensure-car t1)(alexandria:ensure-car t2))
 	(or (eql t t1)
