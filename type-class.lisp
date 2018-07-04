@@ -177,8 +177,12 @@
 				      ,(rec(cdr list))))))
 		     (rec types))))))))))
     ((symbolp var) ; free variable.
-     (or (introspect-environment:variable-type var env)
-	 T))
+     (let((type (introspect-environment:variable-type var env)))
+       (if(not(eql t type))
+	 type
+	 (if(boundp var)
+	   (data-type-of (eval var))
+	   T))))
     ((typep var '(cons (cons (eql lambda) *) *)) ; ((lambda(...)...)...)
      (compute-standard-form-return-type (car(last(cddar var))) env))
     ((and (listp var) ; instance call.
