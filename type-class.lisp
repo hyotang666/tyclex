@@ -142,7 +142,13 @@
 (defvar *return-type-verbose* t)
 (defun compute-return-type(var &optional env)
   (cond
-    ((constantp var) ; lisp object.
+    ((block() ; constantp may do macroexpand.
+       (let((*macroexpand-hook*(lambda(fn form env)
+				 (let((expanded(funcall fn form env)))
+				   (if (eq form expanded)
+				     (return nil)
+				     expanded)))))
+	 (constantp var env))) ; lisp object.
      (if(typep var '(CONS (EQL THE)T))
        (second var)
        (let((value(introspect-environment:constant-form-value var env)))
