@@ -262,7 +262,7 @@
 	  (else(compute-return-type(fourth form)env)))
        (if then
 	 (if else
-	   `(or ,then ,else)
+	   (great-common-type then else)
 	   then)
 	 else)))
     ((quote)
@@ -271,6 +271,133 @@
      (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)env))
     ((go throw catch return-from block) t) ; give up.
     (otherwise (error 'unknown-special-operator :datum form :name 'special-operator-return-type))))
+
+(defun great-common-type(t1 t2)
+  (labels((entry-point(t1 t2)
+	    (if(millet:type-specifier-p t1)
+	      (type-specifier- t1 t2)
+	      (not-type-specifier- t1 t2)))
+	  (type-specifier-(t1 t2)
+	    (if(millet:type-specifier-p t2)
+	      (both-type-specifier t1 t2)
+	      (type-specifier/not-type-specifier t1 t2)))
+	  (both-type-specifier(t1 t2)
+	    (if(symbolp t1)
+	      (symbol-type-specifier- t1 t2)
+	      (compound-type-specifier- t1 t2)))
+	  (symbol-type-specifier-(t1 t2)
+	    (if(symbolp t2)
+	      (both-symbol-type-specifier t1 t2)
+	      (symbol-type-specifier/compound-type-specifier t1 t2)))
+	  (both-symbol-type-specifier(t1 t2)
+	    (if(eq t1 t2)
+	      t1
+	      (different-symbol-type-specifier t1 t2)))
+	  (different-symbol-type-specifier(t1 t2)
+	    (if(c2mop:subclassp t1 t2)
+	      t2
+	      (t1-is-not-subclass-of-t2 t1 t2)))
+	  (t1-is-not-subclass-of-t2(t1 t2)
+	    (if(c2mop:subclassp t2 t1)
+	      t1
+	      (both-are-not-subclass-each-other t1 t2)))
+	  (both-are-not-subclass-each-other(t1 t2)
+	    (find-diverging-point t1
+				  #'c2mop:subclassp
+				  (c2mop:class-direct-superclasses(find-class t2))))
+	  (find-diverging-point(t1 test classes)
+	    (let((class (find t1 classes :test test)))
+	      (if class
+		(class-name class)
+		(find-diverging-point t1
+				      test
+				      (loop :for c :in classes
+					    :append (c2mop:class-direct-superclasses c))))))
+	  (symbol-type-specifier/compound-type-specifier(t1 t2)
+	    (if(subtypep t1 t2)
+	      t1
+	      (sts-is-not-subtype-of-cts t1 t2)))
+	  (sts-is-not-subtype-of-cts(t1 t2)
+	    (if(subtypep t2 t1)
+	      t1
+	      (sts/cts-are-not-subtype-each-other t1 t2)))
+	  (sts/cts-are-not-subtype-each-other(t1 t2)
+	    (call-with-find-class
+	      t1 t2 (lambda()(not-class-name/cts-are-not-subtype-each-other t1 t2))))
+	  (not-class-name/cts-are-not-subtype-each-other(t1 t2)
+	    (call-with-find-class
+	      (car t2) t1
+	      (lambda()(call-with-compound-typecase t1 t2 #'symbol-type-specifier-))))
+	  (call-with-find-class(class-name diverge-arg1 cont)
+	    (let((class(find-class class-name nil)))
+	      (if class
+		(find-diverging-point diverge-arg1 #'subtypep
+				      (c2mop:class-direct-superclasses class))
+		(funcall cont))))
+	  (compound-type-specifier-(t1 t2)
+	    (if(symbolp t2)
+	      (symbol-type-specifier/compound-type-specifier t2 t1)
+	      (both-compound-type-specifier t1 t2)))
+	  (both-compound-type-specifier(t1 t2)
+	    (if(subtypep t1 t2)
+	      t2
+	      (cts1-is-not-subtype-of-cts2 t1 t2)))
+	  (cts1-is-not-subtype-of-cts2(t1 t2)
+	    (if(subtypep t2 t1)
+	      t1
+	      (both-cts-are-not-subtype-each-other t1 t2)))
+	  (both-cts-are-not-subtype-each-other(t1 t2)
+	    (call-with-find-class
+	      (car t1) t2
+	      (lambda()
+		(call-with-find-class
+		  (car t2) t1
+		  (lambda()
+		    (call-with-compound-typecase t1 t2 #'compound-type-specifier-))))))
+	  (call-with-compound-typecase(t1 cts cont)
+	    (typecase cts
+	      ((CONS (EQL AND)T)
+	       (funcall cont t1 (cadr t2)))
+	      ((CONS (EQL OR)T)
+	       (funcall cont t1 (reduce #'great-common-type (cdr t2))))
+	      ((CONS (EQL NOT)T)
+	       T) ; give-up
+	      ((CONS (EQL EQL)T)
+	       (funcall cont t1 (class-name(class-of (second t2)))))
+	      ((CONS (EQL MEMBER)T)
+	       (funcall cont t1 (reduce #'great-common-type (cdr t2)
+						  :key (lambda(x)(class-name(class-of x))))))
+	      ((CONS (EQL SATISFIES)T)
+	       (funcall cont t1 (canonicalize-return-type(alexandria:ensure-car(cadr(introspect-environment:function-type(second t2)))))))
+	      ((CONS (EQL CONS)T)
+	       (funcall cont t1 'cons))
+	      (T (funcall cont t1 (millet:type-expand t2)))))
+	  (not-type-specifier-(t1 t2)
+	    (if(millet:type-specifier-p t2)
+	      (type-specifier/not-type-specifier t2 t1)
+	      (both-are-not-type-specifier t1 t2)))
+	  (both-are-not-type-specifier(t1 t2)
+	    (matrix-case:matrix-etypecase(t1 t2)
+	      ((LIST LIST)(mapcar #'great-common-type t1 t2))
+	      (((SATISFIES TYPE-UNIFY:VARIABLEP)(SATISFIES TYPE-UNIFY:VARIABLEP))
+	       (if(eq t1 t2)
+		 t1
+		 T))
+	      (((SATISFIES TYPE-UNIFY:VARIABLEP)T)
+	       T)
+	      ((T (SATISFIES TYPE-UNIFY:VARIABLEP))
+	       T)
+	      ((T T)
+	       (error "nyi ~S ~S" t1 t2))))
+	  (type-specifier/not-type-specifier(t1 t2)
+	    (typecase t2
+	      ((CONS (EQL FUNCTION)T)
+	       (both-type-specifier t1 'function))
+	      ((SATISFIES TYPE-UNIFY:VARIABLEP)
+	       t2)
+	      (T (error "nyi ~S ~S" t1 t2))))
+	  )
+    (entry-point t1 t2)))
 
 (defun ftype-return-type(form)
   (if(symbolp form)
