@@ -9,6 +9,12 @@
   (direct-superclasses nil :type list)
   (direct-subclasses nil :type list))
 
+;; helper
+(defun find-type-class(name &optional (errorp T))
+  (or (get name 'type-class)
+      (when errorp
+	(error "Type-class named ~S is not found." name))))
+
 ;;;; INSTANCE OBJECT
 (defstruct(type-class-instance(:constructor instance-info)(:copier nil)
                               (:predicate nil))
@@ -466,7 +472,7 @@
 
 ;;;; DEFISTANCE
 (defmacro definstance((type-class type) definition)
-  (let((defs(loop :for instance :in (set-difference (type-instances (get type-class 'type-class))
+  (let((defs(loop :for instance :in (set-difference (type-instances (find-type-class type-class))
 						    (mapcar #'car definition))
 		  :collect (or (instance-default instance)
 			       (error "Default instance missing. ~S" instance))
@@ -474,7 +480,7 @@
 		  :finally (return (append definition defaults)))))
     `(progn ,@(loop :for (name) :in defs
 		    :for signature = (subst type
-					    (type-var (get type-class 'type-class))
+					    (type-var (find-type-class type-class))
 					    (instance-lambda-list name))
 		    :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
 						 signature)
