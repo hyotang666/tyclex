@@ -23,7 +23,7 @@
     #:action ; macro.
     #:<-
     #:put-string #:put-char #:.print #:put-string-line #:get-line #:.sequence
-    #:mapmonad #:mapm #:forever #:for-monad #:interact #:bracket #:.return
+    #:mapmonad #:mapm #:forever #:for-monad #:interact #:bracket
     #:do-contents #:with-file
     #:io-mode #:read-mode #:write-mode #:append-mode #:read-write-mode
     #:h-close

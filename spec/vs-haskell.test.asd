@@ -9,8 +9,10 @@
    (:file "adt" :depends-on ("vs-haskell"))
    ;; Mid2
    (:file "type-class" :depends-on ("adt"))
+   ;; Mid3
    (:file "newtype" :depends-on ("type-class"))
-   ;; Top
+   (:file "monad" :depends-on ("type-class"))
+   ;; Mid4
    (:file "monoid" :depends-on ("type-class" "newtype"))
    ;; Top
    (:file "subtypep" :depends-on ("monoid"))
