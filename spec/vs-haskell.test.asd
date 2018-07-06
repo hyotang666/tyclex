@@ -12,6 +12,8 @@
    (:file "newtype" :depends-on ("type-class"))
    ;; Top
    (:file "monoid" :depends-on ("type-class" "newtype"))
+   ;; Top
+   (:file "subtypep" :depends-on ("monoid"))
    )
   :perform
   (test-op(o c)
