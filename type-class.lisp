@@ -25,7 +25,7 @@
   (default nil :type list :read-only t))
 
 (defun instance-type-class(interface)
-  (type-class-instance-type-class(get interface 'instance)))
+  (find-type-class(type-class-instance-type-class(get interface 'instance))))
 
 (defun instance-default(interface)
   (type-class-instance-default(get interface 'instance)))
@@ -94,38 +94,54 @@
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (IF (EQ *SUB-EXPAND* WHOLE)
 	 (ERROR "Trap infinite expansion ~S" whole)
-	 (LET*((*SUB-EXPAND* WHOLE)
-	       (EXPANDED(LOOP :FOR FORM :IN (LIST ,@gensyms)
-			      :COLLECT (EXPANDER:EXPAND FORM ENV)))
-	       (INFOS(CHECK-SIGNATURE ',lambda-list (COMPUTE-RETURN-TYPES EXPANDED ENV)))
-	       (IL(GET-INSTANCE-LAMBDA ',method INFOS))
-	       (MACROS(LOOP :FOR (NAME . REST) :IN IL
-			    :WHEN (EQ NAME ',method)
-			    :COLLECT (CONS (SUB-NAME NAME) REST)
-			    :ELSE :COLLECT (CONS NAME REST)))
-	       (BODY`(,',sub-name
-		       ,@(LOOP :FOR FORM :IN EXPANDED
-			       :COLLECT (expander:expand
-					  `(MACROLET,MACROS,FORM) env)))))
-	   (IF IL
-	      ,(if(millet:type-specifier-p return-type)
-		 ``(MACROLET,MACROS (THE ,',return-type ,BODY))
-		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
-		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
-		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
-		     `(MACROLET,MACROS ,BODY))))
-	      (LET((DEFAULT(INSTANCE-DEFAULT(CAR WHOLE))))
-		(WHEN *EXPAND-VERBOSE*
-		      (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
-		(IF DEFAULT
-		    (PROGN
-		      (WHEN *EXPAND-VERBOSE*
-			    (WARN "The default is used. ~S ~S"',method DEFAULT))
-		      `(MACROLET(,(CONS (SUB-NAME(CAR DEFAULT))
-					(CDR DEFAULT)))
-			 ,(CONS (SUB-NAME(CAR WHOLE))
-				(CDR WHOLE))))
-		     WHOLE)))))))
+	 (LET((*SUB-EXPAND* WHOLE))
+	   (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS IL MACROS)(PARSE-WHOLE WHOLE ENV)
+	     (DECLARE (IGNORE RETURN-TYPE)
+		      (IGNORABLE INFOS))
+	     (LET((BODY`(,',sub-name
+			  ,@(LOOP :FOR FORM :IN EXPANDED
+				  :COLLECT (expander:expand
+					     `(MACROLET,MACROS,FORM) env)))))
+	       (IF IL
+		   ,(if(millet:type-specifier-p return-type)
+		      ``(MACROLET,MACROS (THE ,',return-type ,BODY))
+		      `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
+			 (IF(MILLET:TYPE-SPECIFIER-P RETURN)
+			   `(MACROLET,MACROS (THE ,RETURN ,BODY))
+			   `(MACROLET,MACROS ,BODY))))
+		   (LET((DEFAULT(INSTANCE-DEFAULT(CAR WHOLE))))
+		     (WHEN *EXPAND-VERBOSE*
+			   (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
+		     (IF DEFAULT
+			 (PROGN
+			   (WHEN *EXPAND-VERBOSE*
+				 (WARN "The default is used. ~S ~S"',method DEFAULT))
+			   `(MACROLET(,(CONS (SUB-NAME(CAR DEFAULT))
+					     (CDR DEFAULT)))
+			      ,(CONS (SUB-NAME(CAR WHOLE))
+				     (CDR WHOLE))))
+			 WHOLE)))))))))
+
+(defun parse-whole(form &optional env)
+  (let*((expanded(loop :for form :in (copy-list (cdr form))
+		       :collect(expander:expand form env)))
+	(return-types(compute-return-types expanded env))
+	(infos(check-signature (instance-lambda-list (car form))
+			       return-types))
+	(instances(get-instance-lambda (car form) infos))
+	(defs(first instances))
+	(type(second instances))
+	(macros(loop :for (name . rest) :in defs
+		     :when (eq name (car form))
+		     :collect (cons (sub-name name) rest)
+		     :else :collect (cons name rest)))
+	(type-class(instance-type-class (car form)))
+	(defs(loop :for tc :in (type-direct-subclasses type-class)
+		   :append (loop :for instance :in (type-instances (find-type-class tc))
+				 :thereis (loop :for (nil defs type%) :in (instance-table instance)
+						:when (eq type type%)
+						:return defs)))))
+    (values expanded return-types infos instances (append macros defs))))
 
 (defun sub-name(symbol)
   (intern(format nil "%~A"symbol)))
@@ -486,12 +502,12 @@
 					    (instance-lambda-list name))
 		    :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
 						 signature)
-		    :collect `(add-instance ',name ',signature ',defs))
+		    :collect `(add-instance ',name ',signature ',defs ',type))
 	    ',type-class)))
 
 ;;;; ADD-INSTANCE
-(defun add-instance(interface signature definition)
-  (push(cons signature definition)(instance-table interface)))
+(defun add-instance(interface signature definition type)
+  (push(list signature definition type)(instance-table interface)))
 
 #|
 (defdata maybe (a)
