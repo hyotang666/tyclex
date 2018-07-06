@@ -414,7 +414,9 @@
   (flet((ensure-t(thing)
 	  (subst T '* thing)))
     (if(typep return-type '(CONS (EQL VALUES)T))
-      (ensure-t (cadr return-type))
+      (if(typep return-type '(CONS * (CONS (EQL &OPTIONAL) T)))
+	(ensure-t (caddr return-type))
+	(ensure-t (cadr return-type)))
       (ensure-t return-type))))
 
 (defun compute-constructor-form-return-type(var env)
