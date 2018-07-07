@@ -277,7 +277,7 @@
 #?(definstance(functor io)
     ((fmap(f a)
        `(action result <- ,a
-		(.return (funcall ,f result))))))
+		(vs-haskell::.return (funcall ,f result))))))
 => FUNCTOR
 
 #?(fmap #'reverse (get-line))
@@ -285,6 +285,9 @@
 	       (& (functionp $result)
 		  (typep $result 'io-action)
 		  (equal "egoh" (funcall $result))))
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+:lazy t
 
 #?(definstance(functor function)
     ((fmap(f g)
@@ -378,9 +381,15 @@
 
 #?(<*> (just (curried-function::section + 3 _)) nothing)
 => NOTHING
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
 
 #?(<*> (just (curried-function:section uiop:strcat _ "hahaha")) nothing)
 => NOTHING
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
 #?(<*> nothing (just "woot"))
 => NOTHING
 
@@ -477,7 +486,7 @@
        '(1 2 3))
 => (0 0 0 101 102 103 1 4 9)
 ,:test equal
-,:around(let(vs-haskell::*return-type-verbose*)
+,:around(let(vs-haskell::*return-type-verbose* vs-haskell::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -514,9 +523,9 @@
     ((<*>(functor arg)
        `(action f <- ,functor
 		x <- ,arg
-		(.return (funcall f x))))
+		(vs-haskell::.return (funcall f x))))
      (pure(x)
-       `(.return ,x))))
+       `(vs-haskell::.return ,x))))
 => APPLICATIVE
 
 #?(<$> (curried-function::section concatenate 'string _ _)
@@ -574,42 +583,6 @@
 ,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
-
-;;; ZIP LIST.
-#?(deftype zip-list(&optional a)
-    (declare(ignore a))
-    'list)
-=> ZIP-LIST
-#?(defmacro zip-list(form)
-    `(THE (ZIP-LIST *) ,form))
-=> ZIP-LIST
-,:before (fmakunbound 'zip-list)
-#?(setf (symbol-function 'get-zip-list)#'third)
-:be-the function
-
-#?(definstance(functor zip-list)
-    ((fmap(f zl)
-       `(zip-list (fmap ,f ,(get-zip-list zl))))))
-=> FUNCTOR
-
-#?(definstance(applicative zip-list)
-    ((pure(x)
-       `(series:series ,x))
-     (<*>(fs xs)
-       `(zip-list (let((fn ,fs))
-		    (series:collect(series:map-fn t #'funcall (series:scan fn)
-						  (series:scan ,xs))))))))
-=> APPLICATIVE
-
-#?(<$> (curried-function:section + _ _)
-       (zip-list '(1 2 3))
-       (zip-list '(100 100 100)))
-=> (101 102 103)
-,:test equal
-,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
-	  (call-body))
-,:lazy t
-
 
 ;;; 11.4
 #?(defmacro lift(function &rest functor*)
@@ -765,9 +738,7 @@
 #?(definstance(monoid list)
     ((mempty()nil)
      (mappend(a b)
-       `(funcall (curried-function:section append _ _)
-		 ,a
-		 ,b))))
+       `(append ,a ,b))))
 => MONOID
 
 #?(mappend '(1 2 3)'(4 5 6))
@@ -777,8 +748,7 @@
 #?(definstance(monoid string)
     ((mempty()"")
      (mappend(a b)
-       `(funcall (curried-function:section concatenate 'string _ _)
-		 ,a ,b))))
+       `(concatenate 'string ,a ,b))))
 => MONOID
 
 #?(mappend "one" (mappend "two" "three"))

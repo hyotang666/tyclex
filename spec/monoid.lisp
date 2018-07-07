@@ -28,14 +28,6 @@
 		    (product 2)))
 => 24
 
-#?(defmacro mappend*(&body body)
-    (if(endp (cdr body))
-      (car body)
-      `(MAPPEND ,(car body)
-		(mappend* ,@(cdr body)))))
-=> MAPPEND*
-,:before (fmakunbound 'mappend*)
-
 #?(mappend* (product 3) (product 4) (product 2))
 => 24
 

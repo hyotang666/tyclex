@@ -74,6 +74,57 @@
 	  (call-body))
 ,:lazy t
 
+;;; ZIP LIST.
+#?(define-newtype zip-list(&optional a)
+    (declare(ignore a))
+    'list)
+=> ZIP-LIST
+,:before (fmakunbound 'zip-list)
+
+#?(definstance(functor zip-list)
+    ((fmap(f zl)
+       `(zip-list (fmap ,f ,(denew zl))))))
+=> FUNCTOR
+
+#?(definstance(applicative zip-list)
+    ((pure(x)
+       `(series:series ,x))
+     (<*>(fs xs)
+       `(zip-list (let((fn ,fs))
+		    (series:collect (series:map-fn t #'funcall (series:scan fn)
+						   (series:scan ,xs))))))))
+=> APPLICATIVE
+
+#?(<$> (curried-function:section + _ _)
+       (zip-list '(1 2 3))
+       (zip-list '(100 100 100)))
+=> (101 102 103)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(<$> (curried-function:section max _ _)
+       (zip-list '(1 2 3 4 5 3))
+       (zip-list '(5 3 1 2)))
+=> (5 3 3 4)
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(<$> (curried-function:section list _ _ _)
+       (zip-list (coerce "dog" 'list))
+       (zip-list (coerce "cat" 'list))
+       (zip-list (coerce "rat" 'list)))
+=> ((#\d #\c #\r)(#\o #\a #\a)(#\g #\t #\t))
+,:test equal
+,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
+	  (call-body))
+,:lazy t
+,:ignore-signals warning ; <--- series signals.
+,:stream nil
+
 (requirements-about DENEW)
 
 ;;;; Description:
