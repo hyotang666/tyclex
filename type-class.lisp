@@ -248,24 +248,28 @@
       (otherwise type-spec))))
 
 (defun compute-standard-form-return-type(form env)
-  (if(and (eq 'coerce (car form))
+  (cond
+    ((function-type-of(car form))
+     (third(function-type-of(car form))))
+    ((and (eq 'coerce (car form))
 	  (constantp (third form)))
-    (introspect-environment:constant-form-value(third form))
-    (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
-      (declare(ignore localp))
-      (case type
-	((nil) (when *return-type-verbose*
-		 (warn "Undefined function ~S. ~S"(car form)form)))
-	(:special-form (special-operator-return-type form env))
-	(:macro (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)
-				     env))
-	(:function
-	  (let((ftype(assoc 'ftype declaration)))
-	    (if ftype
-	      (ftype-return-type (cdr ftype))
-	      (progn (when *return-type-verbose*
-		       (warn "Could not determine type of ~S"form))
-		     T))))))))
+     (introspect-environment:constant-form-value(third form)))
+    (t
+      (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
+	(declare(ignore localp))
+	(case type
+	  ((nil) (when *return-type-verbose*
+		   (warn "Undefined function ~S. ~S"(car form)form)))
+	  (:special-form (special-operator-return-type form env))
+	  (:macro (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)
+				       env))
+	  (:function
+	    (let((ftype(assoc 'ftype declaration)))
+	      (if ftype
+		(ftype-return-type (cdr ftype))
+		(progn (when *return-type-verbose*
+			 (warn "Could not determine type of ~S"form))
+		       T)))))))))
 
 (defun special-operator-return-type(form env)
   (case (car form)
@@ -508,6 +512,14 @@
 ;;;; ADD-INSTANCE
 (defun add-instance(interface signature definition type)
   (push(list signature definition type)(instance-table interface)))
+
+;;;; FUNCTION-TYPE
+(defmacro function-type (name args return)
+  `(PROGN (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
+	  ',name))
+
+(defun function-type-of(name)
+  (get name 'ftype))
 
 #|
 (defdata maybe (a)
