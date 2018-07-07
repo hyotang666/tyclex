@@ -450,16 +450,6 @@
 						  (loop :for v :in (cdr var)
 							:collect (compute-return-type v env))))))))
 
-(defun insert-declare(form values)
-  `(,@(subseq form 0 2)
-     (DECLARE,@(mapcar (lambda(value var)
-			 (if(adv-p value)
-			   `(TYPE ,(data-type-of value) ,var)
-			   `(TYPE ,(type-of value),var)))
-		       values
-		       (cadr form)))
-     ,@(subseq form 2)))
-
 ;;;; CHECK-SIGNATURE
 (defun check-signature(lambda-list type*)
   (dewild (substitute-pattern lambda-list
