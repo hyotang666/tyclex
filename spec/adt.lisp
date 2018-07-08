@@ -33,6 +33,7 @@
     (circle real real real)
     (rectangle real real real real))
 => SHAPE
+,:timeout 2
 ,:before (mapc #'fmakunbound '(circle rectangle))
 ,:lazy T
 
