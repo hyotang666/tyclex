@@ -4,58 +4,17 @@
 (requirements-about MONAD)
 
 ;;;; 13.3
-#?(define-type-class(monad m)()
-    ((.return(a)(m a))
-     (>>=((m a)(function(a)(m b)))(m b))
-     (>>((m a)(m b))(m b))
-     (fail(string)(m a)))
-    (:default >> (x y)
-      `(>>= ,x (constantly ,y)))
-    (:default fail(msg)
-      `(error ,msg)))
-=> MONAD
-,:before (mapc #'fmakunbound '(.return >>= >> fail))
-
-#?(definstance(monad maybe)
-    ((.return(x)
-       `(just ,x))
-     (>>=(a b)
-       (alexandria:with-gensyms(x f)
-	 `(trivia:ematch*(,a ,b)
-	    ((nothing _)nothing)
-	    (((just ,x),f)(funcall ,f ,x)))))
-     (fail(a)
-       (declare(ignore a))
-       'nothing)))
-=> MONAD
-
-#?(definstance(monad list)
-    ((.return(x)`(list ,x))
-     (>>=(xs f)
-       `(mapcan ,f ,xs))
-     (fail(x)
-       (declare(ignore x))
-       NIL)))
-=> MONAD
-
-#?(definstance(monad io)
-    ((.return(x)
-       `(constantly ,x))
-     (>>=(io fun)
-       `(funcall ,fun (funcall ,io)))))
-=> MONAD
-
 #?(>>= (just 9)(lambda(x)(.return (* x 10))))
 => (just 90)
 ,:test equal
-,:around (let(vs-haskell::*expand-verbose*)
+,:around (let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	   (call-body))
 ,:lazy t
 
 #?(>>= nothing(lambda(x)(.return (* x 10))))
 => NOTHING
 ,:test equal
-,:around (let(vs-haskell::*expand-verbose*)
+,:around (let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	   (call-body))
 ,:lazy t
 
@@ -109,7 +68,7 @@
        (curried-function:section land-right 2 _))
 => (JUST (2 . 4))
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
