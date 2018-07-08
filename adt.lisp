@@ -183,10 +183,9 @@
 		      'function)))
 	(t (class-name(class-of thing)))))))
 
+(declaim(ftype(function((satisfies adv-p))fixnum)data-order))
 (defun data-order(thing)
-  (let((adt(adv-p thing)))
-    (when adt
-      (adt-order adt))))
+  (adt-order(adv-p thing)))
 
 (defun data-types(thing)
   (let((adt(adv-p thing)))
