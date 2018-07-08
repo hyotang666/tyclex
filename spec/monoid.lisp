@@ -3,17 +3,6 @@
 
 (requirements-about product)
 
-#?(define-newtype product()
-     'integer)
-=> PRODUCT
-,:before (fmakunbound 'product)
-
-#?(definstance(monoid product)
-    ((mempty()`(product 1))
-     (mappend(a b)
-       `(product (* ,a ,b)))))
-=> MONOID
-
 #?(mappend (product 3)(product 9))
 => 27
 
@@ -37,16 +26,6 @@
 	   (call-body))
 ,:lazy t
 
-#?(define-newtype sum() 'integer)
-=> SUM
-,:before (fmakunbound 'sum)
-
-#?(definstance(monoid sum)
-    ((mempty()`(sum 0))
-     (mappend(a b)
-       `(sum (+ ,a ,b)))))
-=> MONOID
-
 #?(mappend (sum 2)(sum 9))
 => 11
 
@@ -60,16 +39,6 @@
 => 6
 
 ;;; ANY
-
-#?(define-newtype any() 'boolean)
-=> ANY
-,:before (fmakunbound 'any)
-
-#?(definstance(monoid any)
-    ((mempty()`(any nil))
-     (mappend(a b)
-       `(or ,a ,b))))
-=> MONOID
 
 #?(mappend (any t)(any nil))
 => T
@@ -86,16 +55,6 @@
 ,:lazy t
 
 ;;; ALL
-
-#?(define-newtype all() 'boolean)
-=> ALL
-,:before (fmakunbound 'all)
-
-#?(definstance(monoid all)
-    ((mempty()`(all t))
-     (mappend(a b)
-       `(and ,a ,b))))
-=> MONOID
 
 #?(mappend (mempty)(all t))
 => T
@@ -115,19 +74,6 @@
 => NIL
 
 ;;; ORDERING
-#?(defdata ordering()
-	   :lt :eq :gt)
-=> ORDERING
-
-#?(definstance(monoid ordering)
-    ((mempty():eq)
-     (mappend(a b)
-       `(trivia:ematch*(,a ,b)
-	  ((:lt _):lt)
-	  ((:eq y)y)
-	  ((:gt _):gt)))))
-=> MONOID
-
 #?(mappend :lt :gt)
 => :LT
 
@@ -140,22 +86,6 @@
 ,:around (let(vs-haskell::*expand-verbose*)
 	   (call-body))
 ,:lazy t
-
-#?(definstance(compare string)
-    ((lt(a b)
-       `(string< ,a ,b))
-     (lte(a b)
-       `(string<= ,a ,b))
-     (gt(a b)
-       `(string> ,a ,b))
-     (gte(a b)
-       `(string>= ,a ,b))
-     (compare(a b)
-       `(cond
-	  ((string= ,a ,b):eq)
-	  ((string< ,a ,b):lt)
-	  (t :gt)))))
-=> COMPARE
 
 #?(defun length-compare(x y)
     (mappend (compare (length x)(length y))
@@ -182,16 +112,6 @@
 #?(length-compare2 "zen" "ann") => :GT
 
 ;;; MAYBE
-#?(definstance(monoid maybe)
-    ((mempty()nothing)
-     (mappend(a b)
-       (trivia:ematch*(a b)
-	 ((nothing m)m)
-	 ((m nothing)m)
-	 (((just m1)(just m2))
-	  `(just(mappend ,m1 ,m2)))))))
-=> MONOID
-
 #?(mappend nothing (just "andy"))
 => (JUST "andy")
 ,:test equal
@@ -203,19 +123,6 @@
 #?(mappend (just (sum 3))(just (sum 4)))
 => (JUST 7)
 ,:test equal
-
-#?(define-newtype 1st(&optional a)
-    `(maybe ,a))
-=> 1ST
-,:before (fmakunbound '1st)
-
-#?(definstance(monoid 1st)
-    ((mempty()'(1st nothing))
-     (mappend(a b)
-       `(trivia:ematch*(,a ,b)
-	  (((just x)_)(1st(just x)))
-	  ((nothing x)x)))))
-=> MONOID
 
 #?(mappend (1st(just #\a))(1st(just #\b))) => (just #\a)
 ,:test equal

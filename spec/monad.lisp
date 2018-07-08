@@ -29,6 +29,22 @@
        'nothing)))
 => MONAD
 
+#?(definstance(monad list)
+    ((.return(x)`(list ,x))
+     (>>=(xs f)
+       `(mapcan ,f ,xs))
+     (fail(x)
+       (declare(ignore x))
+       NIL)))
+=> MONAD
+
+#?(definstance(monad io)
+    ((.return(x)
+       `(constantly ,x))
+     (>>=(io fun)
+       `(funcall ,fun (funcall ,io)))))
+=> MONAD
+
 #?(>>= (just 9)(lambda(x)(.return (* x 10))))
 => (just 90)
 ,:test equal
@@ -292,15 +308,6 @@
 ,:lazy t
 
 ;;; LIST MONAD
-#?(definstance(monad list)
-    ((.return(x)`(list ,x))
-     (>>=(xs f)
-       `(mapcan ,f ,xs))
-     (fail(x)
-       (declare(ignore x))
-       NIL)))
-=> MONAD
-
 #?(>>= '(3 4 5)
        (lambda(x)
 	 (list x (- x))))
@@ -490,13 +497,6 @@
 ,:around(let(vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
-
-#?(definstance(monad io)
-    ((.return(x)
-       `(constantly ,x))
-     (>>=(io fun)
-       `(funcall ,fun (funcall ,io)))))
-=> MONAD
 
 #?(>>= (put-string-line "Wah!")
        (lambda(x)(.return x)))

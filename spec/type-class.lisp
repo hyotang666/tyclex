@@ -54,6 +54,13 @@
 	 ((yellow yellow)T)))))
 => EQ
 
+#?(definstance(eq (maybe *))
+    ((==(a b)
+       (trivia:match*(a b)
+	 ((nothing nothing)T)
+	 (((just x)(just y))`(== ,x ,y))))))
+=> EQ
+
 #?(== red red) => T
 #?(== green green) => T
 #?(== yellow yellow) => T
@@ -64,13 +71,6 @@
 
 #?(== red 'not-traffic-light) :signals error
 ,:lazy t
-
-#?(definstance(eq (maybe *))
-    ((==(a b)
-       (trivia:match*(a b)
-	 ((nothing nothing)T)
-	 (((just x)(just y))`(== ,x ,y))))))
-=> EQ
 
 #?(== nothing nothing) => T
 #?(== (just red)(just red)) => T
@@ -167,6 +167,22 @@
 	    ((= a b):eq)
 	    ((< a b):lt)
 	    (t :gt))))))
+=> COMPARE
+
+#?(definstance(compare string)
+    ((lt(a b)
+       `(string< ,a ,b))
+     (lte(a b)
+       `(string<= ,a ,b))
+     (gt(a b)
+       `(string> ,a ,b))
+     (gte(a b)
+       `(string>= ,a ,b))
+     (compare(a b)
+       `(cond
+	  ((string= ,a ,b):eq)
+	  ((string< ,a ,b):lt)
+	  (t :gt)))))
 => COMPARE
 
 #?(compare true false) => :GT
@@ -269,16 +285,55 @@
 	 (nothing nothing)))))
 => FUNCTOR
 
-#?(fmap #'1+ nothing) => NOTHING
-#?(fmap #'1+ (just 0)) :be-the (maybe (eql 1))
-#?(fmap #'identity (just 0)) :equivalents (identity (just 0))
-,:test equal
-
 #?(definstance(functor io)
     ((fmap(f a)
        `(action result <- ,a
 		(vs-haskell::.return (funcall ,f result))))))
 => FUNCTOR
+
+#?(definstance(functor function)
+    ((fmap(f g)
+       `(alexandria:compose ,f ,g))))
+=> FUNCTOR
+
+#?(definstance(functor list)
+    ((fmap(f l)
+       `(mapcar ,f ,l))))
+=> FUNCTOR
+
+#?(defdata counter-maybe(a)
+    counter-nothing
+    (counter-just fixnum a))
+=> COUNTER-MAYBE
+,:before (fmakunbound 'counter-just)
+,:lazy t
+
+#?(definstance(functor counter-maybe)
+    ((fmap(f cm)
+       (trivia:ematch cm
+	 (counter-nothing counter-nothing)
+	 ((counter-just counter x)`(counter-just (1+ ,counter)(funcall ,f ,x)))))))
+=> FUNCTOR
+
+#?(fmap #'1+ #'1+)
+:satisfies #`(& (functionp $result)
+		(eql 3 (funcall $result 1)))
+,:around(let((vs-haskell::*subtype-verbose* nil))
+	  (call-body))
+,:lazy t
+
+#?(fmap #'1+ nothing) => NOTHING
+,:around(let(ehcl::*subtype-verbose*)(call-body))
+,:lazy t
+
+#?(fmap #'1+ (just 0)) :be-the (maybe (eql 1))
+,:around(let(ehcl::*subtype-verbose*)(call-body))
+,:lazy t
+
+#?(fmap #'identity (just 0)) :equivalents (identity (just 0))
+,:test equal
+,:around(let(ehcl::*subtype-verbose*)(call-body))
+,:lazy t
 
 #?(fmap #'reverse (get-line))
 :satisfies #`(with-input-from-string(*standard-input* "hoge")
@@ -287,23 +342,8 @@
 		  (equal "egoh" (funcall $result))))
 ,:around(let(vs-haskell::*subtype-verbose* vs-haskell::*expand-verbose*)
 	  (call-body))
-:lazy t
-
-#?(definstance(functor function)
-    ((fmap(f g)
-       `(alexandria:compose ,f ,g))))
-=> FUNCTOR
-#?(fmap #'1+ #'1+)
-:satisfies #`(& (functionp $result)
-		(eql 3 (funcall $result 1)))
-,:around(let((vs-haskell::*subtype-verbose* nil))
-	  (call-body))
 ,:lazy t
 
-#?(definstance(functor list)
-    ((fmap(f l)
-       `(mapcar ,f ,l))))
-=> functor
 #?(fmap #'1+ '(1 2 3)) => (2 3 4)
 ,:test equal
 ,:around(let((vs-haskell::*subtype-verbose* nil))
@@ -322,20 +362,6 @@
 ,:around(let((vs-haskell::*subtype-verbose* nil))
 	  (call-body))
 ,:lazy t
-
-#?(defdata counter-maybe(a)
-    counter-nothing
-    (counter-just fixnum a))
-=> COUNTER-MAYBE
-,:before (fmakunbound 'counter-just)
-,:lazy t
-
-#?(definstance(functor counter-maybe)
-    ((fmap(f cm)
-       (trivia:ematch cm
-	 (counter-nothing counter-nothing)
-	 ((counter-just counter x)`(counter-just (1+ ,counter)(funcall ,f ,x)))))))
-=> FUNCTOR
 
 #?(fmap #'1+ (counter-just 0 1))
 :satisfies #`(not (equal $result (counter-just 0 1)))
@@ -373,6 +399,32 @@
        `(just ,x))))
 => APPLICATIVE
 
+#?(definstance(applicative list)
+    ((<*>(functor arg)
+       `(incf-cl:lc (funcall f x)
+		    (incf-cl:<- f ,functor)
+		    (incf-cl:<- x ,arg)))
+     (pure(x)
+       `(list ,x))))
+=> APPLICATIVE
+
+#?(definstance(applicative io)
+    ((<*>(functor arg)
+       `(action f <- ,functor
+		x <- ,arg
+		(vs-haskell::.return (funcall f x))))
+     (pure(x)
+       `(vs-haskell::.return ,x))))
+=> APPLICATIVE
+
+#?(definstance(applicative function)
+    ((pure(x)
+       `(constantly ,x))
+     (<*>(f g)
+       `(lambda(x)
+	  (funcall (funcall ,f x) (funcall ,g x))))))
+=> APPLICATIVE
+
 #?(<*> (just (curried-function::section + 3 _)) (just 9))
 :satisfies #`(equal $result (just 12))
 ,:around(let((vs-haskell::*subtype-verbose* nil))
@@ -390,8 +442,11 @@
 ,:around(let((vs-haskell::*subtype-verbose* nil))
 	  (call-body))
 ,:lazy t
+
 #?(<*> nothing (just "woot"))
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)(call-body))
+,:lazy t
 
 #?(<*> (pure (curried-function::section + 3 _)) (just 9))
 :satisfies #`(equal $result (just 12))
@@ -471,15 +526,6 @@
 ,:lazy t
 
 ;;; LIST
-#?(definstance(applicative list)
-    ((<*>(functor arg)
-       `(incf-cl:lc (funcall f x)
-		    (incf-cl:<- f ,functor)
-		    (incf-cl:<- x ,arg)))
-     (pure(x)
-       `(list ,x))))
-=> APPLICATIVE
-
 #?(<*> (list (curried-function::section * 0 _)
 	     (curried-function::section + 100 _)
 	     (curried-function::section expt _ 2))
@@ -519,15 +565,6 @@
 ,:lazy t
 
 ;;; IO
-#?(definstance(applicative io)
-    ((<*>(functor arg)
-       `(action f <- ,functor
-		x <- ,arg
-		(vs-haskell::.return (funcall f x))))
-     (pure(x)
-       `(vs-haskell::.return ,x))))
-=> APPLICATIVE
-
 #?(<$> (curried-function::section concatenate 'string _ _)
        (get-line)
        (get-line))
@@ -556,14 +593,6 @@
 ,:lazy t
 
 ;;; FUNCTION
-#?(definstance(applicative function)
-    ((pure(x)
-       `(constantly ,x))
-     (<*>(f g)
-       `(lambda(x)
-	  (funcall (funcall ,f x) (funcall ,g x))))))
-=> APPLICATIVE
-
 #?(funcall (<$> (curried-function::section + _ _)
 		(curried-function::section + _ 3)
 		(curried-function::section * _ 100))
@@ -741,15 +770,92 @@
        `(append ,a ,b))))
 => MONOID
 
-#?(mappend '(1 2 3)'(4 5 6))
-=> (1 2 3 4 5 6)
-,:test equal
-
 #?(definstance(monoid string)
     ((mempty()"")
      (mappend(a b)
        `(concatenate 'string ,a ,b))))
 => MONOID
+
+#?(define-newtype product()
+     'integer)
+=> PRODUCT
+,:before (fmakunbound 'product)
+
+#?(definstance(monoid product)
+    ((mempty()`(product 1))
+     (mappend(a b)
+       `(product (* ,a ,b)))))
+=> MONOID
+
+#?(define-newtype sum() 'integer)
+=> SUM
+,:before (fmakunbound 'sum)
+
+#?(definstance(monoid sum)
+    ((mempty()`(sum 0))
+     (mappend(a b)
+       `(sum (+ ,a ,b)))))
+=> MONOID
+
+#?(define-newtype any() 'boolean)
+=> ANY
+,:before (fmakunbound 'any)
+
+#?(definstance(monoid any)
+    ((mempty()`(any nil))
+     (mappend(a b)
+       `(or ,a ,b))))
+=> MONOID
+
+#?(define-newtype all() 'boolean)
+=> ALL
+,:before (fmakunbound 'all)
+
+#?(definstance(monoid all)
+    ((mempty()`(all t))
+     (mappend(a b)
+       `(and ,a ,b))))
+=> MONOID
+
+#?(defdata ordering()
+	   :lt :eq :gt)
+=> ORDERING
+
+#?(definstance(monoid ordering)
+    ((mempty():eq)
+     (mappend(a b)
+       `(trivia:ematch*(,a ,b)
+	  ((:lt _):lt)
+	  ((:eq y)y)
+	  ((:gt _):gt)))))
+=> MONOID
+
+#?(definstance(monoid maybe)
+    ((mempty()nothing)
+     (mappend(a b)
+       (trivia:ematch*(a b)
+	 ((nothing m)m)
+	 ((m nothing)m)
+	 (((just m1)(just m2))
+	  `(just(mappend ,m1 ,m2)))))))
+=> MONOID
+
+#?(define-newtype 1st(&optional a)
+    `(maybe ,a))
+=> 1ST
+,:before (fmakunbound '1st)
+
+#?(definstance(monoid 1st)
+    ((mempty()'(1st nothing))
+     (mappend(a b)
+       `(trivia:ematch*(,a ,b)
+	  (((just x)_)(1st(just x)))
+	  ((nothing x)x)))))
+=> MONOID
+
+#?(mappend '(1 2 3)'(4 5 6))
+=> (1 2 3 4 5 6)
+,:test equal
 
 #?(mappend "one" (mappend "two" "three"))
 => "onetwothree"
