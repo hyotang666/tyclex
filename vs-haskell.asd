@@ -32,7 +32,7 @@
    (:file "adt" :depends-on ("readtables" "util" "unify"))
    ;;
    (:file "action" :depends-on ("adt"))
-   (:file "type-class" :depends-on ("adt"))
+   (:file "type-class" :depends-on ("adt" "curry"))
    )
   )
 

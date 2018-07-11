@@ -220,6 +220,11 @@
 	  (constantp (cadr var))
 	  (eq 'io-action (introspect-environment:constant-form-value (cadr var))))
      '(io *))
+    ((and (listp var) ; (make-instance 'curry ...) call
+	  (eq 'make-instance (car var))
+	  (constantp (cadr var))
+	  (eq 'curry (introspect-environment:constant-form-value(cadr var))))
+     (canonicalize-return-type (introspect-environment:constant-form-value (getf var :return-type))))
     ((and (listp var)
 	  (symbolp (car var)))
      (compute-standard-form-return-type var env))
@@ -502,14 +507,6 @@
 ;;;; ADD-INSTANCE
 (defun add-instance(interface signature definition type)
   (push(list signature definition type)(instance-table interface)))
-
-;;;; FUNCTION-TYPE
-(defmacro function-type (name args return)
-  `(PROGN (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
-	  ',name))
-
-(defun function-type-of(name)
-  (get name 'ftype))
 
 #|
 (defdata maybe (a)

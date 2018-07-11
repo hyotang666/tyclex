@@ -31,7 +31,8 @@
     (if gensyms
       (<Curry-Form> (<Section-Body-Form> op args gensyms) optional-lambda-list
 		    (and (symbolp op)
-			 (third(introspect-environment:function-type op))))
+			 (or (third(function-type-of op))
+			     (third(introspect-environment:function-type op)))))
       `(,op ,@args))))
 
 (defun gensyms(num)
@@ -89,4 +90,12 @@
 		  (car body)))
 	    )
       (ENTRY-POINT optional-lambda-list))))
+
+;;;; FUNCTION-TYPE
+(defmacro function-type (name args return)
+  `(PROGN (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
+	  ',name))
+
+(defun function-type-of(name)
+  (get name 'ftype))
 
