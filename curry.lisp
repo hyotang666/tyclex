@@ -1,9 +1,4 @@
-(defpackage :ehcl.curry
-  (:use :cl)
-  (:export
-    #:curry
-    ))
-(in-package :ehcl.curry)
+(in-package :vs-haskell)
 
 ;;;; CURRY data structure.
 (defclass curry ()
