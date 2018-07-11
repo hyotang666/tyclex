@@ -447,7 +447,9 @@
 	       (both-type-specifier t1 'function))
 	      ((SATISFIES TYPE-UNIFY:VARIABLEP)
 	       t2)
-	      (T (error "nyi ~S ~S" t1 t2))))
+	      (T (substitute-pattern t2
+				     (type-unify:unify (canonicalize-return-type t1)
+						       (canonicalize-return-type t2))))))
 	  )
     (entry-point t1 t2)))
 
