@@ -300,7 +300,23 @@
      (error 'unexpected-quote :datum form :name 'special-operator-return-type))
     ((macrolet symbol-macrolet)
      (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)env))
-    ((go throw catch return-from block) t) ; give up.
+    ((go throw catch) t) ; give up.
+    ((return-from)(compute-return-type (third form)))
+    ((block)
+     (let((return-types(delete-if (lambda(x)
+				    (member x '(t nil null)))
+				  (uiop:while-collecting(acc)
+				    (acc(ehcl::compute-return-type(car(last form))env))
+				    (trestrul:traverse
+				      (lambda(node)
+					(when(typep node `(CONS (EQL RETURN-FROM)(CONS (EQL,(second form)) T)))
+					  (acc (ehcl::compute-return-type(third node)env))))
+				      form)))))
+       (if return-types
+	 (if(cdr return-types)
+	   (reduce #'great-common-type return-types)
+	   (car return-types))
+	 T))) ; give up.
     (otherwise (error 'unknown-special-operator :datum form :name 'special-operator-return-type))))
 
 (defun great-common-type(t1 t2)
