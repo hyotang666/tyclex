@@ -26,6 +26,7 @@
    (:file "readtables" :depends-on ("package"))
    (:file "haskell" :depends-on ("package"))
    (:file "newtype" :depends-on ("package"))
+   (:file "curry" :depends-on ("package"))
    ;;
    (:file "unify" :depends-on ("package" "newtype"))
    (:file "adt" :depends-on ("readtables" "util" "unify"))
