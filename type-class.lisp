@@ -325,11 +325,11 @@
 	      t1
 	      (different-symbol-type-specifier t1 t2)))
 	  (different-symbol-type-specifier(t1 t2)
-	    (if(c2mop:subclassp t1 t2)
+	    (if(c2mop:subclassp (class-of t1) (class-of t2))
 	      t2
 	      (t1-is-not-subclass-of-t2 t1 t2)))
 	  (t1-is-not-subclass-of-t2(t1 t2)
-	    (if(c2mop:subclassp t2 t1)
+	    (if(c2mop:subclassp (class-of t2)(class-of t1))
 	      t1
 	      (both-are-not-subclass-each-other t1 t2)))
 	  (both-are-not-subclass-each-other(t1 t2)
