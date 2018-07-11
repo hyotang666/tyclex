@@ -78,7 +78,7 @@
        (unless(keywordp constructor)
 	 `((ALEXANDRIA:DEFINE-CONSTANT ,constructor ',constructor))))
       ((or args (list-constructor-p constructor))
-       (let((lambda-list(Gensyms(cdr constructor))))
+       (let((lambda-list(Gensyms(length(cdr constructor)))))
 	 `(,@(if args
 	       `((DECLAIM(FTYPE (FUNCTION ,(arg-types args (cdr constructor))
 					  ,(constructor-return-type name))

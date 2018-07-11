@@ -1,5 +1,4 @@
 (in-package :vs-haskell)
-
 ;;;; CURRY data structure.
 (defclass curry ()
   ((function :initarg :function :reader curried-function)
@@ -34,9 +33,6 @@
 			 (or (third(function-type-of op))
 			     (third(introspect-environment:function-type op)))))
       `(,op ,@args))))
-
-(defun gensyms(num)
-  (loop :repeat num :collect (gensym)))
 
 (defun underscorep (thing)
   (and (symbolp thing)

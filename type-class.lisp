@@ -62,7 +62,7 @@
 	 (<type-class-relation-setter> name super-classes))
      ,@(loop
 	 :for (method lambda-list return-type) :in methods
-	 :for gensyms = (Gensyms lambda-list)
+	 :for gensyms = (Gensyms (length lambda-list))
 	 :do (setf ; as canonicalise
 	       lambda-list (patternize lambda-list)
 	       return-type (patternize return-type))
