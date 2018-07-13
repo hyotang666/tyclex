@@ -124,6 +124,11 @@
 	(call-next-method))
       (call-next-method))))
 
+(defunify((a (eql t))(b symbol))
+  (if(type-unify:variablep b)
+    (type-unify:extend-environment a t env)
+    env))
+
 (defun ensure-value(ftype-spec)
   (trestrul:asubst-if #'second
 		      (lambda(elt)
