@@ -7,6 +7,7 @@
 
 (defpackage #:vs-haskell
   (:use #:cl)
+  (:nicknames "EHCL")
   (:shadow #:list)
   (:export #:list)
   (:export
