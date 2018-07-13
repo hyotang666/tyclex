@@ -46,6 +46,8 @@
 
 #?(vs-haskell::function-type land-right (fixnum pole)(maybe *))
 => LAND-RIGHT
+#?(vs-haskell::function-type land-left (fixnum pole)(maybe *))
+=> LAND-LEFT
 
 #?(land-left 2 '(0 . 0))
 => (JUST (2 . 0))
@@ -58,14 +60,18 @@
        (curried-function:section land-left 2 _))
 => (JUST (2 . 1))
 ,:test equal
+,:around(let(ehcl::*subtype-verbose*)(call-body))
+,:lazy t
 
 #?(>>= nothing (curried-function:section land-left 2 _))
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)(call-body))
+,:lazy t
 
 #?(>>= (>>= (>>= (.return '(0 . 0))
-		 (curried-function:section land-right 2 _))
-	    (curried-function:section land-left 2 _))
-       (curried-function:section land-right 2 _))
+		 (ehcl::curry land-right 2 _))
+	    (ehcl::curry land-left 2 _))
+       (ehcl::curry land-right 2 _))
 => (JUST (2 . 4))
 ,:test equal
 ,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
@@ -83,22 +89,22 @@
 ,:before (fmakunbound '>>=*)
 
 #?(>>=* (.return '(0 . 0))
-	(curried-function:section land-right 2 _)
-	(curried-function:section land-left 2 _)
-	(curried-function:section land-right 2 _))
+	(ehcl::curry land-right 2 _)
+	(ehcl::curry land-left 2 _)
+	(ehcl::curry land-right 2 _))
 => (JUST (2 . 4))
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
 #?(>>=* (.return '(0 . 0))
-	(curried-function:section land-left 1 _)
-	(curried-function:section land-right 4 _)
-	(curried-function:section land-left -1 _)
-	(curried-function:section land-right -2 _))
+	(ehcl::curry land-left 1 _)
+	(ehcl::curry land-right 4 _)
+	(ehcl::curry land-left -1 _)
+	(ehcl::curry land-right -2 _))
 => NOTHING
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -106,28 +112,39 @@
 :be-the function
 
 #?(>>=* (.return '(0 . 0))
-	(curried-function:section land-left 1 _)
+	(ehcl::curry land-left 1 _)
 	#'banana
-	(curried-function:section land-right 1 _))
+	(ehcl::curry land-right 1 _))
 => NOTHING
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
 #?(>> nothing (just 3))
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
 #?(>> (just 3)(just 4))
 => (JUST 4)
 ,:test equal
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
 #?(>> (just 3) nothing)
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= (>> (>>= (.return '(0 . 0))
-		(curried-function:section land-left 1 _))
+		(ehcl::curry land-left 1 _))
 	   nothing)
-       (curried-function:section land-right 1 _))
+       (ehcl::curry land-right 1 _))
 => NOTHING
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -145,19 +162,22 @@
 ,:before (fmakunbound 'with-monad)
 
 #?(with-monad (.return '(0 . 0))
-	      >>= (curried-function:section land-left 1 _)
+	      >>= (ehcl::curry land-left 1 _)
 	      >> nothing
-	      >>= (curried-function:section land-right 1 _))
+	      >>= (ehcl::curry land-right 1 _))
 :expanded-to (>>= (>> (>>= (.return '(0 . 0))
-			   (curried-function:section land-left 1 _))
+			   (ehcl::curry land-left 1 _))
 		      nothing)
-		  (curried-function:section land-right 1 _))
+		  (ehcl::curry land-right 1 _))
 
 ;;; DO
 #?(>>= (just 3)(lambda(x)
 		 (just (format nil "~S!" x))))
 => (JUST "3!")
 ,:test equal
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= (just 3)
        (lambda(x)
@@ -166,6 +186,9 @@
 		(just (format nil "~A~A" x y))))))
 => (JUST "3!")
 ,:test equal
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= nothing
        (lambda(x)
@@ -173,6 +196,9 @@
 	      (lambda(y)
 		(just (format nil "~A~A" x y))))))
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= (just 3)
        (lambda(x)
@@ -180,6 +206,9 @@
 	      (lambda(y)
 		(just (format nil "~A~A" x y))))))
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= (just 3)
        (lambda(x)
@@ -189,6 +218,9 @@
 		(declare(ignore y))
 		nothing))))
 => NOTHING
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(defmacro domonad(&rest expression*)
     (labels((rec(list)
@@ -228,6 +260,9 @@
 	   (just (> x 8)))
 => (JUST T)
 ,:test equal
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(domonad start <- (.return '(0 . 0))
 	   first <- (land-left 2 start)
@@ -236,7 +271,7 @@
 => (JUST (3 . 2))
 ,:timeout 2
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose* vs-haskell::*return-type-verbose*)
+,:around(let(vs-haskell::*expand-verbose* vs-haskell::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -247,7 +282,7 @@
 	   (land-left 1 second))
 => NOTHING
 ,:timeout 10
-,:around(let(vs-haskell::*expand-verbose* vs-haskell::*return-type-verbose*)
+,:around(let(vs-haskell::*expand-verbose* vs-haskell::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -255,14 +290,14 @@
 	   (.return x))
 => (JUST #\h)
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
 #?(domonad (string x _) <- (just "")
 	   (.return x))
 => NOTHING
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -272,17 +307,23 @@
 	 (list x (- x))))
 => (3 -3 4 -4 5 -5)
 ,:test equal
-,:around(let(vs-haskell::*return-type-verbose*)
+,:around(let(vs-haskell::*return-type-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
 #?(>>= nil
        (constantly '("bad" "mad" "rad")))
 => NIL
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= '(1 2 3)
        (constantly nil))
 => NIL
+,:around(let(ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
 
 #?(>>= '(1 2)
        (lambda(n)
@@ -291,7 +332,7 @@
 		(.return (cons n c))))))
 => ((1 . #\a)(1 . #\b)(2 . #\a)(2 . #\b))
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)(call-body))
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)(call-body))
 ,:lazy t
 
 #?(domonad n <- '(1 2)
@@ -299,7 +340,7 @@
 	   (.return (cons n c)))
 => ((1 . #\a)(1 . #\b)(2 . #\a)(2 . #\b))
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)(call-body))
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)(call-body))
 ,:lazy t
 
 #?(defmacro lc (&rest expression*)
@@ -318,21 +359,10 @@
 #?(lc (cons n c) || n <- '(1 2) c <- '(#\a #\b))
 => ((1 . #\a)(1 . #\b)(2 . #\a)(2 . #\b))
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)(call-body))
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)(call-body))
 ,:lazy t
 
 ;;; MONAD+
-#?(define-type-class(monad+ m)(monad)
-    ((mzero()(m a))
-     (mplus((m a)(m a))(m a))))
-=> MONAD+
-,:before (mapc #'fmakunbound '(mzero mplus))
-
-#?(definstance(monad+ list)
-    ((mzero()nil)
-     (mplus(a b)`(append ,a ,b))))
-=> MONAD+
-
 #?(defmacro guard(bool)
     `(if ,bool
        (.return nil)
@@ -340,27 +370,31 @@
 => GUARD
 ,:before (fmakunbound 'guard)
 
-#?(>>= (loop :for i :upfrom 1 :to 50 :collect i)
+#?(>>= (the list(loop :for i :upfrom 1 :to 50 :collect i))
        (lambda(x)
 	 (>> (guard(find #\7(princ-to-string x)))
 	     (.return x))))
 => (7 17 27 37 47)
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)(call-body))
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose* ehcl::*return-type-verbose*)
+	  (call-body))
 ,:lazy t
 
-#?(domonad x <- (loop :for i :upfrom 1 :to 50 :collect i)
+#?(domonad x <- (the list(loop :for i :upfrom 1 :to 50 :collect i))
 	   (guard (find #\7 (princ-to-string x)))
 	   (.return x))
 => (7 17 27 37 47)
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)(call-body))
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose* ehcl::*return-type-verbose*)
+	  (call-body))
 ,:lazy t
 
-#?(lc x || x <- (loop :for i :upfrom 1 :to 50 :collect i)(find #\7 (princ-to-string x)))
+#?(lc x || x <- (the list(loop :for i :upfrom 1 :to 50 :collect i))
+      (find #\7 (princ-to-string x)))
 => (7 17 27 37 47)
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)(call-body))
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose* ehcl::*return-type-verbose*)
+	  (call-body))
 ,:lazy t
 
 ;;;; KNIGHT
@@ -383,8 +417,12 @@
 	       (.return (cons c% r%)))))
 => MOVE-KNIGHT
 ,:before (fmakunbound 'move-knight)
-,:around(let(vs-haskell::*expand-verbose* ehcl::*return-type-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*return-type-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
+,:lazy t
+
+#?(declaim(ftype(function(knight-pos)(list knight-pos))move-knight))
+=> implementation-dependent
 ,:lazy t
 
 #?(move-knight '(6 . 2))
@@ -401,7 +439,7 @@
 	     (move-knight second)))
 => IN3
 ,:before (fmakunbound 'in3)
-,:around(let(vs-haskell::*expand-verbose* ehcl::*return-type-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*return-type-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -416,13 +454,14 @@
 #?(reach-in3-p '(6 . 2)'(7 . 3))
 => NIL
 
+; TODO
 ;;;; 13.7
 #?(>>= (.return 3)
        (lambda(x)
 	 (just (+ 10000 x))))
 => (JUST 10003)
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -437,7 +476,7 @@
 	 (list x x x)))
 => ("WaM" "WaM" "WaM")
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose* ehcl::*return-type-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -445,7 +484,7 @@
        (lambda(x)(.return x)))
 => (JUST "move on up")
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 
@@ -453,7 +492,7 @@
        (lambda(x)(.return x)))
 => (1 2 3 4)
 ,:test equal
-,:around(let(vs-haskell::*expand-verbose*)
+,:around(let(vs-haskell::*expand-verbose* ehcl::*subtype-verbose*)
 	  (call-body))
 ,:lazy t
 

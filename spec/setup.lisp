@@ -392,3 +392,15 @@
        `(funcall ,fun (funcall ,io)))))
 => MONAD
 
+;;;; MONAD+
+#?(define-type-class(monad+ m)(monad)
+    ((mzero()(m a))
+     (mplus((m a)(m a))(m a))))
+=> MONAD+
+,:before (mapc #'fmakunbound '(mzero mplus))
+
+#?(definstance(monad+ list)
+    ((mzero()nil)
+     (mplus(a b)`(append ,a ,b))))
+=> MONAD+
+

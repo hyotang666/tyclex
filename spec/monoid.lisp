@@ -88,15 +88,19 @@
 ,:lazy t
 
 #?(defun length-compare(x y)
+    (declare(type string x y))
     (mappend (compare (length x)(length y))
 	     (compare x y)))
 => LENGTH-COMPARE
 ,:before(fmakunbound 'length-compare)
+,:around(let(ehcl::*expand-verbose*)(call-body))
+,:lazy t
 
 #?(length-compare "zen" "ants") => :LT
 #?(length-compare "zen" "ant") => :GT
 
 #?(defun length-compare2(x y)
+    (declare(type string x y))
     (flet((vowels(x)
 	    (count-if (curried-function:section find _ "aeiou")
 		      x)))
