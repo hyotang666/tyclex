@@ -39,3 +39,4 @@
 (deftype list(&optional a)
   (declare(ignore a))
   'cl:list)
+(declaim(ftype(function(&rest t)list)list))
