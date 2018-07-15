@@ -109,18 +109,10 @@
 			 (IF(MILLET:TYPE-SPECIFIER-P RETURN)
 			   `(MACROLET,MACROS (THE ,RETURN ,BODY))
 			   `(MACROLET,MACROS ,BODY))))
-		   (LET((DEFAULT(INSTANCE-DEFAULT(CAR WHOLE))))
+		   (PROGN
 		     (WHEN *EXPAND-VERBOSE*
 			   (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
-		     (IF DEFAULT
-			 (PROGN
-			   (WHEN *EXPAND-VERBOSE*
-				 (WARN "The default is used. ~S ~S"',method DEFAULT))
-			   `(MACROLET(,(CONS (SUB-NAME(CAR DEFAULT))
-					     (CDR DEFAULT)))
-			      ,(CONS (SUB-NAME(CAR WHOLE))
-				     (CDR WHOLE))))
-			 WHOLE)))))))))
+		     WHOLE))))))))
 
 (defun parse-whole(form &optional env)
   (let*((expanded(loop :for form :in (copy-list (cdr form))
