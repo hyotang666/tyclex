@@ -4,21 +4,34 @@
 
 ;;;; DEFDATA
 (defmacro defdata(name lambda-list &rest constructor*)
-  ;; trivial syntax check.
-  (check-type name symbol)
-  (assert(every #'symbolp lambda-list))
-  (dolist(constructor constructor*)
-    (assert(symbolp(alexandria:ensure-car constructor))))
-  ;; body
-  `(eval-when(:compile-toplevel :load-toplevel :execute)
-     ,(<deftype> name lambda-list constructor*)
-     (SETF(GET ',name 'ADT)T)
-     ,@(mapcan #`(% #'<constructors> name lambda-list)constructor*)
-     ,@(loop :for c :in constructor*
-	     :for o :upfrom 0
-	     :collect (<meta-info-setter> c o lambda-list name))
-     ,@(mapcan #'<pattern-matcher> constructor*)
-     ',name))
+  ;; binding
+  (multiple-value-bind(name options)(parse-name (uiop:ensure-list name))
+    ;; trivial syntax check.
+    (check-type name symbol)
+    (assert(every #'symbolp lambda-list))
+    (dolist(constructor constructor*)
+      (assert(symbolp(alexandria:ensure-car constructor))))
+    (dolist(option options)
+      (assert(listp option))
+      (assert(eq :deriving (car option)))
+      (assert(every #'find-type-class (cdr option))))
+    ;; body
+    `(eval-when(:compile-toplevel :load-toplevel :execute)
+       ,(<deftype> name lambda-list constructor*)
+       (SETF(GET ',name 'ADT)T)
+       ,@(mapcan #`(% #'<constructors> name lambda-list)constructor*)
+       ,@(loop :for c :in constructor*
+	       :for o :upfrom 0
+	       :collect (<meta-info-setter> c o lambda-list name))
+       ,@(mapcan #'<pattern-matcher> constructor*)
+       ,@(loop :for tc :in (cdr(assoc :deriving options))
+	       :append (<derivings> tc name))
+       ',name)))
+
+(defun parse-name(arg)
+  (if(symbolp arg)
+    (values arg nil)
+    (values (car arg)(cdr arg))))
 
 ;;; <deftype>
 (defun <deftype>(name lambda-list constructor*)
@@ -133,6 +146,26 @@
   (when(listp constructor)
     `((TRIVIA:DEFPATTERN,(constructor-name constructor)(&REST ARGS)
 	`(CL:LIST (EQ ',',(car constructor)) ,@ARGS)))))
+
+;;; <derivings>
+(defun <derivings> (type-class-name type)
+  (labels((rec(type-class-names &optional acc)
+	    (if(endp type-class-names)
+	      acc ; order is not issue.
+	      (body(car type-class-names)(cdr type-class-names) acc)))
+	  (body(type-class-name rest acc)
+	    (let*((type-class(find-type-class type-class-name))
+		  (instances(type-instances type-class))
+		  (direct-subclasses(type-direct-subclasses type-class)))
+	      (rec (append direct-subclasses rest)
+		   (loop :for instance :in instances
+			 :collect (or (instance-default instance)
+				      (error "Default instance is not found. ~S"instance))
+			 :into result
+			 :finally (return (cons `(definstance(,type-class-name ,type)
+						   ,result)
+						acc)))))))
+    (rec(list type-class-name))))
 
 ;;;; ADT data structure
 (defstruct(adt (:copier nil)(:predicate nil))
