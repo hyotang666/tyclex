@@ -508,7 +508,12 @@
 
 ;;;; COMPUTE-APPLICABLE-INSTANCE
 (defun compute-applicable-instance(list)
-  (cdar(sort-instance list)))
+  (if(null(cdr list))
+    (cdar list) ; only one element, does not need to sort.
+    (let((sorted(sort-instance list)))
+      (if(find(caar sorted)(cdr sorted):key #'car :test #'equal)
+	nil ; duplicate signature, give up.
+	(cdar list)))))
 
 (defun sort-instance(list)
   (flet((type<(ts1 ts2)
