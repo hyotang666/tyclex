@@ -52,3 +52,9 @@
     (symbol-call :jingoh.org :delete-subject
                  (find-symbol "SUBTYPE?" "VS-HASKELL.SPEC")
                  (symbol-call :jingoh.org :find-org :vs-haskell))))
+(defmethod perform :before
+  ((o compile-op)(c (eql (find-component :vs-haskell.test "setup"))))
+  (when(operation-done-p o c)
+    (symbol-call :jingoh.org :delete-subject
+                 (find-symbol "SETUP" "VS-HASKELL.SPEC")
+                 (symbol-call :jingoh.org :find-org :vs-haskell))))

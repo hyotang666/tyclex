@@ -454,7 +454,6 @@
 #?(reach-in3-p '(6 . 2)'(7 . 3))
 => NIL
 
-; TODO
 ;;;; 13.7
 #?(>>= (.return 3)
        (lambda(x)
@@ -503,3 +502,10 @@
 ,:around(let(vs-haskell::*expand-verbose*)
 	  (call-body))
 ,:lazy t
+
+;;;; 8.3
+#|
+#?(domonad (put-string-line "Hello, what's your name?")
+	   name <- (get-line)
+	   (put-string-line (uiop:strcat "Hey " name ", you rock!")))
+|#

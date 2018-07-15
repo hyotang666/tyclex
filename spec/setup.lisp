@@ -3,15 +3,125 @@
 
 (requirements-about SETUP)
 
+;;;; TYPE-CLASSES
+#?(define-type-class(eq a)()
+    ((==(a a) boolean)
+     (/==(a a) boolean))
+    (:default == (x y)
+      `(not (/== ,x ,y)))
+    (:default /== (x y)
+      `(not (== ,x ,y))))
+=> EQ
+,:before (mapc #'fmakunbound '(== /==))
+
+#?(define-type-class(yes-no a)()
+    ((yes-no(a)boolean)))
+=> YES-NO
+,:before (mapc #'fmakunbound '(yes-no))
+
+#?(define-type-class(ord a)()
+    ((ord(a)integer))
+    (:default ord(x)
+      `(data-order ,x)))
+=> ORD
+,:before (mapc #'fmakunbound '(ord))
+
+#?(define-type-class(compare a)(ord)
+    ((compare(a a)(member :eq :lt :gt))
+     (lt(a a)boolean)
+     (gt(a a)boolean)
+     (lte(a a)boolean)
+     (gte(a a)boolean))
+    (:default compare (x y)
+      `(compare (ord ,x)(ord ,y)))
+    (:default lt (x y)
+      `(< (ord ,x)(ord ,y)))
+    (:default gt (x y)
+      `(> (ord ,x)(ord ,y)))
+    (:default lte (x y)
+      `(<= (ord ,x)(ord ,y)))
+    (:default gte (x y)
+      `(>= (ord ,x)(ord ,y))))
+=> COMPARE
+,:before (mapc #'fmakunbound '(compare lt gt lte gte))
+
+#?(define-type-class(bounded a)()
+    ((min-bound(a)T)
+     (max-bound(a)T))
+    (:default min-bound(x)
+      `(cadr(introspect-environment:typexpand-1 ,x)))
+    (:default max-bound(x)
+      `(car(last(introspect-environment:typexpand-1 ,x)))))
+=> BOUNDED
+,:before (mapc #'fmakunbound '(min-bound max-bound))
+
+#?(define-type-class(enum a)()
+    ((succ(a)a)
+     (pred(a)a))
+    (:default succ (x)
+      `(let((x ,x))
+	 (cadr (nth (1+(data-order x))
+		    (cdr(introspect-environment:typexpand-1(data-type-of x)))))))
+    (:default pred (x)
+      `(let((x ,x))
+	 (cadr (nth (1-(data-order x))
+		    (cdr(introspect-environment:typexpand-1(data-type-of x))))))))
+=> ENUM
+,:before (mapc #'fmakunbound '(succ pred))
+
+#?(define-type-class(functor f)()
+    ((fmap((function(a)b)(f a))(f b))))
+=> FUNCTOR
+,:before (mapc #'fmakunbound '(fmap))
+
+#?(define-type-class(applicative f)(functor)
+    ((pure(a)(f a))
+     (<*>((f(function(a)b))(f a))(f b))))
+=> APPLICATIVE
+,:before (mapc #'fmakunbound '(pure <*>))
+
+#?(define-type-class(monoid m)()
+    ((mempty()m)
+     (mappend(m m)m)
+     (mconcat((list m))m))
+    (:default mconcat(ms)
+      `(reduce (lambda(a m)(mappend a m))
+	       ,ms
+	       :from-end t
+	       :initial-value (mempty))))
+=> MONOID
+,:before (mapc #'fmakunbound '(mempty mappend mconcat))
+
+#?(define-type-class(monad m)()
+    ((.return(a)(m a))
+     (>>=((m a)(function(a)(m b)))(m b))
+     (>>((m a)(m b))(m b))
+     (fail(string)(m a)))
+    (:default >> (x y)
+      `(>>= ,x (lambda(#0=#:arg)
+		 (declare(ignore #0#))
+		 ,y)))
+    (:default fail(msg)
+      `(error ,msg)))
+=> MONAD
+,:before (mapc #'fmakunbound '(.return >>= >> fail))
+
+#?(define-type-class(monad+ m)(monad)
+    ((mzero()(m a))
+     (mplus((m a)(m a))(m a))))
+=> MONAD+
+,:before (mapc #'fmakunbound '(mzero mplus))
+
 ;;;; DATA
 #?(defdata traffic-light()
      red yellow green)
 => TRAFFIC-LIGHT
 
-#?(defdata bool () false true)
+#?(defdata(bool (:deriving ord))()
+    false true)
 => BOOL
 
-#?(defdata week ()
+#?(defdata(week (:deriving ord bounded enum)) ()
     monday tuesday wednesday thursday friday saturday sunday)
 => WEEK
 
@@ -49,17 +159,7 @@
 => 1ST
 ,:before (fmakunbound '1st)
 
-;;;; type-class EQ
-#?(define-type-class(eq a)()
-    ((==(a a) boolean)
-     (/==(a a) boolean))
-    (:default == (x y)
-      `(not (/== ,x ,y)))
-    (:default /== (x y)
-      `(not (== ,x ,y))))
-=> EQ
-,:before (mapc #'fmakunbound '(== /==))
-
+;;;; Instances of EQ
 #?(definstance(eq traffic-light)
     ((==(a b)
        (trivia:match*(a b)
@@ -75,12 +175,7 @@
 	 (((just x)(just y))`(== ,x ,y))))))
 => EQ
 
-;;;; type-class YES-NO
-#?(define-type-class(yes-no a)()
-    ((yes-no(a)boolean)))
-=> YES-NO
-,:before (mapc #'fmakunbound '(yes-no))
-
+;;;; instances of YES-NO
 #?(definstance(yes-no fixnum)
     ((yes-no(a)
        `(not(zerop ,a)))))
@@ -106,14 +201,7 @@
        `(not(eq red ,a)))))
 => YES-NO
 
-;;;; type-class ORD
-#?(define-type-class(ord a)()
-    ((ord(a)integer))
-    (:default ord(x)
-      `(data-order ,x)))
-=> ORD
-,:before (mapc #'fmakunbound '(ord))
-
+;;;; instances of ORD
 #?(definstance(ord number)
      ((ord(a)
 	a)))
@@ -124,26 +212,7 @@
        `(char-code ,a))))
 => ORD
 
-;;;; type-class COMPARE
-#?(define-type-class(compare a)(ord)
-    ((compare(a a)(member :eq :lt :gt))
-     (lt(a a)boolean)
-     (gt(a a)boolean)
-     (lte(a a)boolean)
-     (gte(a a)boolean))
-    (:default compare (x y)
-      `(compare (ord ,x)(ord ,y)))
-    (:default lt (x y)
-      `(< (ord ,x)(ord ,y)))
-    (:default gt (x y)
-      `(> (ord ,x)(ord ,y)))
-    (:default lte (x y)
-      `(<= (ord ,x)(ord ,y)))
-    (:default gte (x y)
-      `(>= (ord ,x)(ord ,y))))
-=> COMPARE
-,:before (mapc #'fmakunbound '(compare lt gt lte gte))
-
+;;;; instance of COMPARE
 #?(definstance(compare number)
     ((compare(a b)
        `(let((a ,a)
@@ -170,38 +239,7 @@
 	  (t :gt)))))
 => COMPARE
 
-;;;; type-class BOUNDED
-#?(define-type-class(bounded a)()
-    ((min-bound(a)T)
-     (max-bound(a)T))
-    (:default min-bound(x)
-      `(cadr(introspect-environment:typexpand-1 ,x)))
-    (:default max-bound(x)
-      `(car(last(introspect-environment:typexpand-1 ,x)))))
-=> BOUNDED
-,:before (mapc #'fmakunbound '(min-bound max-bound))
-
-;;;; type-class ENUM
-#?(define-type-class(enum a)()
-    ((succ(a)a)
-     (pred(a)a))
-    (:default succ (x)
-      `(let((x ,x))
-	 (cadr (nth (1+(data-order x))
-		    (cdr(introspect-environment:typexpand-1(data-type-of x)))))))
-    (:default pred (x)
-      `(let((x ,x))
-	 (cadr (nth (1-(data-order x))
-		    (cdr(introspect-environment:typexpand-1(data-type-of x))))))))
-=> ENUM
-,:before (mapc #'fmakunbound '(succ pred))
-
-;;;; type-class FUNCTOR
-#?(define-type-class(functor f)()
-    ((fmap((function(a)b)(f a))(f b))))
-=> FUNCTOR
-,:before (mapc #'fmakunbound '(fmap))
-
+;;;; instances of FUNCTOR
 #?(definstance(functor maybe)
     ((fmap(f m)
        (trivia:ematch m
@@ -232,13 +270,7 @@
 	 ((counter-just counter x)`(counter-just (1+ ,counter)(funcall ,f ,x)))))))
 => FUNCTOR
 
-;;;; type-class APPLICATIVE
-#?(define-type-class(applicative f)(functor)
-    ((pure(a)(f a))
-     (<*>((f(function(a)b))(f a))(f b))))
-=> APPLICATIVE
-,:before (mapc #'fmakunbound '(pure <*>))
-
+;;;; Instances of APPLICATIVE
 #?(definstance(applicative maybe)
     ((<*>(functor arg)
        (trivia:ematch functor
@@ -268,25 +300,15 @@
 
 #?(definstance(applicative function)
     ((pure(x)
-       `(constantly ,x))
+       `(lambda(#0=#:arg)
+	  (declare(ignore #0#))
+	  ,x))
      (<*>(f g)
        `(lambda(x)
 	  (funcall (funcall ,f x) (funcall ,g x))))))
 => APPLICATIVE
 
 ;;;; MONOID
-#?(define-type-class(monoid m)()
-    ((mempty()m)
-     (mappend(m m)m)
-     (mconcat((list m))m))
-    (:default mconcat(ms)
-      `(reduce (lambda(a m)(mappend a m))
-	       ,ms
-	       :from-end t
-	       :initial-value (mempty))))
-=> MONOID
-,:before (mapc #'fmakunbound '(mempty mappend mconcat))
-
 #?(definstance(monoid list)
     ((mempty()nil)
      (mappend(a b)
@@ -351,18 +373,6 @@
 => MONOID
 
 ;;;; MONAD
-#?(define-type-class(monad m)()
-    ((.return(a)(m a))
-     (>>=((m a)(function(a)(m b)))(m b))
-     (>>((m a)(m b))(m b))
-     (fail(string)(m a)))
-    (:default >> (x y)
-      `(>>= ,x (constantly ,y)))
-    (:default fail(msg)
-      `(error ,msg)))
-=> MONAD
-,:before (mapc #'fmakunbound '(.return >>= >> fail))
-
 #?(definstance(monad maybe)
     ((.return(x)
        `(just ,x))
@@ -387,18 +397,12 @@
 
 #?(definstance(monad io)
     ((.return(x)
-       `(constantly ,x))
+       `(lambda(),x))
      (>>=(io fun)
        `(funcall ,fun (funcall ,io)))))
 => MONAD
 
 ;;;; MONAD+
-#?(define-type-class(monad+ m)(monad)
-    ((mzero()(m a))
-     (mplus((m a)(m a))(m a))))
-=> MONAD+
-,:before (mapc #'fmakunbound '(mzero mplus))
-
 #?(definstance(monad+ list)
     ((mzero()nil)
      (mplus(a b)`(append ,a ,b))))
