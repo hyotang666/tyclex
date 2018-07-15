@@ -174,28 +174,30 @@
        (let((value(introspect-environment:constant-form-value var env)))
 	 (if(adv-p value) ; literal adt.
 	   (data-type-of value)
-	   (let((type (class-name(class-of value))))
-	     (if(not(eq 'cons type))
-	       type
-	       (let((types(handler-case(mapcar (lambda(x)
-						 (class-name(class-of x)))
-					       value)
-			    (error() ; dot list comes
-			      (return-from compute-return-type
-					   (labels((rec(cons)
-						     (if(atom cons)
-						       (class-name(class-of cons))
-						       `(cons ,(class-name(class-of(car cons)))
-							      ,(rec (cdr cons))))))
-					     (rec value)))))))
-		 (if(null(cdr(remove-duplicates types)))
-		   `(LIST ,(class-name(class-of(car value))))
-		   (labels((rec(list)
-			     (if(endp(cdr list))
-			       (car list)
-			       `(CONS ,(car list)
-				      ,(rec(cdr list))))))
-		     (rec types))))))))))
+	   (if(adt-p value)
+	     value
+	     (let((type (class-name(class-of value))))
+	       (if(not(eq 'cons type))
+		 type
+		 (let((types(handler-case(mapcar (lambda(x)
+						   (class-name(class-of x)))
+						 value)
+			      (error() ; dot list comes
+				(return-from compute-return-type
+					     (labels((rec(cons)
+						       (if(atom cons)
+							 (class-name(class-of cons))
+							 `(cons ,(class-name(class-of(car cons)))
+								,(rec (cdr cons))))))
+					       (rec value)))))))
+		   (if(null(cdr(remove-duplicates types)))
+		     `(LIST ,(class-name(class-of(car value))))
+		     (labels((rec(list)
+			       (if(endp(cdr list))
+				 (car list)
+				 `(CONS ,(car list)
+					,(rec(cdr list))))))
+		       (rec types)))))))))))
     ((symbolp var) ; free variable.
      (let((type (introspect-environment:variable-type var env)))
        (if(not(eql t type))
