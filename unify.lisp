@@ -145,22 +145,7 @@
 					     ,@(cdr form)))))))
 
 (defun subtype?(t1 t2)
-  (labels((category-of(thing)
-	    (cond
-	      ((newtypep thing):newtype)
-	      ((adt-p thing) :adt)
-	      ((find thing '(* T)) :wildcard)
-	      ((millet:type-specifier-p thing)
-	       (if(or (eq 'function thing)
-		      (typep thing '(cons (eql function)t)))
-		 :function
-		 :type-specifier))
-	      (t (cond
-		   ((typep thing '(cons (eql function)t)) :function)
-		   ; TODO we should define-newtype io.
-		   ((typep thing '(cons (eql io)t)) :newtype)
-		   (t :unknown)))))
-	  (car-eq(t1 t2)
+  (labels((car-eq(t1 t2)
 	    (eq(alexandria:ensure-car t1)(alexandria:ensure-car t2)))
 	  (entry-point(t1 t2)
 	    (matrix-case:matrix-case((category-of t1)(category-of t2))
@@ -191,3 +176,19 @@
 	      ((:function	:wildcard)		T)
 	      (otherwise (error "nyi")))))
     (entry-point t1 t2)))
+
+(defun category-of(thing)
+  (cond
+    ((newtypep thing):newtype)
+    ((adt-p thing) :adt)
+    ((find thing '(* T)) :wildcard)
+    ((millet:type-specifier-p thing)
+     (if(or (eq 'function thing)
+	    (typep thing '(cons (eql function)t)))
+       :function
+       :type-specifier))
+    (t (cond
+	 ((typep thing '(cons (eql function)t)) :function)
+	 ; TODO we should define-newtype io.
+	 ((typep thing '(cons (eql io)t)) :newtype)
+	 (t :unknown)))))
