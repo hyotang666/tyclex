@@ -9,4 +9,8 @@
 (setf (symbol-function 'denew)#'third)
 
 (defun newtypep(type-specifier)
-  (get (alexandria:ensure-car type-specifier) 'newtype))
+  (labels((ensure-symbol(thing)
+	    (if(atom thing)
+	      thing
+	      (ensure-symbol(car thing)))))
+    (get (ensure-symbol type-specifier) 'newtype)))
