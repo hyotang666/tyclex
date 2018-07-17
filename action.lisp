@@ -12,6 +12,7 @@
 ;;; IO type constructor.
 (deftype io(&optional return)
   `(and io-action (function * ,return)))
+(setf (get 'io 'newtype)T)
 
 ;;;; ACTION data structure.
 (defstruct(action (:copier nil)(:predicate nil)(:constructor action-meta-info))

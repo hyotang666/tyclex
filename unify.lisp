@@ -189,6 +189,4 @@
        :type-specifier))
     (t (cond
 	 ((typep thing '(cons (eql function)t)) :function)
-	 ; TODO we should define-newtype io.
-	 ((typep thing '(cons (eql io)t)) :newtype)
 	 (t :unknown)))))
