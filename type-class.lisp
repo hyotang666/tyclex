@@ -81,7 +81,7 @@
 	(constraint(third instances))
 	(consts(when constraint
 		 (let*((constructor(trestrul:find-node-if (lambda(x)
-							    (typep x `(cons (eql ,type)T)))
+							    (equal (car x)type))
 							  return-types))
 		       (return-type(second constructor))
 		       (instance-table(some #'instance-table (type-instances (find-type-class constraint)))))
