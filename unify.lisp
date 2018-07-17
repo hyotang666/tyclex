@@ -197,7 +197,9 @@
   (cond
     ((newtypep thing):newtype)
     ((adt-p thing) :adt)
-    ((find thing '(* T)) :wildcard)
+    ((or (find thing '(* T))
+	 (type-unify:variablep thing))
+     :wildcard)
     ((millet:type-specifier-p thing)
      (cond
        ((or (eq 'function thing)
