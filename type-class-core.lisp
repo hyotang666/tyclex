@@ -46,7 +46,7 @@
   (setf(type-class-instance-table(get interface 'instance))new))
 
 ;;;; DEFISTANCE
-(defmacro definstance((type-class type) definition)
+(defmacro definstance((type-class type &optional constraint) definition)
   (let((defs(loop :for instance :in (set-difference (type-instances (find-type-class type-class))
 						    (mapcar #'car definition))
 		  :collect (or (instance-default instance)
@@ -59,10 +59,10 @@
 					    (instance-lambda-list name))
 		    :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
 						 signature)
-		    :collect `(add-instance ',name ',signature ',defs ',type))
+		    :collect `(add-instance ',name ',signature ',defs ',type ',constraint))
 	    ',type-class)))
 
 ;;;; ADD-INSTANCE
-(defun add-instance(interface signature definition type)
-  (push(list signature definition type)(instance-table interface)))
+(defun add-instance(interface signature definition type constraint)
+  (push(list signature definition type constraint)(instance-table interface)))
 

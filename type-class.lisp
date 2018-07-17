@@ -78,6 +78,16 @@
 	(instances(get-instance-lambda (car form) infos))
 	(defs(first instances))
 	(type(second instances))
+	(constraint(third instances))
+	(consts(when constraint
+		 (let*((constructor(trestrul:find-node-if (lambda(x)
+							    (typep x `(cons (eql ,type)T)))
+							  return-types))
+		       (return-type(second constructor))
+		       (instance-table(some #'instance-table (type-instances (find-type-class constraint)))))
+		   (second(find-if (lambda(cell)
+				     (subtype? return-type (third cell)))
+				   instance-table)))))
 	(macros(loop :for (name . rest) :in defs
 		     :when (eq name (car form))
 		     :collect (cons (sub-name name) rest)
@@ -94,7 +104,7 @@
 		     (eq t x))))
 	      infos)
       (values expanded return-types infos nil nil)
-      (values expanded return-types infos instances (append macros defs)))))
+      (values expanded return-types infos instances (append macros defs consts)))))
 
 (defun sub-name(symbol)
   (intern(format nil "%~A"symbol)))
