@@ -142,6 +142,8 @@
 	   (if(adt-p value)
 	     value
 	     (let((type (class-name(class-of value))))
+	       #+sbcl(when(eq 'sb-kernel:simple-character-string type)
+		       (setq type 'string))
 	       (if(not(eq 'cons type))
 		 type
 		 (let((types(handler-case(mapcar (lambda(x)
