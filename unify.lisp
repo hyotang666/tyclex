@@ -151,12 +151,15 @@
 	      ((adt-p thing) :adt)
 	      ((find thing '(* T)) :wildcard)
 	      ((millet:type-specifier-p thing)
-	       (if(eq 'function thing)
+	       (if(or (eq 'function thing)
+		      (typep thing '(cons (eql function)t)))
 		 :function
 		 :type-specifier))
-	      (t (if(typep thing '(cons (eql function)t))
-		   :function
-		   :unknown))))
+	      (t (cond
+		   ((typep thing '(cons (eql function)t)) :function)
+		   ; TODO we should define-newtype io.
+		   ((typep thing '(cons (eql io)t)) :newtype)
+		   (t :unknown)))))
 	  (car-eq(t1 t2)
 	    (eq(alexandria:ensure-car t1)(alexandria:ensure-car t2)))
 	  (entry-point(t1 t2)
