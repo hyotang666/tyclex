@@ -200,10 +200,12 @@
 	:function)
        ((or (eq 'list thing)
 	    (eq 'cl:list thing)
-	    (typep thing '(cons (eql list)t)))
+	    (typep thing '(cons (eql list)t))
+	    (typep thing '(cons (eql cons)t)))
 	:list)
        (t :type-specifier)))
     (t (cond
 	 ((typep thing '(cons (eql function)t)) :function)
 	 ((typep thing '(cons (eql cl:list)t)) :list)
+	 ((typep thing '(cons (eql cons)t)) :list)
 	 (t :unknown)))))
