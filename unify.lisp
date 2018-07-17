@@ -190,7 +190,7 @@
 	      ((:list		:type-specifier)	nil)
 	      ((:list		:wildcard)		T)
 	      ((:list		:function)		nil)
-	      (otherwise (error "nyi")))))
+	      (otherwise (with-subtype-verbose(type-unify:unify t1 t2))))))
     (entry-point t1 t2)))
 
 (defun category-of(thing)
