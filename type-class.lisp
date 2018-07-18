@@ -80,14 +80,17 @@
 	(type(second instances))
 	(constraint(third instances))
 	(consts(when constraint
-		 (let*((constructor(trestrul:find-node-if (lambda(x)
-							    (equal (car x)type))
-							  return-types))
-		       (return-type(second constructor))
-		       (instance-table(some #'instance-table (type-instances (find-type-class constraint)))))
-		   (second(find-if (lambda(cell)
-				     (subtype? return-type (third cell)))
-				   instance-table)))))
+		 (alexandria:when-let((constructor(trestrul:find-node-if
+						    (lambda(x)
+						      (eq (car x)
+							  (alexandria:ensure-car type)))
+						    return-types)))
+		   (let((return-type(second constructor))
+			(instance-table(some #'instance-table
+					     (type-instances (find-type-class constraint)))))
+		     (second(find-if (lambda(cell)
+				       (subtype? return-type (third cell)))
+				     instance-table))))))
 	(macros(loop :for (name . rest) :in defs
 		     :when (eq name (car form))
 		     :collect (cons (sub-name name) rest)
