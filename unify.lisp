@@ -146,7 +146,11 @@
 
 (defun subtype?(t1 t2)
   (labels((car-eq(t1 t2)
-	    (eq(alexandria:ensure-car t1)(alexandria:ensure-car t2)))
+	    (matrix-case:matrix-typecase(t1 t2)
+	      ((symbol symbol)(eq t1 t2))
+	      ((list list)(car-eq (car t1)(car t2)))
+	      ((symbol list)(car-eq t1 (car t2)))
+	      ((list symbol)(car-eq (car t1)t2))))
 	  (entry-point(t1 t2)
 	    (matrix-case:matrix-case((category-of t1)(category-of t2))
 	      ((:newtype	:newtype)		(car-eq t1 t2))
