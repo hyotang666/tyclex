@@ -120,7 +120,9 @@
       (call-next-method))
     (if(newtypep a)
       (if(type-unify:variablep (car b))
-	(type-unify:extend-environment (car b) a env)
+	(if(type-unify:find-variable-value (car b) env)
+	  env
+	  (type-unify:extend-environment (car b) a env))
 	(call-next-method))
       (call-next-method))))
 
