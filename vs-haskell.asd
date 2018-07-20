@@ -23,9 +23,6 @@
   ((:file "package")
    ;; bottoms
    (:file "util" :depends-on ("package"))
-   (:file "qualified-use" :depends-on ("package"))
-   (:file "readtables" :depends-on ("package"))
-   (:file "haskell" :depends-on ("package"))
    (:file "newtype" :depends-on ("package"))
    (:file "type-class-core" :depends-on ("package"))
    ;;
