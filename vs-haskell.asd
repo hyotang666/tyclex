@@ -12,7 +12,6 @@
    "closer-mop"                 ; mop wrapper.
    "trivial-types"
    "trestrul"                   ; tree structural list utils.
-   "agnostic-lizard"            ; macroexpand all.
    "expander"                   ; macroexpand all.
    "cl-unification"             ; unification.
    "curried-function"

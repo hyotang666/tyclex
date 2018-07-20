@@ -314,7 +314,7 @@
 	  ((nil) (when *return-type-verbose*
 		   (warn "Undefined function ~S. ~S"(car form)form)))
 	  (:special-form (special-operator-return-type form env))
-	  (:macro (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)
+	  (:macro (compute-return-type (expander:expand (copy-tree form)env)
 				       env))
 	  (:function
 	    (let((ftype(assoc 'ftype declaration)))
@@ -347,7 +347,7 @@
     ((quote)
      (error 'unexpected-quote :datum form :name 'special-operator-return-type))
     ((macrolet symbol-macrolet)
-     (compute-return-type (agnostic-lizard:macroexpand-all (copy-tree form)env)env))
+     (compute-return-type (expander:expand (copy-tree form)env)env))
     ((go throw catch) t) ; give up.
     ((return-from)(compute-return-type (third form)))
     ((block)
