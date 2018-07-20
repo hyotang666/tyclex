@@ -27,13 +27,14 @@
    (:file "readtables" :depends-on ("package"))
    (:file "haskell" :depends-on ("package"))
    (:file "newtype" :depends-on ("package"))
-   (:file "curry" :depends-on ("package"))
    (:file "type-class-core" :depends-on ("package"))
    ;;
    (:file "unify" :depends-on ("package" "newtype"))
    (:file "adt" :depends-on ("util" "unify" "type-class-core"))
    ;;
    (:file "action" :depends-on ("adt"))
+   ;;
+   (:file "curry" :depends-on ("adt" "action" "type-class-core" "unify"))
    ;;
    (:file "type-class" :depends-on ("action" "curry"))
    )
