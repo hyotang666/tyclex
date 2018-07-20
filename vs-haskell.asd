@@ -4,7 +4,6 @@
 (defsystem "vs-haskell"
   :depends-on
   (
-   "named-readtables"
    "trivia"                     ; pattern matcher.
    "alexandria"                 ; pure cl utilities.
    "millet"                     ; implementation dependent utilities.
