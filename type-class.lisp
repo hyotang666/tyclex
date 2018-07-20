@@ -50,7 +50,7 @@
      (IF (EQ *SUB-EXPAND* WHOLE)
 	 (ERROR "Trap infinite expansion ~S" whole)
 	 (LET((*SUB-EXPAND* WHOLE))
-	   (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS IL MACROS)(PARSE-WHOLE WHOLE ENV)
+	   (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS IL MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
 	     (DECLARE (IGNORE RETURN-TYPE)
 		      (IGNORABLE INFOS))
 	     (LET((BODY`(,',sub-name
@@ -69,7 +69,7 @@
 			   (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
 		     WHOLE))))))))
 
-(defun parse-whole(form &optional env)
+(defun parse-whole(form sub-name &optional env)
   (let*((expanded(loop :for form :in (copy-list (cdr form))
 		       :collect(expander:expand form env)))
 	(return-types(compute-return-types expanded env))
@@ -93,7 +93,7 @@
 				     instance-table))))))
 	(macros(loop :for (name . rest) :in defs
 		     :when (eq name (car form))
-		     :collect (cons (sub-name name) rest)
+		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
 	(type-class(instance-type-class (car form)))
 	(defs(loop :for tc :in (type-direct-subclasses type-class)
@@ -110,7 +110,7 @@
       (values expanded return-types infos instances (append macros defs consts)))))
 
 (defun sub-name(symbol)
-  (intern(format nil "%~A"symbol)))
+  (gensym(symbol-name symbol)))
 
 (define-condition internal-logical-error(cell-error)
   ((datum :initarg :datum :accessor error-datum))
