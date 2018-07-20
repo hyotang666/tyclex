@@ -17,6 +17,7 @@
    "cl-unification"             ; unification.
    "curried-function"
    "matrix-case"                ; control flow.
+   "lambda-list"                ; tiny utilities for lambda list processing.
    )
   :components
   ((:file "package")

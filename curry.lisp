@@ -95,3 +95,91 @@
 (defun function-type-of(name)
   (get name 'ftype))
 
+;;;; DEFUN
+(defmacro defun* (name lambda-list &body body)
+  (if(or (listp name) ; setf form, ignore.
+	 (or (null(function-type-of name))
+	     (null(introspect-environment:function-type name))))
+    `(cl:defun ,name ,lambda-list ,@body)
+    ;; bind
+    (let((types(second(or (function-type-of name)
+			  (introspect-environment:function-type name)))))
+      (multiple-value-bind(body decls doc)(alexandria:parse-body body)
+	(setf doc (alexandria:ensure-list doc)) ; as canonicalize.
+	`(cl:defun ,name ,lambda-list
+		   ,@doc
+		   ,@(append decls (lambda-var-decls lambda-list types))
+		   ,@body)))))
+
+(defun lambda-var-decls(lambda-list types)
+  (labels((entry-point(lambda-list types &optional acc)
+	    (if(endp lambda-list)
+	      acc
+	      (body (car lambda-list)(cdr lambda-list)types acc)))
+	  (body(elt rest types acc)
+	    (if(lambda-list:lambda-list-keyword-p elt)
+	      (diverge elt rest types acc)
+	      (entry-point rest (cdr types)(cons (make-declare elt(car types))
+						 acc))))
+	  (diverge(key rest types acc)
+	    (ecase key
+	      (&optional (optional rest types acc))
+	      (&key (key rest types acc))
+	      (&rest (&rest rest types acc))
+	      (&allow-other-keys(otherkeys rest types acc))
+	      (&aux (aux rest types acc))))
+	  (make-declare(var type)
+	    `(declare(type ,type ,var)))
+	  (optional(rest types acc)
+	    (if(not(eq '&optional(car types)))
+	      (error "Not match lambda-list ~S" lambda-list)
+	      (optional-body rest (cdr types)acc)))
+	  (optional-body(rest types acc)
+	    (if(lambda-list:lambda-list-keyword-p(car rest))
+	      (diverge (car rest)(cdr rest)types acc)
+	      (optional-body (cdr rest)(cdr types)(cons (make-declare (alexandria:ensure-car (car rest))
+								      (car types))
+							acc))))
+	  (key(rest types acc)
+	    (if(lambda-list:lambda-list-keyword-p(car rest))
+	      (diverge(car rest)(cdr rest)types acc)
+	      (key (cdr rest)types
+		   (let((var(ensure-var (car rest))))
+		     (cons (make-declare var (some (compare var) types))
+			   acc)))))
+	  (ensure-var(thing)
+	    (etypecase thing
+	      (symbol thing)
+	      ((cons symbol t)(car thing))
+	      ((cons (cons keyword (cons symbol null))t)
+	       (cadar thing))))
+	  (compare(var)
+	    (lambda(type)
+	      (and (not(lambda-list:lambda-list-keyword-p type))
+		   (listp type)
+		   (string= var (car type))
+		   (cadr type))))
+	  (otherkeys(rest types acc)
+	    (if(endp rest)
+	      acc
+	      (diverge(car rest)(cdr rest)types acc)))
+	  (aux(rest types acc)
+	    (if(endp rest)
+	      acc
+	      (aux (cdr rest)types
+		   (cons (make-declare (ensure-var (car rest))
+				       (compute-return-type (cadr rest)))
+			 acc))))
+	  (&rest(rest types acc)
+	    (if(endp (cdr rest))
+	      (cons (make-declare (car rest)
+				  (loop :for (key value) :in types
+					:when (eq 'rest key)
+					:return value))
+		    acc)
+	      (diverge (cadr rest)
+		       (cddr rest)
+		       types
+		       acc)))
+	    )
+    (entry-point lambda-list types)))
