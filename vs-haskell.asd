@@ -31,7 +31,7 @@
    (:file "type-class-core" :depends-on ("package"))
    ;;
    (:file "unify" :depends-on ("package" "newtype"))
-   (:file "adt" :depends-on ("readtables" "util" "unify" "type-class-core"))
+   (:file "adt" :depends-on ("util" "unify" "type-class-core"))
    ;;
    (:file "action" :depends-on ("adt"))
    ;;

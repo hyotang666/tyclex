@@ -1,7 +1,5 @@
 (in-package #:vs-haskell)
 
-(named-readtables:in-readtable :cl-vs-haskell)
-
 ;;;; DEFDATA
 (defmacro defdata(name lambda-list &rest constructor*)
   ;; binding
@@ -19,7 +17,9 @@
     `(eval-when(:compile-toplevel :load-toplevel :execute)
        ,(<deftype> name lambda-list constructor*)
        (SETF(GET ',name 'ADT)T)
-       ,@(mapcan #`(% #'<constructors> name lambda-list)constructor*)
+       ,@(mapcan (lambda(constructor)
+		   (<constructors> name lambda-list constructor))
+		 constructor*)
        ,@(loop :for c :in constructor*
 	       :for o :upfrom 0
 	       :collect (<meta-info-setter> c o lambda-list name))
