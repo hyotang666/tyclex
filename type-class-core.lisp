@@ -47,12 +47,15 @@
 
 ;;;; DEFISTANCE
 (defmacro definstance((type-class type &optional constraint) definition)
-  (let((defs(loop :for instance :in (set-difference (type-instances (find-type-class type-class))
-						    (mapcar #'car definition))
-		  :collect (or (instance-default instance)
-			       (error "Default instance missing. ~S" instance))
-		  :into defaults
-		  :finally (return (append definition defaults)))))
+  (let*((instances(type-instances (find-type-class type-class)))
+	(defs(loop :for instance :in (set-difference instances (mapcar #'car definition))
+		   :collect (or (instance-default instance)
+				(if(find instance instances)
+				  (error "Default instance missing. ~S" instance)
+				  (error "Unknown instance. ~S~%~S supports only ~S"
+					 instance type-class instances)))
+		   :into defaults
+		   :finally (return (append definition defaults)))))
     `(progn ,@(loop :for (name) :in defs
 		    :for signature = (subst type
 					    (type-var (find-type-class type-class))
