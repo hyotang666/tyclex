@@ -43,31 +43,26 @@
 			      `(:DEFAULT ',(cdr default)))))))
 
 ;;; <defmacro>
-(defvar *sub-expand* nil)
 (defvar *expand-verbose* T)
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
-     (IF (EQ *SUB-EXPAND* WHOLE)
-	 (ERROR "Trap infinite expansion ~S" whole)
-	 (LET((*SUB-EXPAND* WHOLE))
-	   (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS IL MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
-	     (DECLARE (IGNORE RETURN-TYPE)
-		      (IGNORABLE INFOS))
-	     (LET((BODY`(,',sub-name
-			  ,@(LOOP :FOR FORM :IN EXPANDED
-				  :COLLECT (expander:expand
-					     `(MACROLET,MACROS,FORM) env)))))
-	       (IF IL
-		   ,(if(millet:type-specifier-p return-type)
-		      ``(MACROLET,MACROS (THE ,',return-type ,BODY))
-		      `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
-			 (IF(MILLET:TYPE-SPECIFIER-P RETURN)
-			   `(MACROLET,MACROS (THE ,RETURN ,BODY))
-			   `(MACROLET,MACROS ,BODY))))
-		   (PROGN
-		     (WHEN *EXPAND-VERBOSE*
-			   (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
-		     WHOLE))))))))
+     (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS IL MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
+       (DECLARE (IGNORE RETURN-TYPE)
+		(IGNORABLE INFOS))
+       (LET((BODY`(,',sub-name
+		    ,@(LOOP :FOR FORM :IN EXPANDED
+			    :COLLECT (expander:expand `(MACROLET,MACROS,FORM) env)))))
+	 (IF IL
+	     ,(if(millet:type-specifier-p return-type)
+		``(MACROLET,MACROS (THE ,',return-type ,BODY))
+		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
+		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
+		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
+		     `(MACROLET,MACROS ,BODY))))
+	     (PROGN
+	       (WHEN *EXPAND-VERBOSE*
+		     (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
+	       WHOLE))))))
 
 (defun parse-whole(form sub-name &optional env)
   (let*((expanded(loop :for form :in (copy-list (cdr form))
