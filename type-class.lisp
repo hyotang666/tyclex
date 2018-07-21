@@ -149,6 +149,23 @@
 		 (canonicalize-return-type ts2))))
     (sort list #'type< :key #'car)))
 
+;;;; MACROEXPAND-HOOK
+(defun ehcl-macroexpand-hook(expander form env)
+  (let*((*macroexpand-hook* #'funcall)
+	(expanded(funcall expander form env)))
+    (if(and (eq expanded form)
+	    (macro-function(car form)))
+      (error "Trap into infinite expansion. ~S"form)
+      expanded)))
+
+#++(if(or (eq #'funcall *macroexpand-hook*)
+       (eq 'funcall *macroexpand-hook*))
+  (setq *macroexpand-hook* 'ehcl-macroexpand-hook)
+  (if(eq 'ehcl-macroexpand-hook *macroexpand-hook*)
+    nil
+    (if(y-or-n-p "~%EHCL try to replace *MACROEXPAND-HOOK*, but already set. ~S~%Really replace it?"*macroexpand-hook*)
+      (setq *macroexpand-hook* 'ehcl-macroexpand-hook)
+      (warn "EHCL could not detect infinite macro expansion."))))
 #|
 (defdata maybe (a)
   :nothing
