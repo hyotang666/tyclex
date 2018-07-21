@@ -1,12 +1,15 @@
 (in-package #:vs-haskell)
 
+(deftype valid-name()
+  '(and symbol (not (or keyword boolean))))
+
 ;;;; DEFDATA
 (defmacro defdata(name lambda-list &rest constructor*)
   ;; binding
   (multiple-value-bind(name options)(parse-name (uiop:ensure-list name))
     ;; trivial syntax check.
-    (check-type name symbol)
-    (assert(every #'symbolp lambda-list))
+    (check-type name valid-name)
+    (assert(every (lambda(x)(typep x 'valid-name)) lambda-list))
     (dolist(constructor constructor*)
       (assert(symbolp(alexandria:ensure-car constructor))))
     (dolist(option options)
