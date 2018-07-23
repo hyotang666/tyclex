@@ -7,6 +7,7 @@
   ((:file "vs-haskell")
    ;; Mid
    (:file "setup" :depends-on ("vs-haskell"))
+   (:file "lambda-var-decls" :depends-on ("vs-haskell"))
    (:file "adt" :depends-on ("vs-haskell"))
    ;; Mid2
    (:file "type-class" :depends-on ("adt"))
