@@ -1,36 +1,39 @@
 (in-package #:vs-haskell)
 
 ;;;; DEFINE-TYPE-CLASS
-(defmacro define-type-class((name type-var)super-classes methods &rest rest)
+(defmacro define-type-class((name &rest type-var+)(&rest var-constraint*) method+ &rest rest)
   ;; trivial syntax checking.
   (assert(symbolp name))
-  (assert(symbolp type-var))
-  (assert(listp super-classes))
-  (assert(every #'symbolp super-classes))
+  (assert type-var+)
+  (assert(every #'symbolp type-var+))
+  (assert(loop :for (constraint var) :in var-constraint*
+	       :always (and (Find-type-class constraint)
+			    (find var type-var+))))
+  (assert method+)
   ;; as canonicalize
-  (setf type-var (Envar type-var))
+  (setf type-var+ (Envar type-var+))
   ;; body
   `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-     (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name :VAR ',type-var
-					     :INSTANCES ',(mapcar #'car methods)))
-     ,@(when super-classes
-	 (<type-class-relation-setter> name super-classes))
+     (SETF(GET ',name 'TYPE-CLASS)(MAKE-INFO :NAME ',name :VARS ',type-var+
+					     :INSTANCES ',(mapcar #'car method+)))
+     ,@(when var-constraint*
+	 (<type-class-relation-setter> name var-constraint*))
      ,@(loop
-	 :for (method lambda-list return-type) :in methods
+	 :for (method lambda-list return-type) :in method+
 	 :for gensyms = (Gensyms (length lambda-list))
 	 :do (setf ; as canonicalise
-	       lambda-list (patternize lambda-list)
-	       return-type (patternize return-type))
+	       lambda-list (Patternize lambda-list)
+	       return-type (Patternize return-type))
 	 :collect (<instance-info-setter> method name lambda-list return-type rest)
 	 :collect (<defmacro> method gensyms lambda-list return-type))
      ',name))
 
 ;;; <type-class-relation-setter>
-(defun <type-class-relation-setter>(name super-classes)
-  `((SETF (TYPE-DIRECT-SUPERCLASSES(GET ',name 'TYPE-CLASS))',super-classes)
-    ,@(loop :for type-class :in super-classes
+(defun <type-class-relation-setter>(name var-constraints)
+  `((SETF (TYPE-DIRECT-SUPERCLASSES(GET ',name 'TYPE-CLASS))',var-constraints)
+    ,@(loop :for (constraint) :in var-constraints
 	    :collect
-	    `(PUSHNEW ',name (TYPE-DIRECT-SUBCLASSES(GET ',type-class 'TYPE-CLASS))))))
+	    `(PUSHNEW ',name (TYPE-DIRECT-SUBCLASSES(GET ',constraint 'TYPE-CLASS))))))
 
 ;;; <instance-info-setter>
 (defun <instance-info-setter>(method name lambda-list return-type rest)
@@ -64,37 +67,43 @@
 		     (WARN "Instance is not found. ~S ~S"',method (LIST ,@gensyms)))
 	       WHOLE))))))
 
-(defun parse-whole(form sub-name &optional env)
-  (let*((expanded(loop :for form :in (copy-list (cdr form))
+(defun parse-whole(form &optional (sub-name '#:sub-name) env)
+  (let*((*macroexpand-hook* 'funcall) ; for easy debugging.
+	(expanded(loop :for form :in (copy-list (cdr form))
 		       :collect(expander:expand form env)))
-	(return-types(compute-return-types expanded env))
-	(infos(check-signature (instance-lambda-list (car form))
+	(return-types(Compute-return-types expanded env))
+	(infos(check-signature (Instance-lambda-list (car form))
 			       return-types))
 	(instances(get-instance-lambda (car form) infos))
 	(defs(first instances))
-	(type(second instances))
-	(constraint(third instances))
+	(types(second instances))
+	(constraint(car(third instances)))
 	(consts(when constraint
-		 (alexandria:when-let((constructor(trestrul:find-node-if
-						    (lambda(x)
-						      (eq (car x)
-							  (alexandria:ensure-car type)))
-						    return-types)))
-		   (let((return-type(second constructor))
-			(instance-table(some #'instance-table
-					     (type-instances (find-type-class constraint)))))
+		 (alexandria:when-let((constructors(mapcan (lambda(type)
+							     (let((constructor (trestrul:find-node-if
+										      (lambda(x)
+											(eq (car x) (alexandria:ensure-car type)))
+										      return-types)))
+							       (when constructor
+								 (list constructor))))
+							   types)))
+		   (let((return-types(mapcar #'second constructors))
+			(instance-table(some #'Instance-table
+					     (Type-instances (Find-type-class constraint)))))
 		     (second(find-if (lambda(cell)
-				       (subtype? return-type (third cell)))
+				       (find-if (lambda(return-type)
+						  (Subtype? return-type (car(third cell))))
+						return-types))
 				     instance-table))))))
 	(macros(loop :for (name . rest) :in defs
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
-	(type-class(instance-type-class (car form)))
-	(defs(loop :for tc :in (type-direct-subclasses type-class)
-		   :append (loop :for instance :in (type-instances (find-type-class tc))
-				 :thereis (loop :for (nil defs type%) :in (instance-table instance)
-						:when (eq type type%)
+	(type-class(Instance-type-class (car form)))
+	(defs(loop :for tc :in (Type-direct-subclasses type-class)
+		   :append (loop :for instance :in (Type-instances (Find-type-class tc))
+				 :thereis (loop :for (nil defs type%) :in (Instance-table instance)
+						:when (equal types type%)
 						:return defs)))))
     (if(some (lambda(x)
 	       (let((x(alexandria:ensure-car x)))

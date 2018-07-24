@@ -16,6 +16,7 @@
    "curried-function"
    "matrix-case"                ; control flow.
    "lambda-list"                ; tiny utilities for lambda list processing.
+   "split-sequence"
    )
   :components
   ((:file "package")

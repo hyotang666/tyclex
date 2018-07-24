@@ -4,7 +4,7 @@
 (defstruct(type-class(:constructor make-info)(:copier nil)
                      (:predicate nil)(:conc-name type-))
   (name (error "Name is required.") :type (or symbol list) :read-only t)
-  (var (error "Var is required.") :type symbol :read-only t)
+  (vars (error "Var is required.") :type list :read-only t)
   (instances nil :type list :read-only t)
   (direct-superclasses nil :type list)
   (direct-subclasses nil :type list))
@@ -46,8 +46,11 @@
   (setf(type-class-instance-table(get interface 'instance))new))
 
 ;;;; DEFISTANCE
-(defmacro definstance((type-class type &optional constraint) definition)
-  (let*((instances(type-instances (find-type-class type-class)))
+(defmacro definstance((type-class &rest args) definition)
+  (let*((|(types constraint)|(split-sequence:split-sequence :constraint args))
+	(types (first |(types constraint)|))
+	(constraint (caadr |(types constraint)|))
+	(instances(type-instances (find-type-class type-class)))
 	(defs(loop :for instance :in (set-difference instances (mapcar #'car definition))
 		   :collect (or (instance-default instance)
 				(if(find instance instances)
@@ -57,15 +60,18 @@
 		   :into defaults
 		   :finally (return (append definition defaults)))))
     `(progn ,@(loop :for (name) :in defs
-		    :for signature = (subst type
-					    (type-var (find-type-class type-class))
-					    (instance-lambda-list name))
+		    :for signature = (sublis (mapcan (lambda(var)
+						       (mapcar (lambda(type)
+								 (cons var type))
+							       types))
+						     (type-vars (find-type-class type-class)))
+					     (instance-lambda-list name))
 		    :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
 						 signature)
-		    :collect `(add-instance ',name ',signature ',defs ',type ',constraint))
+		    :collect `(add-instance ',name ',signature ',defs ',types ',constraint))
 	    ',type-class)))
 
 ;;;; ADD-INSTANCE
-(defun add-instance(interface signature definition type constraint)
-  (push(list signature definition type constraint)(instance-table interface)))
+(defun add-instance(interface signature definition types constraint)
+  (push(list signature definition types constraint)(instance-table interface)))
 

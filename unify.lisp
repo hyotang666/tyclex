@@ -1,9 +1,11 @@
 (in-package :vs-haskell)
 
 (defun envar(thing)
-  (if(char= #\? (char(string thing)0))
-    thing
-    (intern(format nil "?~A"thing))))
+  (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
+		      (lambda(x)(and (typep x '(and symbol (not (or keyword boolean))))
+				     (not (char= #\? (char (string x)
+							   0)))))
+		      thing))
 
 (defun patternize(thing)
   (if(millet:type-specifier-p thing)
