@@ -504,8 +504,121 @@
 ,:lazy t
 
 ;;;; 8.3
-#|
-#?(domonad (put-string-line "Hello, what's your name?")
-	   name <- (get-line)
-	   (put-string-line (uiop:strcat "Hey " name ", you rock!")))
-|#
+#?(funcall (domonad (put-string-line "Hello, what's your name?")
+		    name <- (get-line)
+		    (put-string-line (uiop:strcat "Hey " name ", you rock!"))))
+:outputs "Hello, what's your name?
+Hey hoge, you rock!
+"
+,:around (with-input-from-string(*standard-input* "hoge")
+	   (call-body))
+
+#?(domonad (put-string-line "What's your first name?")
+	   first-name <- (get-line)
+	   (put-string-line "What's your last name?")
+	   last-name <- (get-line)
+	   (let((big-first-name(string-upcase first-name))
+		(big-last-name(string-upcase last-name)))
+	     (funcall(put-string-line (uiop:strcat "Hey " big-first-name " " big-last-name ", how are you?")))))
+:outputs "What's your first name?
+What's your last name?
+Hey HOGE FUGA, how are you?
+"
+,:around (with-input-from-string(*standard-input* (format nil "hoge~%fuga"))
+	   (call-body))
+
+#?(defun main()
+    (domonad line <- (get-line)
+	     (if(equal "" line)
+	       (.return ())
+	       (domonad (put-string-line(reverse line))
+			(main)))))
+=> MAIN
+,:around(let(ehcl::*expand-verbose* ehcl::*return-type-verbose*)
+	  (call-body))
+,:lazy t
+,:before(fmakunbound 'main)
+
+#?(main)
+:outputs "egoh
+aguf
+"
+,:around(with-input-from-string(*standard-input* (format nil "hoge~%fuga~%~%"))
+	  (call-body))
+
+;;;;1.5
+#?(lc (* x 2)|| x <- '#.(loop :for i :upfrom 1 :to 10 :collect i))
+=> (2 4 6 8 10 12 14 16 18 20)
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(lc (* x 2)|| x <- '#.(loop :for i :upfrom 1 :to 10 :collect i)(>= (* x 2)12))
+=> (12 14 16 18 20)
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(lc x || x <- '#.(loop :for i :upfrom 50 :to 100 :collect i)(= 3 (mod x 7)))
+=> (52 59 66 73 80 87 94)
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(defun boom-bangs(xs)
+    (declare(type list xs))
+    (lc (if (< x 10) "BOOM!" "BANG!") || x <- xs (oddp x)))
+=> BOOM-BANGS
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+,:before (fmakunbound 'boom-bangs)
+
+#?(boom-bangs '#.(loop :for i :upfrom 7 :to 13 :collect i))
+=> ("BOOM!" "BOOM!" "BANG!" "BANG!")
+,:test equal
+
+#?(lc x || x <- '#.(loop :for i :upfrom 10 :to 20 :collect i)(/= x 13)(/= x 15)(/= x 19))
+=> (10 11 12 14 16 17 18 20)
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(lc (+ x y) || x <- '(1 2 3) y <- '(10 100 1000))
+=> (11 101 1001 12 102 1002 13 103 1003)
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(let((nouns'("hobo" "frog" "pope"))
+       (adjectives '("lazy" "grouchy" "scheming")))
+    (declare(type list nouns adjectives))
+    (lc (uiop:strcat adjective " " noun) || adjective <- adjectives noun <- nouns))
+=> ("lazy hobo" "lazy frog" "lazy pope" "grouchy hobo" "grouchy frog" "grouchy pope" "scheming hobo" "scheming frog" "scheming pope")
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose* ehcl::*return-type-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(apply #'+ (lc 1 || _ <- '(1 2 3)))
+=> 3
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose*)
+	  (call-body))
+,:lazy t
+
+#?(let((xxs '((1 3 5 2 3 1 2 4 5)
+	      (1 2 3 4 5 6 7 8 9)
+	      (1 2 4 2 1 6 3 1 3 2 3 6))))
+    (declare(type list xxs))
+    (lc (lc x || x <- (the list xs) (evenp x)) || xs <- xxs))
+=> ((2 2 4)(2 4 6 8)(2 4 2 6 2 6))
+,:test equal
+,:around(let(ehcl::*expand-verbose* ehcl::*subtype-verbose* ehcl::*return-type-verbose*)
+	  (call-body))
+,:lazy t
+

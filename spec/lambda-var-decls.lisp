@@ -121,8 +121,8 @@
 
 ; combinations
 #?(ehcl::lambda-var-decls '(r &key (k 0)) '(string &key (:k fixnum)))
-=> ((DECLARE(TYPE STRING R))
-    (DECLARE(TYPE FIXNUM K)))
+=> ((DECLARE(TYPE FIXNUM K))
+    (DECLARE(TYPE STRING R)))
 
 #?(ehcl::lambda-var-decls '(r &rest args &key a)'(fixnum &rest t &key (:a string)))
 => ((DECLARE(TYPE STRING A))

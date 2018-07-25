@@ -26,7 +26,7 @@
 => ORD
 ,:before (mapc #'fmakunbound '(ord))
 
-#?(define-type-class(compare a)(ord)
+#?(define-type-class(compare a)((ord a))
     ((compare(a a)(member :eq :lt :gt))
      (lt(a a)boolean)
      (gt(a a)boolean)
@@ -74,7 +74,7 @@
 => FUNCTOR
 ,:before (mapc #'fmakunbound '(fmap))
 
-#?(define-type-class(applicative f)(functor)
+#?(define-type-class(applicative f)((functor f))
     ((pure(a)(f a))
      (<*>((f(function(a)b))(f a))(f b))))
 => APPLICATIVE
@@ -106,11 +106,25 @@
 => MONAD
 ,:before (mapc #'fmakunbound '(.return >>= >> fail))
 
-#?(define-type-class(monad+ m)(monad)
+#?(define-type-class(monad+ m)((monad m))
     ((mzero()(m a))
      (mplus((m a)(m a))(m a))))
 => MONAD+
 ,:before (mapc #'fmakunbound '(mzero mplus))
+
+#?(define-type-class(monad-writer w m)((monoid w)(monad m))
+    ((.write((cons a w))(m a))
+     (tell(w)(m null))
+     (.listen((m a))(m (cons a w)))
+     (pass((m (cons a (function(w)w))))(m a)))
+    (:default .write(cons)
+	      `(destructuring-bind(#0=#:a . #1=#:w),cons
+		 (tell #1#)
+		 (.return #0#)))
+    (:default tell (w)
+	      `(.write(cons nil ,w))))
+=> MONAD-WRITER
+,:before (mapc #'fmakunbound '(.write tell .listen pass))
 
 ;;;; DATA
 #?(defdata traffic-light()
@@ -158,6 +172,21 @@
     `(maybe ,a))
 => 1ST
 ,:before (fmakunbound '1st)
+
+#?(define-newtype writer(&optional w a)
+    `(cons ,a ,w))
+=> WRITER
+,:before (fmakunbound 'writer)
+
+#?(define-newtype diff-list(&optional a)
+    `(function((list ,a))(list ,a)))
+=> DIFF-LIST
+,:before (fmakunbound 'diff-list)
+
+#?(define-newtype state(&optional s a)
+    `(function(,s)(cons ,a ,s)))
+=> STATE
+,:before (fmakunbound 'state)
 
 ;;;; Instances of EQ
 #?(definstance(eq traffic-light)
@@ -270,6 +299,17 @@
 	 ((counter-just counter x)`(counter-just (1+ ,counter)(funcall ,f ,x)))))))
 => FUNCTOR
 
+#?(definstance(functor pair)
+    ((fmap(f pair)
+       `(trivia:match ,pair
+          ((cons x y)(pair (cons (funcall ,f x)y)))))))
+=> FUNCTOR
+
+#?(definstance(functor zip-list)
+    ((fmap(f zl)
+       `(zip-list (fmap ,f ,(denew zl))))))
+=> FUNCTOR
+
 ;;;; Instances of APPLICATIVE
 #?(definstance(applicative maybe)
     ((<*>(functor arg)
@@ -305,7 +345,16 @@
 	  ,x))
      (<*>(f g)
        `(lambda(x)
-	  (funcall (funcall ,f x) (funcall ,g x))))))
+	  (funcall(funcall ,f x) (funcall ,g x))))))
+=> APPLICATIVE
+
+#?(definstance(applicative zip-list)
+    ((pure(x)
+       `(series:series ,x))
+     (<*>(fs xs)
+       `(zip-list (let((fn ,fs))
+		    (series:collect (series:map-fn t #'funcall (series:scan fn)
+						   (series:scan ,xs))))))))
 => APPLICATIVE
 
 ;;;; MONOID
@@ -402,9 +451,54 @@
        `(funcall ,fun (funcall ,io)))))
 => MONAD
 
+#?(definstance(monad (writer w) :constraint (monoid w))
+    ((.return(x)
+       `(writer (cons ,x (mempty))))
+     (>>=(writer f)
+       `(destructuring-bind(#0=#:x . #1=#:v),writer
+	  (destructuring-bind(#2=#:y . #3=#:v%)(funcall ,f #0#)
+	    (writer(cons #2# (mappend #1# #3#))))))))
+=> MONAD
+
+#?(definstance(monad function)
+    ((.return(x)
+       `(lambda(#0=#:_)
+	  (declare(ignore #0#))
+	  ,x))
+     (>>=(h f)
+       `(lambda(#1=#:w)
+	  (funcall (funcall ,f (funcall ,h #1#))
+		   #1#)))))
+=> MONAD
+
+#?(definstance(monad state)
+    ((.return(x)
+       `(state(lambda(#0=#:s)
+		(cons ,x #0#))))
+     (>>=(h f)
+       `(state(lambda(#0#)
+		(destructuring-bind(#1=#:a . #2=#:new-state)(funcall ,h #0#)
+		  (let((#3=#:g(funcall ,f #1#)))
+		    (funcall #3# #2#))))))))
+=> MONAD
+
 ;;;; MONAD+
 #?(definstance(monad+ list)
     ((mzero()nil)
      (mplus(a b)`(append ,a ,b))))
 => MONAD+
 
+;;;; MONAD-WRITAER
+#?(definstance(monad-writer w (cons w) :constraint (monoid w))
+    ((.write(cons)
+       `(destructuring-bind(#0=#:a #1=#:w),cons
+	  (cons #1# #0#)))
+     (tell(w)
+       `(cons ,w nil))
+     (.listen(cons)
+       `(destructuring-bind(#1# #0#),cons
+	  (cons #1# (cons #0# #1#))))
+     (pass(cons)
+       `(destructuring-bind(#1# #0# . #2=#:f)cons
+	  (cons (funcall #2# #1#)#0#)))))
+=> MONAD-WRITER

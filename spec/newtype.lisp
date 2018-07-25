@@ -53,12 +53,6 @@
 => PAIR
 ,:before (fmakunbound 'pair)
 
-#?(definstance(functor pair)
-    ((fmap(f pair)
-       `(trivia:match ,pair
-          ((cons x y)(pair (cons (funcall ,f x)y)))))))
-=> FUNCTOR
-
 #?(fmap (curried-function:section * _ 100)
 	(pair '(2 . 3)))
 => (200 . 3)
@@ -80,20 +74,6 @@
     'list)
 => ZIP-LIST
 ,:before (fmakunbound 'zip-list)
-
-#?(definstance(functor zip-list)
-    ((fmap(f zl)
-       `(zip-list (fmap ,f ,(denew zl))))))
-=> FUNCTOR
-
-#?(definstance(applicative zip-list)
-    ((pure(x)
-       `(series:series ,x))
-     (<*>(fs xs)
-       `(zip-list (let((fn ,fs))
-		    (series:collect (series:map-fn t #'funcall (series:scan fn)
-						   (series:scan ,xs))))))))
-=> APPLICATIVE
 
 #?(<$> (curried-function:section + _ _)
        (zip-list '(1 2 3))
