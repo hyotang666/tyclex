@@ -6,7 +6,6 @@
     )
   (:export ; for hackers
     #:newtypep
-    #:*newtypes*
     ))
 (in-package :tyclex.newtype)
 
