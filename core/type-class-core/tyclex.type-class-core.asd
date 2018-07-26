@@ -6,7 +6,11 @@
   :pathname
   "src/"
   :components
-  ((:file "tyclex.type-class-core")))
+  ((:file "package")
+   (:file "type-class" :depends-on ("package"))
+   (:file "instance" :depends-on ("package"))
+   (:file "cell" :depends-on ("package"))
+   ))
 
 ;; These two methods below are added by JINGOH.GENERATOR.
 (defmethod component-depends-on
