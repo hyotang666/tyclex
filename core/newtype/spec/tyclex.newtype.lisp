@@ -134,3 +134,45 @@
 
 ;;;; Exceptional-Situations:
 
+(requirements-about NEWTYPE-TYPE-SPECIFIER-P)
+
+;;;; Description:
+; Return T when argument may newtype type specifier.
+#?(newtype-type-specifier-p '(zip-list fixnum))
+=> T
+#?(newtype-type-specifier-p "Not newtype type specifier")
+=> NIL
+
+#+syntax
+(NEWTYPE-TYPE-SPECIFIER-P type-specifier) ; => result
+
+;;;; Arguments and Values:
+
+; type-specifier := T
+
+; result := BOOLEAN
+
+;;;; Affected By:
+; Lisp environment.
+
+;;;; Side-Effects:
+; none
+
+;;;; Notes:
+; Return T even if it is not valid type specifier.
+#?(newtype-type-specifier-p '(zip-list * * *)) ; <--- too much arguments.
+=> T
+#?(newtype-type-specifier-p 'zip-list) ; <--- Lack required argument.
+=> T
+#?(newtype-type-specifier-p '(zip-list :not-valid-type-specifier))
+=> T
+
+; In order to simulate currying, nested type specifier is treated as valid.
+; In such case, return t when first symbol names newtype.
+#?(newtype-type-specifier-p '((zip-list first-arg)second-arg))
+=> T
+#?(newtype-type-specifier-p '((not-newtype *) *))
+=> NIL
+
+;;;; Exceptional-Situations:
+
