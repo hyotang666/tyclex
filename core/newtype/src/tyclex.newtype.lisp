@@ -5,7 +5,7 @@
     #:denew
     )
   (:export ; for hackers
-    #:newtypep
+    #:newtype-type-specifier-p
     ))
 (in-package :tyclex.newtype)
 
@@ -19,7 +19,7 @@
 
 (setf (symbol-function 'denew)#'third)
 
-(defun newtypep(type-specifier)
+(defun newtypep-type-specifier-p(type-specifier)
   (labels((ensure-symbol(thing)
 	    (if(atom thing)
 	      thing
