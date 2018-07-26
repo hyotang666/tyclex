@@ -35,4 +35,4 @@
 	    (if(atom thing)
 	      thing
 	      (ensure-symbol(car thing)))))
-    (gethash (ensure-symbol type-specifier) *newtypes*)))
+    (values(gethash (ensure-symbol type-specifier) *newtypes*))))
