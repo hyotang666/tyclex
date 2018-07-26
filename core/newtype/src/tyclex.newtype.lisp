@@ -30,7 +30,7 @@
 
 (setf (symbol-function 'denew)#'third)
 
-(defun newtypep-type-specifier-p(type-specifier)
+(defun newtype-type-specifier-p(type-specifier)
   (labels((ensure-symbol(thing)
 	    (if(atom thing)
 	      thing
