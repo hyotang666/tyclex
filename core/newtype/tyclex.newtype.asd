@@ -2,7 +2,9 @@
 (in-package :asdf)
 (defsystem "tyclex.newtype"
   :depends-on
-  nil
+  (
+   "lambda-fiddle"      ; Tiny utilities for lambda-list parsing.
+   )
   :pathname
   "src/"
   :components

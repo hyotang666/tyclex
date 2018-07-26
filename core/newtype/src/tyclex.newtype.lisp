@@ -19,7 +19,14 @@
   `(PROGN (SETF (GETHASH ',name *NEWTYPES*) T)
 	  (DEFTYPE ,name ,lambda-list ,@body)
 	  (DEFMACRO,name(arg)
-	    `(THE ,',name ,arg))))
+	    `(THE ,',(enough-type-specifier name lambda-list) ,arg))))
+
+(defun enough-type-specifier(name lambda-list)
+  (let((*s(loop :repeat (length (first(lambda-fiddle:split-lambda-list lambda-list)))
+		:collect '*)))
+    (if *s
+      `(,name ,@*s)
+      name)))
 
 (setf (symbol-function 'denew)#'third)
 
