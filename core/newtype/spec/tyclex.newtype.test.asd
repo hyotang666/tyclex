@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :tyclex.newtype.test
   :depends-on
-  (:jingoh "tyclex.newtype")
+  (:jingoh "tyclex.newtype" "millet")
   :components
   ((:file "tyclex.newtype"))
   :perform
