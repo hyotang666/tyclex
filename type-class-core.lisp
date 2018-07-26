@@ -45,6 +45,16 @@
 (defun (setf instance-table)(new interface)
   (setf(type-class-instance-table(get interface 'instance))new))
 
+;;;; CELL
+(defstruct(cell (:predicate nil)
+		(:copier nil)
+		(:conc-name nil)
+		(:constructor make-cell (signature instances types constraint)))
+  (signature (error "SIGNATURE is required.") :type list :read-only t)
+  (instances (error "Instances is required.") :type list :read-only t)
+  (types     (error "Types is required.")     :type list :read-only t)
+  (constraint(error "Constraint is required."):type t    :read-only t))
+
 ;;;; DEFISTANCE
 (defmacro definstance((type-class &rest args) definition)
   (let*((|(types constraint)|(split-sequence:split-sequence :constraint args))
@@ -69,9 +79,12 @@
 		    :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
 						 signature)
 		    :collect `(add-instance ',name ',signature ',defs ',types ',constraint))
+	    ,@(loop :for type :in types
+		    :collect `(pushnew ',type (type-member (find-type-class ',type-class))
+				       :test #'equal))
 	    ',type-class)))
 
 ;;;; ADD-INSTANCE
 (defun add-instance(interface signature definition types constraint)
-  (push(list signature definition types constraint)(instance-table interface)))
+  (push(make-cell signature definition types constraint)(instance-table interface)))
 

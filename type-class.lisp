@@ -49,13 +49,13 @@
 (defvar *expand-verbose* T)
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
-     (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS IL MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
+     (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS CELL MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
        (DECLARE (IGNORE RETURN-TYPE)
 		(IGNORABLE INFOS))
        (LET((BODY`(,',sub-name
 		    ,@(LOOP :FOR FORM :IN EXPANDED
 			    :COLLECT (expander:expand `(MACROLET,MACROS,FORM) env)))))
-	 (IF IL
+	 (IF CELL
 	     ,(if(millet:type-specifier-p return-type)
 		``(MACROLET,MACROS (THE ,',return-type ,BODY))
 		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYPE-UNIFY:UNIFY ',lambda-list (ENWILD INFOS)))))
@@ -74,10 +74,10 @@
 	(return-types(Compute-return-types expanded env))
 	(infos(check-signature (Instance-lambda-list (car form))
 			       return-types))
-	(instances(get-instance-lambda (car form) infos))
-	(defs(first instances))
-	(types(second instances))
-	(constraint(car(third instances)))
+	(cell(get-instance-lambda (car form) infos))
+	(defs(and cell (Instances cell)))
+	(types(and cell (Types cell)))
+	(constraint(and cell (car(Constraint cell))))
 	(consts(when constraint
 		 (alexandria:when-let((constructors(mapcan (lambda(type)
 							     (let((constructor (trestrul:find-node-if
@@ -87,14 +87,16 @@
 							       (when constructor
 								 (list constructor))))
 							   types)))
-		   (let((return-types(mapcar #'second constructors))
-			(instance-table(some #'Instance-table
-					     (Type-instances (Find-type-class constraint)))))
-		     (second(find-if (lambda(cell)
-				       (find-if (lambda(return-type)
-						  (Subtype? return-type (car(third cell))))
-						return-types))
-				     instance-table))))))
+		   (let*((return-types(mapcar #'second constructors))
+			 (instance-table(some #'Instance-table
+					      (Type-instances (Find-type-class constraint))))
+			 (cell(find-if (lambda(cell)
+					 (find-if (lambda(return-type)
+						    (Subtype? return-type (car(Types cell))))
+						  return-types))
+				       instance-table)))
+		     (when cell
+		       (Instances cell))))))
 	(macros(loop :for (name . rest) :in defs
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
@@ -102,16 +104,16 @@
 	(type-class(Instance-type-class (car form)))
 	(defs(loop :for tc :in (Type-direct-subclasses type-class)
 		   :append (loop :for instance :in (Type-instances (Find-type-class tc))
-				 :thereis (loop :for (nil defs type%) :in (Instance-table instance)
-						:when (equal types type%)
-						:return defs)))))
+				 :thereis (loop :for cell :in (Instance-table instance)
+						:when (equal types (types cell))
+						:return (instances cell))))))
     (if(some (lambda(x)
 	       (let((x(alexandria:ensure-car x)))
 		 (or (type-unify:variablep x)
 		     (eq t x))))
 	      infos)
       (values expanded return-types infos nil nil)
-      (values expanded return-types infos instances (append macros defs consts)))))
+      (values expanded return-types infos cell (append macros defs consts)))))
 
 (defun sub-name(symbol)
   (gensym(symbol-name symbol)))
@@ -132,26 +134,28 @@
 
 ;;;; COLLECT-INSTANCE
 (defun collect-instance(type* interface)
-  (remove-if-not (lambda(type)
+  (remove-if-not (lambda(signature)
 		   (every #'subtype? (canonicalize-return-type type*)
-			  (canonicalize-return-type type)))
+			  (canonicalize-return-type signature)))
 		 (instance-table interface)
-		 :key #'car))
+		 :key #'Signature))
 
 ;;;; COMPUTE-APPLICABLE-INSTANCE
 (defun compute-applicable-instance(list)
   (if(null(cdr list))
-    (cdar list) ; only one element, does not need to sort.
+    (car list) ; only one element, does not need to sort.
     (let((sorted(sort-instance list)))
-      (if(find(caar sorted)(cdr sorted):key #'car :test #'equal)
+      (if(find (Signature(car sorted))
+	       (cdr sorted)
+	       :key #'Signature :test #'equal)
 	nil ; duplicate signature, give up.
-	(cdar list)))))
+	(car sorted)))))
 
 (defun sort-instance(list)
   (flet((type<(ts1 ts2)
 	  (every #'subtype? (canonicalize-return-type ts1)
 		 (canonicalize-return-type ts2))))
-    (sort list #'type< :key #'car)))
+    (sort list #'type< :key #'Signature)))
 
 ;;;; MACROEXPAND-HOOK
 (defun ehcl-macroexpand-hook(expander form env)
