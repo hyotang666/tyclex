@@ -12,6 +12,10 @@
 (defvar *newtypes* (make-hash-table :test #'eq))
 
 (defmacro define-newtype(name lambda-list &body body)
+  ;; trivial-syntax-check.
+  (assert(typep name '(and symbol (not (or keyword boolean)))))
+  (assert(listp lambda-list))
+  ;; body
   `(PROGN (SETF (GETHASH ',name *NEWTYPES*) T)
 	  (DEFTYPE ,name ,lambda-list ,@body)
 	  (DEFMACRO,name(arg)
