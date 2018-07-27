@@ -55,3 +55,47 @@
   (table(find-instance interface)))
 (defun (setf instance-table)(new interface)
   (setf(table(find-instance interface))new))
+
+;;;; DEFISTANCE
+(defmacro definstance((type-class &rest args) definition)
+  ;; bindings.
+  (destructuring-bind(types constraints)(split-sequence:split-sequence :constraints args)
+    (let*((instances(Type-class-instances  type-class))
+	  (defs(loop :for instance :in (set-difference instances (mapcar #'car definition))
+		     :collect (or (instance-default instance)
+				  (if(find instance instances)
+				    (error "Default instance missing. ~S" instance)
+				    (error "Unknown instance. ~S~%~S supports only ~S"
+					   instance type-class instances)))
+		     :into defaults
+		     :finally (return (append definition defaults)))))
+      ;; as canonicalize.
+      (when constraints
+	(setf types
+	      (trestrul:asubst-if
+		(lambda(var)
+		  `(satisfies ,(intern(format nil "~A-P"
+					      (car(find var constraints
+							:key #'cadr :test #'eq))))))
+		(lambda(elt)
+		  (find elt constraints :key #'cadr :test #'eq))
+		types)))
+      ;; body.
+      `(progn ,@(loop :for (name) :in defs
+		      :for signature = (sublis (mapcan (lambda(var)
+							 (mapcar (lambda(type)
+								   (cons var type))
+								 types))
+						       (Type-class-vars type-class))
+					       (instance-lambda-list name))
+		      :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
+						   signature)
+		      :collect `(AUGMENT-TABLE ',name
+					       (MAKE-CELL :SIGNATURE ',signature
+							  :INSTANCES ',defs
+							  :TYPES ',types
+							  :CONSTRAINTS ',constraints)))
+	      ,@(loop :for type :in types
+		      :collect `(pushnew ',type (Type-class-member ',type-class)
+					 :test #'equal))
+	      ',type-class))))

@@ -2,7 +2,11 @@
 (in-package :asdf)
 (defsystem "tyclex.type-class-core"
   :depends-on
-  nil
+  (
+   "split-sequence"     ; Tiny utilities for sequence splitting.
+   "cl-unification"     ; Unification.
+   "trestrul"           ; Tiny utilities for tree structured list.
+   )
   :pathname
   "src/"
   :components

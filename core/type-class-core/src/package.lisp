@@ -35,7 +35,15 @@
     #:type-class-member #:type-class-constraints
     ;; helpers
     #:find-type-class #:add-type-class #:remove-type-class
+    ;; Main api
+    #:definstance
     )
   )
 (in-package :tyclex.type-class-core)
+
+(eval-when(:compile-toplevel :load-toplevel :execute)
+  (unless(find-package :type-unify)
+    (rename-package :unify :type-unify)
+    (let((asdf::*asdf-session* nil))
+      (asdf:load-system :cl-unification :force t))))
 
