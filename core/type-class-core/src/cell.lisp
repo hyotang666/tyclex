@@ -8,5 +8,5 @@
   (signature  (error "SIGNATURE is required.")  :type list :read-only t)
   (instances  (error "INSTANCES is required.")  :type list :read-only t)
   (types      (error "TYPES is required.")      :type list :read-only t)
-  (constraints(error "CONSTRAINTS is required."):type t    :read-only t))
+  (constraints(error "CONSTRAINTS is required."):type list :read-only t))
 
