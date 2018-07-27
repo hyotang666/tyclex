@@ -1,5 +1,6 @@
 (defpackage :tyclex.newtype.spec
   (:import-from :tyclex.newtype #:enough-type-specifier)
+  (:shadowing-import-from :tyclex.newtype #:list)
   (:use :cl :jingoh :tyclex.newtype))
 (in-package :tyclex.newtype.spec)
 (setup :tyclex.newtype)
@@ -10,7 +11,7 @@
 ; Define newtype.
 #?(define-newtype zip-list(a)
     (declare(ignore a))
-    'list)
+    'cl:list)
 => ZIP-LIST
 ,:before (fmakunbound 'zip-list)
 

@@ -1,5 +1,7 @@
 (defpackage :tyclex.newtype
   (:use :cl)
+  (:shadow #:list)
+  (:export #:list)
   (:export ; main api
     #:define-newtype
     #:denew
@@ -8,6 +10,13 @@
     #:newtype-type-specifier-p
     ))
 (in-package :tyclex.newtype)
+
+(setf(symbol-function 'list)#'cl:list)
+
+(deftype list(&optional a)
+  (declare(ignore a))
+  'cl:list)
+(declaim(ftype(function(&rest t)list)list))
 
 (defvar *newtypes* (make-hash-table :test #'eq))
 
