@@ -27,6 +27,7 @@
 	  (error "Missing instance named ~S" interface)))))
 
 (defun add-instance(interface &rest args)
+  (check-type interface (and symbol (not (or keyword boolean))))
   (setf (gethash interface *instances*)
 	(apply #'make-type-class-instance args)))
 

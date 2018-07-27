@@ -20,6 +20,7 @@
 	  (error "Missing type-class named ~S." arg)))))
 
 (defun add-type-class(name &rest args)
+  (check-type name (and symbol (not (or keyword boolean))))
   (setf (gethash name *type-classes*)
 	(apply #'make-type-class :name name args)))
 
