@@ -1,19 +1,19 @@
 ; vim: ft=lisp et
 (in-package :asdf)
-(defsystem "tyclex.meta-objects"
+(defsystem "tyclex.objects.cell"
   :depends-on
   nil
   :pathname
   "src/"
   :components
-  ((:file "tyclex.meta-objects")))
+  ((:file "tyclex.objects.cell")))
 
 ;; These two methods below are added by JINGOH.GENERATOR.
 (defmethod component-depends-on
-           ((o test-op) (c (eql (find-system "tyclex.meta-objects"))))
-  (append (call-next-method) '((test-op "tyclex.meta-objects.test"))))
+           ((o test-op) (c (eql (find-system "tyclex.objects.cell"))))
+  (append (call-next-method) '((test-op "tyclex.objects.cell.test"))))
 (defmethod operate :around
-           ((o test-op) (c (eql (find-system "tyclex.meta-objects")))
+           ((o test-op) (c (eql (find-system "tyclex.objects.cell")))
             &rest keys)
   (flet ((jingoh.args (keys)
            (loop :for (key value) :on keys :by #'cddr
