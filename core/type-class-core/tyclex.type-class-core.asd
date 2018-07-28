@@ -3,8 +3,8 @@
 (defsystem "tyclex.type-class-core"
   :depends-on
   (
+   "tyclex.unifier"     ; Unification.
    "split-sequence"     ; Tiny utilities for sequence splitting.
-   "cl-unification"     ; Unification.
    "trestrul"           ; Tiny utilities for tree structured list.
    )
   :pathname

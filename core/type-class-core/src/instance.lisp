@@ -88,7 +88,7 @@
 								 types))
 						       (Type-class-vars type-class))
 					       (instance-lambda-list name))
-		      :when (trestrul:find-leaf-if (complement #'type-unify:variablep)
+		      :when (trestrul:find-leaf-if (complement #'tyclex.unifier:variablep)
 						   signature)
 		      :collect `(AUGMENT-TABLE ',name
 					       (MAKE-CELL :SIGNATURE ',signature
