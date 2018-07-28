@@ -5,7 +5,7 @@
       (asdf:load-system :cl-unification :force t))))
 
 (in-package :tyclex.unifier)
-(export '(envar patternize enwild dewild))
+(export '(envar patternize enwild dewild ignore-unification-failure))
 
 (defun envar(thing)
   (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
@@ -26,3 +26,7 @@
 
 (defun dewild (pattern)
   (subst T '_ pattern))
+
+(defmacro ignore-unification-failure(form)
+  `(handler-case,form
+     (unification-failure()NIL)))
