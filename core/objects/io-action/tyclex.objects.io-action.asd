@@ -2,7 +2,10 @@
 (in-package :asdf)
 (defsystem "tyclex.objects.io-action"
   :depends-on
-  nil
+  (
+   "closer-mop"         ; Wrapper for meta object protocols.
+   "tyclex.newtype"     ; Tyclex module for newtype.
+   )
   :pathname
   "src/"
   :components
