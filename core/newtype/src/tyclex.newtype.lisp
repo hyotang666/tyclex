@@ -7,7 +7,7 @@
     #:denew
     )
   (:export ; for hackers
-    #:newtype-type-specifier-p
+    #:newtype-type-specifier-p #:add-newtype
     ))
 (in-package :tyclex.newtype)
 
@@ -25,7 +25,7 @@
   (assert(typep name '(and symbol (not (or keyword boolean)))))
   (assert(listp lambda-list))
   ;; body
-  `(PROGN (SETF (GETHASH ',name *NEWTYPES*) T)
+  `(PROGN (ADD-NEWTYPE ',name)
 	  (DEFTYPE ,name ,lambda-list ,@body)
 	  (DEFMACRO,name(arg)
 	    `(THE ,',(enough-type-specifier name lambda-list) ,arg))))
@@ -45,3 +45,7 @@
 	      thing
 	      (ensure-symbol(car thing)))))
     (values(gethash (ensure-symbol type-specifier) *newtypes*))))
+
+(defun add-newtype(name)
+  (check-type name (and symbol (not (or keyword boolean))))
+  (setf (gethash name *newtypes*)t))
