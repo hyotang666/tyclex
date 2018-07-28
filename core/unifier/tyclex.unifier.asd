@@ -2,7 +2,11 @@
 (in-package :asdf)
 (defsystem "tyclex.unifier"
   :depends-on
-  nil
+  (
+   "cl-unification"     ; Unification.
+   "trestrul"           ; Utilities for tree structured list.
+   "millet"             ; Wrapper for implementation dependent utilities.
+   )
   :pathname
   "src/"
   :components
