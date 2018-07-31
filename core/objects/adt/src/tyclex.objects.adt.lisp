@@ -35,6 +35,7 @@
 	(apply #'make-adt args)))
 
 (defun remove-adt(name)
+  (check-type name symbol)
   (remhash name *adts*))
 
 (defun find-adt(name &optional(errorp t))
@@ -60,10 +61,12 @@
 (defvar *adt-constructors* (make-hash-table :test #'eq))
 
 (defun add-adt-constructor(name &rest args)
+  (check-type name symbol)
   (setf (gethash name *adt-constructors*)
 	(apply #'make-adt-constructor args)))
 
 (defun remove-adt-constructor(name)
+  (check-type name symbol)
   (remhash name *adt-constructors*))
 
 (defun find-adt-constructor(name &optional (errorp t))
