@@ -6,7 +6,7 @@
     ;; constructor
     #:make-adt
     ;; readers
-    #:adt-constructurs #:adt-lambda-list
+    #:adt-constructors #:adt-lambda-list
     ;; helpers
     #:add-adt #:remove-adt #:find-adt #:adt-makunbound
     )
