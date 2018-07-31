@@ -453,7 +453,7 @@
 
 ;;;; Description:
 ; Return generalized boolean when symbol bound as `ADT-CONSTRUCTOR`.
-#?(adt-constructor-boundp 'name) :satisifes identity
+#?(adt-constructor-boundp 'name) :satisfies identity
 
 #+syntax
 (ADT-CONSTRUCTOR-BOUNDP symbol) ; => result
