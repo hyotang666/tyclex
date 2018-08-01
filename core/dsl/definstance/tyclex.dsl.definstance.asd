@@ -2,7 +2,14 @@
 (in-package :asdf)
 (defsystem "tyclex.dsl.definstance"
   :depends-on
-  nil
+  (
+   "tyclex.unifier"             ; Module for Unification.
+   "tyclex.objects.type-class"  ; Module for type-class object.
+   "tyclex.objects.instance"    ; Module for instance object.
+   "tyclex.objects.cell"        ; Module for cell object.
+   "split-sequence"             ; Sequence splitting utilities.
+   "trestrul"                   ; Utilities for tree structured list.
+   )
   :pathname
   "src/"
   :components
