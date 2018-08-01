@@ -2,7 +2,9 @@
 (in-package :asdf)
 (defsystem "tyclex.dsl.defio"
   :depends-on
-  nil
+  (
+   "tyclex.objects.io-action"   ; Module for io-action object.
+   )
   :pathname
   "src/"
   :components
