@@ -2,7 +2,19 @@
 (in-package :asdf)
 (defsystem "tyclex.dsl.define-type-class"
   :depends-on
-  nil
+  (
+   "tyclex.objects"             ; Interface for object modules.
+   "tyclex.unifier"             ; Module for unification.
+   "tyclex.type-matcher"        ; Module for type matching.
+   "tyclex.curry"               ; Module for currying.
+   "tyclex.dsl.defdata"         ; Module for DEFDATA syntax.
+   "millet"                     ; Wrapper for implementation dependent utilities.
+   "introspect-environment"     ; Wrapper for environment introspection.
+   "closer-mop"                 ; Wrapper for meta object protocols.
+   "alexandria"                 ; Public domain utilities.
+   "expander"                   ; Macroexpand-all.
+   "trestrul"                   ; Utilities for tree structured list.
+   )
   :pathname
   "src/"
   :components
