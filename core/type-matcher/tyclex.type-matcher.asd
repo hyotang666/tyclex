@@ -2,7 +2,15 @@
 (in-package :asdf)
 (defsystem "tyclex.type-matcher"
   :depends-on
-  nil
+  (
+   "tyclex.newtype"     ; Module for newtype.
+   "tyclex.adt"         ; Module for algebraic data types.
+   "tyclex.unifier"     ; Module for unification.
+   "tyclex.objects.adt" ; Module for adt objects.
+   "millet"             ; Wrapper for implementation dependent utilities.
+   "trestrul"           ; Tiny utilities for tree structured list.
+   "matrix-case"        ; Tiny utilities for control flow.
+   )
   :pathname
   "src/"
   :components
