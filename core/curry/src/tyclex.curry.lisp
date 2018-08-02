@@ -98,7 +98,8 @@
 
 ;;;; FUNCTION-TYPE
 (defmacro function-type (name args return)
-  `(PROGN (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
+  `(PROGN (DECLAIM(FTYPE(FUNCTION,args,return),name))
+	  (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
 	  ',name))
 
 (defun function-type-of(name)
