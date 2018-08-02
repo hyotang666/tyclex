@@ -6,13 +6,12 @@
    "tyclex.objects.adt"         ; Module for adt objects.
    "tyclex.objects.type-class"  ; Module for type-class objects.
    "tyclex.objects.instance"    ; Module for instance objects.
-   "tyclex.unifier"             ; Module for unification.
+   "tyclex.type-matcher"        ; Module for type matching.
    "tyclex.dsl.definstance"     ; Module for dsl definstance.
    "millet"                     ; Wrapper for implementation dependent utilities.
    "introspect-environment"     ; Wrapper for environment introspection.
    "alexandria"                 ; Public domain utilities.
    "trivia"                     ; Pattern matcher.
-   "with-package"               ; Using package locally.
    )
   :pathname
   "src/"
