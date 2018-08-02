@@ -2,7 +2,11 @@
 (in-package :asdf)
 (defsystem "tyclex.curry"
   :depends-on
-  nil
+  (
+   "closer-mop"                 ; Wrapper for meta object protocols.
+   "introspect-environment"     ; Wrapper for environment introspection.
+   "alexandria"                 ; Public domain utilities.
+   )
   :pathname
   "src/"
   :components
