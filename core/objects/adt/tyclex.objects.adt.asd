@@ -2,7 +2,9 @@
 (in-package :asdf)
 (defsystem "tyclex.objects.adt"
   :depends-on
-  nil
+  (
+   "alexandria" ; Public domain utilities.
+   )
   :pathname
   "src/"
   :components

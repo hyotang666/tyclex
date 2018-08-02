@@ -6,7 +6,7 @@
     ;; Main API
     #:defdata
     ;; Helpers
-    #:adt-type-specifier-p #:adt-value-p #:data-type-of #:data-order
+    #:adt-value-p #:data-type-of #:data-order
     ))
 (in-package :tyclex.dsl.defdata)
 
@@ -177,19 +177,6 @@
     (rec(list type-class-name))))
 
 ;;;; Trivial helpers
-(defun adt-type-specifier-p(thing)
-  (labels((ensure-adt(thing)
-	    (typecase thing
-	      (symbol (Find-adt thing))
-	      (list (adt-type-specifier-p (car thing))))))
-    (let((adt(ensure-adt thing)))
-      (when adt
-	(let*((form(cdr(alexandria:flatten (if (symbolp thing)
-					     ()
-					     thing))))
-	      (lambda-list(adt-lambda-list adt)))
-	  (< (length form)(length lambda-list)))))))
-
 (defun adt-value-p(thing)
   (labels((adv?(thing)
 	    (typecase thing

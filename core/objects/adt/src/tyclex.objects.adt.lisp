@@ -8,7 +8,7 @@
     ;; readers
     #:adt-constructors #:adt-lambda-list
     ;; helpers
-    #:add-adt #:remove-adt #:find-adt #:adt-makunbound
+    #:add-adt #:remove-adt #:find-adt #:adt-makunbound #:adt-type-specifier-p
     )
   (:export
     ;; type-name
@@ -52,6 +52,19 @@
 	    (fmakunbound symbol))
 	  constructors)
     (makunbound name)))
+
+(defun adt-type-specifier-p(thing)
+  (labels((ENSURE-ADT(thing)
+	    (typecase thing
+	      (symbol (Find-adt thing))
+	      (list (adt-type-specifier-p (car thing))))))
+    (let((adt(ENSURE-ADT thing)))
+      (when adt
+	(let*((form(cdr(alexandria:flatten (if (symbolp thing)
+					     ()
+					     thing))))
+	      (lambda-list(adt-lambda-list adt)))
+	  (< (length form)(length lambda-list)))))))
 
 ;;;; ADT-CONSTRUCTOR data structure
 (defstruct(adt-constructor (:copier nil)(:predicate nil))
