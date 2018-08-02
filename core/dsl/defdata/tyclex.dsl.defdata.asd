@@ -2,7 +2,18 @@
 (in-package :asdf)
 (defsystem "tyclex.dsl.defdata"
   :depends-on
-  nil
+  (
+   "tyclex.objects.adt"         ; Module for adt objects.
+   "tyclex.objects.type-class"  ; Module for type-class objects.
+   "tyclex.objects.instance"    ; Module for instance objects.
+   "tyclex.unifier"             ; Module for unification.
+   "tyclex.dsl.definstance"     ; Module for dsl definstance.
+   "millet"                     ; Wrapper for implementation dependent utilities.
+   "introspect-environment"     ; Wrapper for environment introspection.
+   "alexandria"                 ; Public domain utilities.
+   "trivia"                     ; Pattern matcher.
+   "with-package"               ; Using package locally.
+   )
   :pathname
   "src/"
   :components
