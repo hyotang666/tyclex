@@ -3,7 +3,7 @@
 (defsystem "tyclex.objects"
   :depends-on
   (
-   "tyclex.objects.cell"
+   "tyclex.objects.instance"
    "tyclex.objects.interface"
    "tyclex.objects.type-class"
    "tyclex.objects.adt"
@@ -17,7 +17,7 @@
 ;; These two methods below are added by JINGOH.GENERATOR.
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tyclex.objects"))))
-  (append (call-next-method) '((test-op "tyclex.objects.cell.test")
+  (append (call-next-method) '((test-op "tyclex.objects.instance.test")
                                (test-op "tyclex.objects.interface.test")
                                (test-op "tyclex.objects.type-class.test")
                                (test-op "tyclex.objects.io-action.test")
