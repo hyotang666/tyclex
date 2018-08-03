@@ -6,7 +6,7 @@
    "tyclex.unifier"             ; Module for Unification.
    "tyclex.objects.type-class"  ; Module for type-class object.
    "tyclex.objects.interface"   ; Module for interface object.
-   "tyclex.objects.cell"        ; Module for cell object.
+   "tyclex.objects.instance"    ; Module for cell object.
    "split-sequence"             ; Sequence splitting utilities.
    "trestrul"                   ; Utilities for tree structured list.
    )

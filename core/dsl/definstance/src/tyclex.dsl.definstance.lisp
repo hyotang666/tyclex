@@ -1,6 +1,6 @@
 (defpackage :tyclex.dsl.definstance
   (:use :cl #:tyclex.objects.type-class #:tyclex.objects.interface)
-  (:import-from #:tyclex.objects.cell #:make-cell)
+  (:import-from #:tyclex.objects.instance #:make-type-class-instance)
   (:export
     #:definstance
     ))
@@ -49,10 +49,11 @@
 					       (Interface-lambda-list name))
 		      :when (trestrul:find-leaf-if (complement #'tyclex.unifier:variablep)
 						   signature)
-		      :collect `(AUGMENT-INSTANCES ',name (MAKE-CELL :SIGNATURE ',signature
-								     :INSTANCES ',defs
-								     :TYPES ',types
-								     :CONSTRAINTS ',constraints)))
+		      :collect `(AUGMENT-INSTANCES ',name (MAKE-TYPE-CLASS-INSTANCE
+							    :SIGNATURE ',signature
+							    :DEFINITIONS ',defs
+							    :TYPES ',types
+							    :CONSTRAINTS ',constraints)))
 	      ,@(loop :for type :in types
 		      :collect `(PUSHNEW ',type (TYPE-CLASS-MEMBER  ',type-class)
 					 :TEST #'EQUAL))
