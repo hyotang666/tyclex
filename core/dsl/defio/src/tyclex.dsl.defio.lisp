@@ -12,7 +12,7 @@
        ;; SBCL emits compiler note about return type `IO-ACTION`.
        ;; note: type assertion too complex to check:
        #+sbcl(declare (sb-ext:muffle-conditions sb-ext:compiler-note))
-       (DECLAIM(FTYPE(FUNCTION,types(IO ,return)),name))
+       (PROCLAIM '(FTYPE(FUNCTION,types(IO ,return)),name))
        (ADD-IO ',name :TYPE '(IO ,return))
        (DEFUN,name,vars
 	 (MAKE-INSTANCE 'IO-ACTION
