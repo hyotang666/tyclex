@@ -11,7 +11,9 @@
   ;; trivial syntax checks.
   (assert(Find-type-class type-class))
   ;; Binds
-  (destructuring-bind(types constraints)(split-sequence:split-sequence :constraints args)
+  (destructuring-bind(types . constraints)(split-sequence:split-sequence :constraints args)
+    ;; canonicalize
+    (setf constraints (car constraints))
     ;; trivial syntax checks.
     (assert (every #'symbolp types))
     (assert (and (every #'symbolp constraints)
