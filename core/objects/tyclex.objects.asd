@@ -4,7 +4,7 @@
   :depends-on
   (
    "tyclex.objects.cell"
-   "tyclex.objects.instance"
+   "tyclex.objects.interface"
    "tyclex.objects.type-class"
    "tyclex.objects.adt"
    "tyclex.objects.io-action"
@@ -18,7 +18,7 @@
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tyclex.objects"))))
   (append (call-next-method) '((test-op "tyclex.objects.cell.test")
-                               (test-op "tyclex.objects.instance.test")
+                               (test-op "tyclex.objects.interface.test")
                                (test-op "tyclex.objects.type-class.test")
                                (test-op "tyclex.objects.io-action.test")
                                (test-op "tyclex.objects.adt.test"))))
