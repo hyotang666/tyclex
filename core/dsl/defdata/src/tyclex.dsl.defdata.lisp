@@ -1,7 +1,7 @@
 (defpackage :tyclex.dsl.defdata
   (:use :cl #:tyclex.objects.adt #:tyclex.objects.type-class)
-  (:import-from #:tyclex.objects.instance
-		#:instance-default)
+  (:import-from #:tyclex.objects.interface
+		#:interface-default)
   (:export
     ;; Main API
     #:defdata
@@ -167,9 +167,9 @@
 	      (body(car type-class-names)(cdr type-class-names) acc)))
 	  (body(type-class-name rest acc)
 	    (rec (append (Type-class-constraints type-class-name) rest)
-		 (loop :for instance :in (Type-class-instances type-class-name)
-		       :collect (or (Instance-default instance)
-				    (error "Default instance is not found. ~S"instance))
+		 (loop :for interface :in (Type-class-instances type-class-name)
+		       :collect (or (Interface-default interface)
+				    (error "Default instance is not found. ~S"interface))
 		       :into result
 		       :finally (return (cons `(Definstance(,type-class-name ,type)
 						 ,result)
