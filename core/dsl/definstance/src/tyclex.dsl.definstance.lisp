@@ -17,13 +17,13 @@
     (assert (and (every #'symbolp constraints)
 		 (notany #'keywordp constraints)))
     ;; Binds
-    (let*((instances(Type-class-instances type-class))
-	  (defs(loop :for instance :in (set-difference instances (mapcar #'car definition+))
-		     :collect (or (Interface-default instance)
-				  (if(find instance instances)
-				    (error "Default instance missing. ~S" instance)
+    (let*((interfaces(Type-class-interfaces type-class))
+	  (defs(loop :for interface :in (set-difference interfaces (mapcar #'car definition+))
+		     :collect (or (Interface-default interface)
+				  (if(find interface interfaces)
+				    (error "Default instance missing. ~S" interface)
 				    (error "Unknown interface. ~S~%~S supports only ~S"
-					   instance type-class instances)))
+					   interface type-class interfaces)))
 		     :into defaults
 		     :finally (return (append definition+ defaults)))))
       (when constraints
