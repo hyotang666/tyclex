@@ -7,7 +7,7 @@
 (in-package :tyclex.dsl.definstance)
 
 ;;;; DEFISTANCE
-(defmacro definstance((type-class &rest args)(&rest definition+))
+(defmacro definstance((type-class &rest args)definition+)
   ;; trivial syntax checks.
   (assert(Find-type-class type-class))
   ;; Binds
