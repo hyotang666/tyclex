@@ -30,7 +30,7 @@
 	 :do (setf ; as canonicalise
 	       lambda-list (tyclex.unifier:patternize lambda-list)
 	       return-type (tyclex.unifier:patternize return-type))
-	 :collect (<add-instance> method name lambda-list return-type rest)
+	 :collect (<add-interface> method name lambda-list return-type rest)
 	 :collect (<defmacro> method gensyms lambda-list return-type))
      ,(<type-class-predicate> name)
      ',name))
@@ -41,15 +41,15 @@
 	:collect
 	`(PUSHNEW ',name (TYPE-CLASS-CONSTRAINTS ',constraint))))
 
-;;; <add-instance>
-(defun <add-instance>(method name lambda-list return-type rest)
-  `(ADD-INSTANCE ',method
-		 :TYPE-CLASS ',name
-		 :LAMBDA-LIST ',lambda-list
-		 :RETURN-TYPE ',return-type
-		 ,@(let((default(find method rest :key #'cadr)))
-		     (when default
-		       `(:DEFAULT ',(cdr default))))))
+;;; <add-interface>
+(defun <add-interface>(method name lambda-list return-type rest)
+  `(ADD-INTERFACE ',method
+		  :TYPE-CLASS ',name
+		  :LAMBDA-LIST ',lambda-list
+		  :RETURN-TYPE ',return-type
+		  ,@(let((default(find method rest :key #'cadr)))
+		      (when default
+			`(:DEFAULT ',(cdr default))))))
 
 ;;; <defmacro>
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
@@ -75,7 +75,7 @@
 	(expanded(loop :for form :in (copy-list (cdr form))
 		       :collect(expander:expand form env)))
 	(return-types(compute-return-types expanded env))
-	(infos(check-signature (Instance-lambda-list (car form))
+	(infos(check-signature (Interface-lambda-list (car form))
 			       return-types))
 	(cell(get-cell (car form) infos))
 	(defs(and cell (Instances cell)))
@@ -92,8 +92,8 @@
 							   types)))
 		   (let*((return-types(mapcar #'second constructors))
 			 (instance-tables(loop :for constraint :in constraints
-					       :append (dolist(instance (Type-class-instances constraint))
-							 (let((table (Instance-table instance)))
+					       :append (dolist(interface (Type-class-instances constraint))
+							 (let((table (Interface-instances interface)))
 							   (when table
 							     (return (list table)))))))
 			 (cells(loop :for instance-table :in instance-tables
@@ -108,10 +108,10 @@
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
-	(type-class(Instance-type-class (car form)))
+	(type-class(Interface-type-class (car form)))
 	(defs(loop :for tc :in (Type-class-constraints type-class)
-		   :append (loop :for instance :in (Type-class-instances tc)
-				 :thereis (loop :for cell :in (Instance-table instance)
+		   :append (loop :for interface :in (Type-class-instances tc)
+				 :thereis (loop :for cell :in (Interface-instances interface)
 						:when (find types (Types cell)
 							    :test #'Type-match-p)
 						:return (Instances cell))))))
@@ -155,9 +155,9 @@
 	   T))))
     ((typep var '(cons (cons (eql lambda) *) *)) ; ((lambda(...)...)...)
      (compute-standard-form-return-type (car(last(cddar var))) env))
-    ((and (listp var) ; instance call.
-	  (Instancep (car var)))
-     (compute-instance-call-return-type var))
+    ((and (listp var) ; interface call.
+	  (Interfacep (car var)))
+     (compute-interface-call-return-type var))
     ((and (listp var) ; action call.
 	  (Io-boundp (car var)))
      (Action-type(Io-boundp (car var))))
@@ -225,9 +225,9 @@
 				     ,(rec(cdr list))))))
 		    (rec types)))))))))))
 
-(defun compute-instance-call-return-type(call-form)
-  (let((pattern(instance-return-type(car call-form)))
-       (environment(tyclex.unifier:unify (Instance-lambda-list(car call-form))
+(defun compute-interface-call-return-type(call-form)
+  (let((pattern(Interface-return-type(car call-form)))
+       (environment(tyclex.unifier:unify (Interface-lambda-list(car call-form))
 					 (tyclex.unifier:enwild (compute-return-types(cdr call-form))))))
     (substitute-pattern pattern environment)))
 
@@ -484,7 +484,7 @@
   (remove-if-not (lambda(signature)
 		   (every #'Type-match-p (canonicalize-return-type type*)
 			  (canonicalize-return-type signature)))
-		 (Instance-table interface)
+		 (Interface-instances interface)
 		 :key #'Signature))
 
 ;;;; COMPUTE-APPLICABLE-INSTANCE
