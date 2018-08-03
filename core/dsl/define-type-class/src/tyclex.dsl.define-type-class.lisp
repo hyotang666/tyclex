@@ -54,13 +54,13 @@
 ;;; <defmacro>
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
-     (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS CELL MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
+     (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS INSTANCE MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
        (DECLARE (IGNORE RETURN-TYPE)
 		(IGNORABLE INFOS))
        (LET((BODY`(,',sub-name
 		    ,@(LOOP :FOR FORM :IN EXPANDED
 			    :COLLECT (expander:expand `(MACROLET,MACROS,FORM) env)))))
-	 (IF CELL
+	 (IF INSTANCE
 	     ,(if(millet:type-specifier-p return-type)
 		``(MACROLET,MACROS (THE ,',return-type ,BODY))
 		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (ENWILD INFOS)))))
@@ -77,16 +77,16 @@
 	(return-types(compute-return-types expanded env))
 	(infos(check-signature (Interface-lambda-list (car form))
 			       return-types))
-	(cell(get-cell (car form) infos))
-	(defs(and cell (Instances cell)))
-	(types(and cell (Types cell)))
-	(constraints(and cell (Constraints cell)))
+	(instance(get-instance (car form) infos))
+	(definitions(and instance (Instance-definitions instance)))
+	(types(and instance (Instance-types instance)))
+	(constraints(and instance (Instance-constraints instance)))
 	(consts(when constraints
 		 (alexandria:when-let((constructors(mapcan (lambda(type)
 							     (let((constructor (trestrul:find-node-if
-										      (lambda(x)
-											(eq (car x) (alexandria:ensure-car type)))
-										      return-types)))
+										 (lambda(x)
+										   (eq (car x) (alexandria:ensure-car type)))
+										 return-types)))
 							       (when constructor
 								 (list constructor))))
 							   types)))
@@ -96,32 +96,32 @@
 							 (let((table (Interface-instances interface)))
 							   (when table
 							     (return (list table)))))))
-			 (cells(loop :for instance-table :in instance-tables
-				     :collect (find-if (lambda(cell)
-							 (find-if (lambda(return-type)
-								    (Type-match-p return-type (car(Types cell))))
-								  return-types))
-						       instance-table))))
-		     (when cells
-		       (alexandria:mappend #'Instances cells))))))
-	(macros(loop :for (name . rest) :in defs
+			 (instances(loop :for instance-table :in instance-tables
+					 :collect (find-if (lambda(instance)
+							     (find-if (lambda(return-type)
+									(Type-match-p return-type (car(Instance-types instance))))
+								      return-types))
+							   instance-table))))
+		     (when instances
+		       (alexandria:mappend #'Instance-definitions instances))))))
+	(macros(loop :for (name . rest) :in definitions
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
 	(type-class(Interface-type-class (car form)))
-	(defs(loop :for tc :in (Type-class-constraints type-class)
-		   :append (loop :for interface :in (Type-class-interfaces tc)
-				 :thereis (loop :for cell :in (Interface-instances interface)
-						:when (find types (Types cell)
-							    :test #'Type-match-p)
-						:return (Instances cell))))))
+	(definitions(loop :for tc :in (Type-class-constraints type-class)
+			  :append (loop :for interface :in (Type-class-interfaces tc)
+					:thereis (loop :for instance :in (Interface-instances interface)
+						       :when (find types (Instance-types instance)
+								   :test #'Type-match-p)
+						       :return (Instance-definitions instance))))))
     (if(some (lambda(x)
 	       (let((x(alexandria:ensure-car x)))
 		 (or (tyclex.unifier:variablep x)
 		     (eq t x))))
-	      infos)
+	     infos)
       (values expanded return-types infos nil nil)
-      (values expanded return-types infos cell (append macros defs consts)))))
+      (values expanded return-types infos instance (append macros definitions consts)))))
 
 (defun sub-name(symbol)
   (gensym(symbol-name symbol)))
@@ -471,8 +471,8 @@
 					     (tyclex.unifier:unify (tyclex.unifier:enwild type*)
 								   (tyclex.unifier:enwild lambda-list)))))
 
-;;;; GET-INSTANCE-LAMBDA
-(defun get-cell(interface type*)
+;;;; GET-INSTANCE
+(defun get-instance(interface type*)
   (if(every (lambda(x)
 	      (eq T x))
 	    type*)
@@ -485,16 +485,16 @@
 		   (every #'Type-match-p (canonicalize-return-type type*)
 			  (canonicalize-return-type signature)))
 		 (Interface-instances interface)
-		 :key #'Signature))
+		 :key #'Instance-signature))
 
 ;;;; COMPUTE-APPLICABLE-INSTANCE
 (defun compute-applicable-instance(list)
   (if(null(cdr list))
     (car list) ; only one element, does not need to sort.
     (let((sorted(sort-instance list)))
-      (if(find (Signature(car sorted))
+      (if(find (Instance-signature(car sorted))
 	       (cdr sorted)
-	       :key #'Signature :test #'equal)
+	       :key #'Instance-signature :test #'equal)
 	nil ; duplicate signature, give up.
 	(car sorted)))))
 
@@ -502,7 +502,7 @@
   (flet((type<(ts1 ts2)
 	  (every #'Type-match-p (canonicalize-return-type ts1)
 		 (canonicalize-return-type ts2))))
-    (sort list #'type< :key #'Signature)))
+    (sort list #'type< :key #'Instance-signature)))
 
 ;;; <type-class-predicate>
 (defun <type-class-predicate>(name)
