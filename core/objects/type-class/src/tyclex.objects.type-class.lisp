@@ -8,7 +8,7 @@
     ;; predicate
     #:type-class-p
     ;; readers
-    #:type-class-name #:type-class-vars #:type-class-instances
+    #:type-class-name #:type-class-vars #:type-class-interfaces
     ;; accessors
     #:type-class-member #:type-class-constraints
     ;; helpers
@@ -22,7 +22,7 @@
 		      (:conc-name type-))
   (name 	(error "Name is required.")	:type (or symbol list)	:read-only t)
   (vars		(error "Var is required.")	:type list		:read-only t)
-  (instances	nil				:type list		:read-only t)
+  (interfaces	nil				:type list		:read-only t)
   (member	nil				:type list)
   (constraints	nil				:type list))
 
@@ -51,8 +51,8 @@
 (defun type-class-vars(arg)
   (type-vars(find-type-class arg)))
 
-(defun type-class-instances(arg)
-  (type-instances(find-type-class arg)))
+(defun type-class-interfaces(arg)
+  (type-interfaces(find-type-class arg)))
 
 (defun type-class-member(arg)
   (type-member(find-type-class arg)))

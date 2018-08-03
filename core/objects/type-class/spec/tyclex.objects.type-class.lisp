@@ -26,7 +26,7 @@
 (MAKE-TYPE-CLASS &key
 		 ((:name #:name) (error "name is required."))
 		 ((:vars #:vars) (error "var is required."))
-		 ((:instances #:instances) nil)
+		 ((:interfaces #:interfaces) nil)
 		 ((:member #:member) nil)
 		 ((:constraints #:constraints) nil))
 ; => result
@@ -38,7 +38,7 @@
 
 ; vars := List as type class parameter variables.
 
-; instances := List which contains instance name (i.e. (and symbol (not (or keyword boolean))))
+; interfaces := List which contains interface name (i.e. (and symbol (not (or keyword boolean))))
 
 ; member := List which contains type specifiers.
 
@@ -149,27 +149,27 @@
 ; When specified type-class is not found, an error is signaled.
 #?(type-class-vars '#:not-exist) :signals error
 
-(requirements-about TYPE-CLASS-INSTANCES)
+(requirements-about TYPE-CLASS-INTERFACES)
 
 ;;;; Description:
-; Reader for `TYPE-CLASS`'s `INSTANCE` slot.
-#?(type-class-instances (make-type-class :name '#:dummy :vars nil :instances '(yes)))
+; Reader for `TYPE-CLASS`'s `INTERFACES` slot.
+#?(type-class-interfaces (make-type-class :name '#:dummy :vars nil :interfaces '(yes)))
 => (YES)
 ,:test equal
 
 #+syntax
-(TYPE-CLASS-INSTANCES arg) ; => result
+(TYPE-CLASS-INTERFACES arg) ; => result
 
 ;;;; Arguments and Values:
 
 ; arg := type-class designator, i.e. type-class name is acceptable.
 #?(let((tyclex.objects.type-class::*type-classes*(make-hash-table)))
-    (add-type-class 'type-class-name :vars nil :instances '(yes))
-    (type-class-instances 'type-class-name))
+    (add-type-class 'type-class-name :vars nil :interfaces '(yes))
+    (type-class-interfaces 'type-class-name))
 => (YES)
 ,:test equal
 
-; result := List which contains instance names.
+; result := List which contains interface names.
 
 ;;;; Affected By:
 ; TYCLEX.OBJECTS.TYPE-CLASS::*TYPE-CLASSES*
@@ -181,7 +181,7 @@
 
 ;;;; Exceptional-Situations:
 ; When specified type-class is not found, an error is signaled.
-#?(type-class-instances '#:not-exist) :signals error
+#?(type-class-interfaces '#:not-exist) :signals error
 
 (requirements-about TYPE-CLASS-MEMBER)
 
