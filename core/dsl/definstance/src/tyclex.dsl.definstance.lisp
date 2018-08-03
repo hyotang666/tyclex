@@ -1,5 +1,5 @@
 (defpackage :tyclex.dsl.definstance
-  (:use :cl #:tyclex.objects.type-class #:tyclex.objects.instance)
+  (:use :cl #:tyclex.objects.type-class #:tyclex.objects.interface)
   (:import-from #:tyclex.objects.cell #:make-cell)
   (:export
     #:definstance
@@ -19,10 +19,10 @@
     ;; Binds
     (let*((instances(Type-class-instances type-class))
 	  (defs(loop :for instance :in (set-difference instances (mapcar #'car definition+))
-		     :collect (or (Instance-default instance)
+		     :collect (or (Interface-default instance)
 				  (if(find instance instances)
 				    (error "Default instance missing. ~S" instance)
-				    (error "Unknown instance. ~S~%~S supports only ~S"
+				    (error "Unknown interface. ~S~%~S supports only ~S"
 					   instance type-class instances)))
 		     :into defaults
 		     :finally (return (append definition+ defaults)))))
@@ -46,7 +46,7 @@
 								   (cons var type))
 								 types))
 						       (Type-class-vars type-class))
-					       (Instance-lambda-list name))
+					       (Interface-lambda-list name))
 		      :when (trestrul:find-leaf-if (complement #'tyclex.unifier:variablep)
 						   signature)
 		      :collect `(AUGMENT-TABLE ',name (MAKE-CELL :SIGNATURE ',signature
