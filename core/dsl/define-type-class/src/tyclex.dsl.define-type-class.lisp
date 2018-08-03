@@ -81,47 +81,58 @@
 	(definitions(and instance (Instance-definitions instance)))
 	(types(and instance (Instance-types instance)))
 	(constraints(and instance (Instance-constraints instance)))
-	(consts(when constraints
-		 (alexandria:when-let((constructors(mapcan (lambda(type)
-							     (let((constructor (trestrul:find-node-if
-										 (lambda(x)
-										   (eq (car x) (alexandria:ensure-car type)))
-										 return-types)))
-							       (when constructor
-								 (list constructor))))
-							   types)))
-		   (let*((return-types(mapcar #'second constructors))
-			 (instance-tables(loop :for constraint :in constraints
-					       :append (dolist(interface (Type-class-interfaces constraint))
-							 (let((table (Interface-instances interface)))
-							   (when table
-							     (return (list table)))))))
-			 (instances(loop :for instance-table :in instance-tables
-					 :collect (find-if (lambda(instance)
-							     (find-if (lambda(return-type)
-									(Type-match-p return-type (car(Instance-types instance))))
-								      return-types))
-							   instance-table))))
-		     (when instances
-		       (alexandria:mappend #'Instance-definitions instances))))))
+	(instance-constraints-definitions
+	  (when constraints
+	    (let((constructors(mapcan (lambda(type)
+					(let((constructor (trestrul:find-node-if
+							    (lambda(x)
+							      (eq (car x) (alexandria:ensure-car type)))
+							    return-types)))
+					  (when constructor
+					    (list constructor))))
+				      types)))
+	      (when constructors
+		(constraints-definitions constraints (mapcar #'second constructors))))))
 	(macros(loop :for (name . rest) :in definitions
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
 	(type-class(Interface-type-class (car form)))
-	(definitions(loop :for tc :in (Type-class-constraints type-class)
-			  :append (loop :for interface :in (Type-class-interfaces tc)
-					:thereis (loop :for instance :in (Interface-instances interface)
-						       :when (find types (Instance-types instance)
-								   :test #'Type-match-p)
-						       :return (Instance-definitions instance))))))
+	(type-class-constraints-definitions(constraints-definitions (Type-class-constraints type-class)
+								    types)))
     (if(some (lambda(x)
 	       (let((x(alexandria:ensure-car x)))
 		 (or (tyclex.unifier:variablep x)
 		     (eq t x))))
 	     infos)
       (values expanded return-types infos nil nil)
-      (values expanded return-types infos instance (append macros definitions consts)))))
+      (values expanded return-types infos instance (append macros
+							   type-class-constraints-definitions
+							   instance-constraints-definitions)))))
+
+#++
+(let*((return-types(mapcar #'second constructors))
+      (instance-tables(loop :for tc :in constraints
+			    :append (dolist(interface (Type-class-interfaces tc))
+				      (let((instances (Interface-instances interface)))
+					(when instances
+					  (return (list instances)))))))
+      (instances(loop :for instance-table :in instance-tables
+		      :collect (find-if (lambda(instance)
+					  (find-if (lambda(return-type)
+						     (Type-match-p return-type (car(Instance-types instance))))
+						   return-types))
+					instance-table))))
+  (when instances
+    (alexandria:mappend #'Instance-definitions instances)))
+
+(defun constraints-definitions(constraints types)
+  (loop :for tc :in constraints
+	:append (loop :for interface :in (Type-class-interfaces tc)
+		      :thereis (loop :for instance :in (Interface-instances interface)
+				     :when (find types (Instance-types instance)
+						 :test #'Type-match-p)
+				     :return (Instance-definitions instance)))))
 
 (defun sub-name(symbol)
   (gensym(symbol-name symbol)))
