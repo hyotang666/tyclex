@@ -49,10 +49,10 @@
 					       (Interface-lambda-list name))
 		      :when (trestrul:find-leaf-if (complement #'tyclex.unifier:variablep)
 						   signature)
-		      :collect `(AUGMENT-TABLE ',name (MAKE-CELL :SIGNATURE ',signature
-								 :INSTANCES ',defs
-								 :TYPES ',types
-								 :CONSTRAINTS ',constraints)))
+		      :collect `(AUGMENT-INSTANCES ',name (MAKE-CELL :SIGNATURE ',signature
+								     :INSTANCES ',defs
+								     :TYPES ',types
+								     :CONSTRAINTS ',constraints)))
 	      ,@(loop :for type :in types
 		      :collect `(PUSHNEW ',type (TYPE-CLASS-MEMBER  ',type-class)
 					 :TEST #'EQUAL))
