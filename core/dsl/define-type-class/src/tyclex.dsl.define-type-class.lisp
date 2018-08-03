@@ -92,7 +92,7 @@
 							   types)))
 		   (let*((return-types(mapcar #'second constructors))
 			 (instance-tables(loop :for constraint :in constraints
-					       :append (dolist(interface (Type-class-instances constraint))
+					       :append (dolist(interface (Type-class-interfaces constraint))
 							 (let((table (Interface-instances interface)))
 							   (when table
 							     (return (list table)))))))
@@ -110,7 +110,7 @@
 		     :else :collect (cons name rest)))
 	(type-class(Interface-type-class (car form)))
 	(defs(loop :for tc :in (Type-class-constraints type-class)
-		   :append (loop :for interface :in (Type-class-instances tc)
+		   :append (loop :for interface :in (Type-class-interfaces tc)
 				 :thereis (loop :for cell :in (Interface-instances interface)
 						:when (find types (Types cell)
 							    :test #'Type-match-p)
