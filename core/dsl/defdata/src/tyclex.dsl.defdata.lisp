@@ -176,7 +176,7 @@
 (defun adt-value-p(thing)
   (labels((adv?(thing)
 	    (typecase thing
-	      (symbol(Find-adt-constructor thing))
+	      (symbol(Find-adt-constructor thing nil))
 	      (list (adv? (car thing))))))
     (let((adt-constructor(adv? thing)))
       (when adt-constructor
