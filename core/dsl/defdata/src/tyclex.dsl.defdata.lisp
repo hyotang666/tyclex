@@ -28,8 +28,7 @@
 		   (<constructors> name lambda-list constructor))
 		 constructor*)
        ,@(loop :for c :in constructor*
-	       :for o :upfrom 0
-	       :collect (<add-adt-constructor> c o lambda-list name))
+	       :collect (<add-adt-constructor> c lambda-list name))
        ,@(mapcan #'<pattern-matcher> constructor*)
        ,@(loop :for tc :in deriving
 	       :append (<derivings> tc name))
@@ -129,18 +128,12 @@
   (intern(symbol-name(car constructor))))
 
 ;;; <add-adt-constructor>
-(defun <add-adt-constructor>(constructor order lambda-list name)
+(defun <add-adt-constructor>(constructor lambda-list name)
   `(ADD-ADT-CONSTRUCTOR ',(alexandria:ensure-car constructor)
 			:TYPE-OF ',(if lambda-list
 				     (constructor-return-type name)
 				     name)
-			:LAMBDA-LIST ',(mapcar (lambda(elt)
-						 (if(millet:type-specifier-p elt)
-						   elt
-						   (tyclex.unifier:envar elt)))
-					       lambda-list)
-			:TYPES ',(arg-types constructor lambda-list)
-			:ORDER ,order))
+			:ARG-TYPES ',(arg-types constructor lambda-list)))
 
 (defun arg-types(constructor args)
   (cond
