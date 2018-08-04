@@ -13,16 +13,13 @@
 ;;;; DEFDATA
 (defmacro defdata(name&options lambda-list &rest constructor*)
   ;; binding
-  (multiple-value-bind(name options)(parse-name (alexandria:ensure-list name&options))
+  (destructuring-bind(name &key deriving)(alexandria:ensure-list name&options)
     ;; trivial syntax check.
     (check-type name valid-name)
+    (assert(every #'Find-type-class deriving))
     (assert(every (lambda(x)(typep x 'valid-name)) lambda-list))
     (dolist(constructor constructor*)
       (assert(symbolp(alexandria:ensure-car constructor))))
-    (dolist(option options)
-      (assert(listp option))
-      (assert(eq :deriving (car option)))
-      (assert(every #'Find-type-class (cdr option))))
     ;; body
     `(eval-when(:compile-toplevel :load-toplevel :execute)
        ,(<deftype> name lambda-list constructor*)
@@ -34,13 +31,9 @@
 	       :for o :upfrom 0
 	       :collect (<add-adt-constructor> c o lambda-list name))
        ,@(mapcan #'<pattern-matcher> constructor*)
-       ,@(loop :for tc :in (cdr(assoc :deriving options))
+       ,@(loop :for tc :in deriving
 	       :append (<derivings> tc name))
        ',name)))
-
-;;; PARSE-NAME
-(defun parse-name(arg)
-  (values (car arg)(cdr arg)))
 
 ;;; VALID-NAME
 (deftype valid-name()
