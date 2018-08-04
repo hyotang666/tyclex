@@ -11,9 +11,9 @@
 (in-package :tyclex.dsl.defdata)
 
 ;;;; DEFDATA
-(defmacro defdata(name lambda-list &rest constructor*)
+(defmacro defdata(name&options lambda-list &rest constructor*)
   ;; binding
-  (multiple-value-bind(name options)(parse-name (alexandria:ensure-list name))
+  (multiple-value-bind(name options)(parse-name (alexandria:ensure-list name&options))
     ;; trivial syntax check.
     (check-type name valid-name)
     (assert(every (lambda(x)(typep x 'valid-name)) lambda-list))
