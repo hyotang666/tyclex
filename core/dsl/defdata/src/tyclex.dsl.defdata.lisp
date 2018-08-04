@@ -180,9 +180,11 @@
 	      (list (adv? (car thing))))))
     (let((adt-constructor(adv? thing)))
       (when adt-constructor
-	(values (tyclex.unifier:ignore-unification-failure
-		  (tyclex.unifier:unify (adt-constructor-arg-types adt-constructor)
-					(mapcar #'data-type-of (cdr thing))))
+	(values (if(symbolp thing) ; nullary constructor.
+		  (tyclex.unifier:make-empty-environment)
+		  (tyclex.unifier:ignore-unification-failure
+		    (tyclex.unifier:unify (adt-constructor-arg-types adt-constructor)
+					  (mapcar #'data-type-of (cdr thing)))))
 		adt-constructor)))))
 
 (defun data-type-of(thing)
