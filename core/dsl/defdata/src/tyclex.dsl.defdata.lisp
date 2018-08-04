@@ -23,7 +23,7 @@
     ;; body
     `(eval-when(:compile-toplevel :load-toplevel :execute)
        ,(<deftype> name lambda-list constructor*)
-       (ADD-ADT ',name)
+       ,(<add-adt> name lambda-list constructor*)
        ,@(mapcan (lambda(constructor)
 		   (<constructors> name lambda-list constructor))
 		 constructor*)
@@ -83,6 +83,16 @@
   (if(endp types)
     'null
     `(CONS ,(car types),(cons-type-specifier (cdr types)))))
+
+;;; <add-adt>
+(defun <add-adt> (name lambda-list constructor*)
+  `(ADD-ADT ',name
+	    :CONSTRUCTORS ',(mapcar #'alexandria:ensure-car constructor*)
+	    :LAMBDA-LIST ',(mapcar (lambda(elt)
+				     (if(millet:type-specifier-p elt)
+				       elt
+				       (tyclex.unifier:envar elt)))
+				   lambda-list)))
 
 ;;; <constructors>
 (defun <constructors>(name args constructor)
