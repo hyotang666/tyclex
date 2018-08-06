@@ -6,6 +6,7 @@
    "tyclex.objects.adt"         ; Module for adt objects.
    "tyclex.objects.type-class"  ; Module for type-class objects.
    "tyclex.objects.interface"   ; Module for interface objects.
+   "tyclex.objects.io-action"   ; Module for io-action objects.
    "tyclex.type-matcher"        ; Module for type matching.
    "tyclex.dsl.definstance"     ; Module for dsl definstance.
    "millet"                     ; Wrapper for implementation dependent utilities.
