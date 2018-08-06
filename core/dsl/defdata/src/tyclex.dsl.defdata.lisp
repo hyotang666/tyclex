@@ -205,7 +205,15 @@
 		    (if name
 		      (introspect-environment:function-type name)
 		      'function)))
-	(t (class-name(class-of thing)))))))
+	(t (class-name-of thing))))))
+
+(defun class-name-of(thing)
+  (let((name(class-name(class-of thing))))
+    #+sbcl(when (eq 'sb-kernel:simple-character-string name)
+	    (setf name 'string))
+    #+sbcl(when (eq 'sb-impl::string-output-stream name)
+	    (setf name 'stream))
+    name))
 
 (declaim(ftype(function((satisfies adt-value-p))fixnum)data-order))
 (defun data-order(thing)
