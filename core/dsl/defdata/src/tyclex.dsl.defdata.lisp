@@ -190,7 +190,8 @@
 (defun data-type-of(thing)
   (multiple-value-bind(env adt-constructor)(adt-value-p thing)
     (if env
-      (with-slots(arg-types type-of)adt-constructor
+      (with-accessors((arg-types adt-constructor-arg-types)
+		      (type-of adt-constructor-type-of))adt-constructor
 	(if(or (null arg-types)
 	       (eq 'eql (car arg-types)))
 	  type-of
