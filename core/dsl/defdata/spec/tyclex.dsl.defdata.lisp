@@ -154,30 +154,11 @@
 
 ;;;; Exceptional-Situations:
 
-;;;; Examples:
-#?(data-type-of 0) => FIXNUM
-#?(data-type-of 1.4) => SINGLE-FLOAT
-#?(data-type-of 1.4d0) => DOUBLE-FLOAT
-#?(data-type-of 1/3) => RATIO
-#?(data-type-of #C(1 2)) => COMPLEX
-#?(data-type-of #\a) => CHARACTER
-#?(data-type-of "string") => STRING
-#?(data-type-of #("vector")) => SIMPLE-VECTOR
-#?(data-type-of nil) => NULL
-#?(data-type-of '(1)) => CONS
-#?(data-type-of '(1 . 2)) => CONS
-#?(data-type-of (make-array '(2 2) :initial-contents '((1 2)(3 4)))) => SIMPLE-ARRAY
-#?(data-type-of *package*) => PACKAGE
-#?(data-type-of *readtable*) => READTABLE
-#?(data-type-of *standard-output*) => STREAM
-#?(data-type-of *random-state*) => RANDOM-STATE
-#?(data-type-of 'car) => SYMBOL
-#?(data-type-of :keyword) => SYMBOL
+;;;; Examples
 #?(data-type-of #'car) => (FUNCTION (LIST) (VALUES T &OPTIONAL))
 ,:test equal
 #?(data-type-of #'documentation) => (FUNCTION * *)
 ,:test equal
-
 (requirements-about DATA-ORDER)
 
 ;;;; Description:
@@ -192,6 +173,7 @@
 
 ; thing := adt value, otherwise error.
 #?(data-order "not adt value") :signals error
+,:lazy t
 
 ; result := fixnum
 
@@ -204,4 +186,53 @@
 ;;;; Notes:
 
 ;;;; Exceptional-Situations:
+
+(requirements-about CLASS-NAME-OF)
+
+;;;; Description:
+; Wrapper for `(CLASS-NAME(CLASS-OF ...))`.
+
+#+syntax
+(CLASS-NAME-OF thing) ; => result
+
+;;;; Arguments and Values:
+
+; thing := T
+
+; result := SYMBOL
+
+;;;; Affected By:
+; Lisp environment.
+
+;;;; Side-Effects:
+; none
+
+;;;; Notes:
+
+;;;; Exceptional-Situations:
+
+;;;; Examples:
+#?(class-name-of 0) => FIXNUM
+#?(class-name-of (1+ most-positive-fixnum)) => BIGNUM
+#?(class-name-of 1.4) => SINGLE-FLOAT
+#?(class-name-of 1.4d0) => DOUBLE-FLOAT
+#?(class-name-of 1/3) => RATIO
+#?(class-name-of #C(1 2)) => COMPLEX
+#?(class-name-of #\a) => CHARACTER
+#?(class-name-of "string") => STRING
+#?(class-name-of #("vector")) => VECTOR
+#?(class-name-of nil) => NULL
+#?(class-name-of '(1)) => CONS
+#?(class-name-of '(1 . 2)) => CONS
+#?(class-name-of (make-array '(2 2) :initial-contents '((1 2)(3 4)))) => ARRAY
+#?(class-name-of *package*) => PACKAGE
+#?(class-name-of *readtable*) => READTABLE
+#?(class-name-of *standard-output*) => STREAM
+#?(class-name-of *standard-input*) => STREAM
+#?(class-name-of *debug-io*) => STREAM
+#?(class-name-of *random-state*) => RANDOM-STATE
+#?(class-name-of 'car) => SYMBOL
+#?(class-name-of :keyword) => SYMBOL
+#?(class-name-of #'car) => FUNCTION
+#?(class-name-of #'documentation) => STANDARD-GENERIC-FUNCTION
 
