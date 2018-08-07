@@ -97,32 +97,6 @@
 
 ;;;; Exceptional-Situations:
 
-;;;; Examples.
-#?(defdata maybe (a)
-    :nothing
-    (just a))
-:expanded-to
-(eval-when(:compile-toplevel :load-toplevel :execute)
-  (deftype maybe (a)
-    (list 'or '(eql :nothing)
-	  `(cons (eql ,'just)
-		 ,(list 'cons a 'null))))
-  (tyclex.objects.adt:add-adt 'maybe
-			      :constructors '(:nothing just)
-			      :lambda-list '(?A))
-  (declaim(ftype(function(t)(maybe *))just))
-  (defun just (a)
-    (list 'just a))
-  (tyclex.objects.adt:add-adt-constructor ':nothing
-					 :type-of '(maybe *)
-					 :arg-types '(eql :nothing))
-  (tyclex.objects.adt:add-adt-constructor 'just
-					 :type-of '(maybe *)
-					 :arg-types '(?a))
-  (trivia:defpattern just(&rest tyclex.dsl.defdata::args)
-    `(list (eq ','just) ,@tyclex.dsl.defdata::args))
-  'maybe)
-
 (requirements-about ADT-VALUE-P)
 
 ;;;; Description:
