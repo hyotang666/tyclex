@@ -118,7 +118,7 @@
 #?(function-type "not symbol" * *) :signals error
 ,:lazy t
 
-; args := (or * list), otherwise error.
+; args := [ * | list ], otherwise error.
 #?(function-type dummy "not valid" *) :signals error
 ; For ftype form second element.
 
