@@ -49,6 +49,7 @@
   (setf(gethash name *io-functions*)(apply #'make-action args)))
 
 (defun remove-io(name)
+  (check-type name (and symbol (not (or keyword boolean))))
   (remhash name *io-functions*))
 
 (defun io-boundp(symbol)
