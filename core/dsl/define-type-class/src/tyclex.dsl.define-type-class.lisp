@@ -4,6 +4,9 @@
   (:export
     ;; Main API
     #:define-type-class
+    ;; Useful helpers
+    #:compute-return-type
+    #:infinite-expansion-detecter
     ))
 (in-package :tyclex.dsl.define-type-class)
 
