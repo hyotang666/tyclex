@@ -6,7 +6,7 @@
     ;; Main API
     #:defdata
     ;; Helpers
-    #:adt-value-p #:data-type-of #:data-order
+    #:adt-value-p #:data-type-of #:data-order #:class-name-of
     ))
 (in-package :tyclex.dsl.defdata)
 
