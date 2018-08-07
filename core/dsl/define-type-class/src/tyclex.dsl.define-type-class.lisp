@@ -266,6 +266,9 @@
     ((and (eq 'coerce (car form))
 	  (constantp (third form)))
      (introspect-environment:constant-form-value(third form)))
+    ((and (eq 'map (car form))
+	  (constantp (second form)))
+     (introspect-environment:constant-form-value(second form)))
     (t
       (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
 	(declare(ignore localp))
