@@ -214,9 +214,7 @@
 	(Data-type-of value)
 	(if(Adt-type-specifier-p value)
 	  value
-	  (let((type (class-name(class-of value))))
-	    #+sbcl(when(eq 'sb-kernel:simple-character-string type)
-		    (setq type 'string))
+	  (let((type (Class-name-of value)))
 	    (if(not(eq 'cons type))
 	      type
 	      (let((types(handler-case(mapcar (lambda(x)
@@ -226,12 +224,12 @@
 			     (return-from constant-return-type
 					  (labels((rec(cons)
 						    (if(atom cons)
-						      (class-name(class-of cons))
-						      `(cons ,(class-name(class-of(car cons)))
+						      (Class-name-of cons)
+						      `(cons ,(Class-name-of(car cons))
 							     ,(rec (cdr cons))))))
 					    (rec value)))))))
 		(if(null(cdr(remove-duplicates types)))
-		  `(LIST ,(class-name(class-of(car value))))
+		  `(LIST ,(Class-name-of(car value)))
 		  (labels((rec(list)
 			    (if(endp(cdr list))
 			      (car list)
