@@ -98,6 +98,11 @@
 
 ;;;; FUNCTION-TYPE
 (defmacro function-type (name args return)
+  ;; trivial syntax checks.
+  (check-type name (and symbol (not (or keyword boolean))))
+  (check-type args (or (eql *)list))
+  (check-type return (or symbol list))
+  ;; body
   `(PROGN (DECLAIM(FTYPE(FUNCTION,args,return),name))
 	  (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
 	  ',name))
