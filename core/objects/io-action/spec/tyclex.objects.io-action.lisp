@@ -199,7 +199,7 @@
 ;;;; Arguments and Values:
 
 ; name := IO name, i.e. (and symbol (not (or keyword boolean))), otherwise error.
-#?(move-io "not io name") :signals error
+#?(remove-io "not io name") :signals error
 
 ; result := BOOLEAN, T when io exists, otherwise nil.
 #?(values (remove-io 'io-name)
