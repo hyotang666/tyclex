@@ -221,12 +221,7 @@
 	      (let((types(handler-case(mapcar #'class-name-of value)
 			   (error() ; dot list comes
 			     (return-from constant-return-type
-					  (labels((rec(cons)
-						    (if(atom cons)
-						      (Class-name-of cons)
-						      `(cons ,(Class-name-of(car cons))
-							     ,(rec (cdr cons))))))
-					    (rec value)))))))
+					  (tyclex.dsl.defdata::cons-type-specifier(trestrul:mapleaf #'class-name-of value)))))))
 		(if(null(cdr(remove-duplicates types)))
 		  `(LIST ,(Class-name-of(car value)))
 		  (tyclex.dsl.defdata::cons-type-specifier types))))))))))
