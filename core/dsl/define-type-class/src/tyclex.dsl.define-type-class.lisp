@@ -464,7 +464,7 @@
     (if(atom type)
       type
       (cons (car type)
-	    (substitute-pattern (Adt-lambda-list (alexandria:ensure-car type))
+	    (substitute-pattern (Adt-lambda-list (Find-adt(alexandria:ensure-car type)))
 				(tyclex.unifier:unify (Adt-constructor-arg-types adt-constructor)
 						      (loop :for v :in (cdr var)
 							    :collect (compute-return-type v env))))))))
