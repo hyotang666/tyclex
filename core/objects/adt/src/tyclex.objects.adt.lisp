@@ -56,7 +56,7 @@
 (defun adt-type-specifier-p(thing)
   (labels((ENSURE-ADT(thing)
 	    (typecase thing
-	      (symbol (Find-adt thing))
+	      (symbol (Find-adt thing nil))
 	      (list (adt-type-specifier-p (car thing))))))
     (let((adt(ENSURE-ADT thing)))
       (when adt
