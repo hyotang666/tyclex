@@ -79,8 +79,10 @@
   (every #'millet:type-specifier-p (cdr constructor)))
 
 (defun cons-type-specifier(types)
-  (if(endp types)
-    'null
+  (if(atom types)
+    (if(null types)
+      'null
+      types)
     `(CONS ,(car types),(cons-type-specifier (cdr types)))))
 
 ;;; <add-adt>
