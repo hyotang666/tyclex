@@ -24,7 +24,7 @@
   (setf type-var+ (tyclex.unifier:envar type-var+))
   ;; body
   `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-     (ADD-TYPE-CLASS ',name :NAME ',name :VARS ',type-var+ :INSTANCES ',(mapcar #'car signature+))
+     (ADD-TYPE-CLASS ',name :NAME ',name :VARS ',type-var+ :INTERFACES ',(mapcar #'car signature+))
      ,@(when var-constraint*
 	 (<constraints-setter> name var-constraint*))
      ,@(loop
