@@ -229,12 +229,7 @@
 					    (rec value)))))))
 		(if(null(cdr(remove-duplicates types)))
 		  `(LIST ,(Class-name-of(car value)))
-		  (labels((rec(list)
-			    (if(endp(cdr list))
-			      (car list)
-			      `(CONS ,(car list)
-				     ,(rec(cdr list))))))
-		    (rec types)))))))))))
+		  (tyclex.dsl.defdata::cons-type-specifier types))))))))))
 
 (defun compute-interface-call-return-type(call-form)
   (let((pattern(Interface-return-type(car call-form)))
