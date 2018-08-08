@@ -218,9 +218,7 @@
 	  (let((type (Class-name-of value)))
 	    (if(not(eq 'cons type))
 	      type
-	      (let((types(handler-case(mapcar (lambda(x)
-						(class-name(class-of x)))
-					      value)
+	      (let((types(handler-case(mapcar #'class-name-of value)
 			   (error() ; dot list comes
 			     (return-from constant-return-type
 					  (labels((rec(cons)
