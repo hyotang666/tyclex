@@ -57,6 +57,7 @@
 ;;; <defmacro>
 (defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
   `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
+     (DECLARE(IGNORE ,@gensyms))
      (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS INSTANCE MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
        (DECLARE (IGNORE RETURN-TYPE)
 		(IGNORABLE INFOS))
