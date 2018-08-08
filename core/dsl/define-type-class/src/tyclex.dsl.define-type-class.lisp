@@ -11,7 +11,7 @@
 (in-package :tyclex.dsl.define-type-class)
 
 ;;;; DEFINE-TYPE-CLASS
-(defmacro define-type-class((name &rest type-var+)(&rest var-constraint*) method+ &rest rest)
+(defmacro define-type-class((name &rest type-var+)(&rest var-constraint*) signature+ &rest rest)
   ;; trivial syntax checking.
   (assert(symbolp name))
   (assert type-var+)
@@ -19,16 +19,16 @@
   (assert(loop :for (constraint var) :in var-constraint*
 	       :always (and (Find-type-class constraint)
 			    (find var type-var+))))
-  (assert method+)
+  (assert signature+)
   ;; as canonicalize
   (setf type-var+ (tyclex.unifier:envar type-var+))
   ;; body
   `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
-     (ADD-TYPE-CLASS ',name :NAME ',name :VARS ',type-var+ :INSTANCES ',(mapcar #'car method+))
+     (ADD-TYPE-CLASS ',name :NAME ',name :VARS ',type-var+ :INSTANCES ',(mapcar #'car signature+))
      ,@(when var-constraint*
 	 (<constraints-setter> name var-constraint*))
      ,@(loop
-	 :for (method lambda-list return-type) :in method+
+	 :for (method lambda-list return-type) :in signature+
 	 :for gensyms = (alexandria:make-gensym-list (length lambda-list))
 	 :do (setf ; as canonicalise
 	       lambda-list (tyclex.unifier:patternize lambda-list)
