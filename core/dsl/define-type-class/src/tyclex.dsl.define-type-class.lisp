@@ -28,13 +28,13 @@
      ,@(when var-constraint*
 	 (<constraints-setter> name var-constraint*))
      ,@(loop
-	 :for (method lambda-list return-type) :in signature+
+	 :for (interface lambda-list return-type) :in signature+
 	 :for gensyms = (alexandria:make-gensym-list (length lambda-list))
 	 :do (setf ; as canonicalise
 	       lambda-list (tyclex.unifier:patternize lambda-list)
 	       return-type (tyclex.unifier:patternize return-type))
-	 :collect (<add-interface> method name lambda-list return-type rest)
-	 :collect (<defmacro> method gensyms lambda-list return-type))
+	 :collect (<add-interface> interface name lambda-list return-type rest)
+	 :collect (<defmacro> interface gensyms lambda-list return-type))
      ,(<type-class-predicate> name)
      ',name))
 
