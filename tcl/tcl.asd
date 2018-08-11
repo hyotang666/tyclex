@@ -2,7 +2,12 @@
 (in-package :asdf)
 (defsystem "tcl"
   :depends-on
-  nil
+  (
+   "tyclex"
+   "lambda-list"                ; Utilities for lambda-list parsing.
+   "introspect-environment"     ; Wrapper for environment introspection.
+   "alexandria"                 ; Public domain utilities.
+   )
   :pathname
   "src/"
   :components
