@@ -67,10 +67,12 @@
       (extend-environment-with-t (cdr b)
 				 (Extend-environment(car b)'list env)))))
 
+#++original[fail]
+; I do not why this code fails to unexpected diverge. (in SBCL, ECL)
 (defmethod Unify :around ((a cl:list)(b cl:list)
 			  &optional(env(Make-empty-environment))
 			  &key &allow-other-keys)
-  (matrix-case:matrix-typecase((car a)(car b))
+  (matrix-case:matrix-etypecase((car a)(car b))
     (((satisfies Variablep)(eql function))
      (setf b (ensure-value b))
      (Unify (cdr a)
@@ -84,6 +86,26 @@
 	    (cdr b)
 	    (Extend-environment (car b)(car a)env)))
     (otherwise (call-next-method))))
+
+;#++macroexpand-1ed-when-readtime[success]
+; I do not why but this one works. (in ECL, SBCL)
+(defmethod Unify :around ((a cl:list)(b cl:list)
+			  &optional(env(Make-empty-environment))
+			  &key &allow-other-keys)
+  #.(macroexpand-1'(matrix-case:matrix-etypecase((car a)(car b))
+		     (((satisfies Variablep)(eql function))
+		      (setf b (ensure-value b))
+		      (Unify (cdr a)
+			     (or (cddr b) ; lisp style, e.g. (function(arg)return)
+				 (cdr b)) ; probably haskell style, e.g. (function return).
+			     (Extend-environment (car a) (car b) env)))
+		     (((eql function)(satisfies Variablep))
+		      (setf a (ensure-value a))
+		      (Unify (or (cddr a) ; lisp style, e.g. (function(arg)return)
+				 (cdr a)) ; probably haskell style, e.g. (function return).
+			     (cdr b)
+			     (Extend-environment (car b)(car a)env)))
+		     (otherwise (call-next-method)))))
 
 (defunify((a (eql 'cons))(b (eql 'list)))
   env)
