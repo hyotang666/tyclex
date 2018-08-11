@@ -2,7 +2,8 @@
 (in-package :asdf)
 (defsystem :tyclex.dsl.define-type-class.test
   :depends-on
-  (:jingoh "tyclex.dsl.define-type-class")
+  (:jingoh "tyclex.dsl.define-type-class"
+           "tyclex.dsl.defio")
   :components
   ((:file "tyclex.dsl.define-type-class"))
   :perform
