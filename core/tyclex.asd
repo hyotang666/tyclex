@@ -2,11 +2,19 @@
 (in-package :asdf)
 (defsystem "tyclex"
   :depends-on
-  nil
+  (
+   "tyclex.objects"     ; Objects for tyclex modules.
+   "tyclex.unifier"     ; Unification system for tyclex module.
+   "tyclex.newtype"     ; Newtype system as tyclex module.
+   "tyclex.type-matcher"; Type matching system as tyclex module.
+   "tyclex.curry"       ; Currying system as tyclex module.
+   "tyclex.dsl"         ; DSL for tyclex.
+   )
   :pathname
   "src/"
   :components
-  ((:file "tyclex")))
+  ((:file "tyclex") 
+   ))
 
 ;; These two methods below are added by JINGOH.GENERATOR.
 (defmethod component-depends-on ((o test-op) (c (eql (find-system "tyclex"))))
