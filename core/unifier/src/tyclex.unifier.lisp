@@ -5,7 +5,11 @@
       (asdf:load-system :cl-unification :force t))))
 
 (in-package :tyclex.unifier)
-(export '(envar patternize enwild dewild ignore-unification-failure))
+(handler-bind((package-error(lambda(c) ; for ECL.
+			      (declare(ignore c))
+			      (when(find-restart 'continue)
+				(invoke-restart 'continue)))))
+  (export '(envar patternize enwild dewild ignore-unification-failure)))
 
 (defun envar(thing)
   (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
