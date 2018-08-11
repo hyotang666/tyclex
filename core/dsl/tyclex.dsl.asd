@@ -2,7 +2,12 @@
 (in-package :asdf)
 (defsystem "tyclex.dsl"
   :depends-on
-  nil
+  (
+   "tyclex.dsl.defio"
+   "tyclex.dsl.definstance"
+   "tyclex.dsl.defdata"
+   "tyclex.dsl.define-type-class"
+   )
   :pathname
   "src/"
   :components
@@ -11,7 +16,12 @@
 ;; These two methods below are added by JINGOH.GENERATOR.
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tyclex.dsl"))))
-  (append (call-next-method) '((test-op "tyclex.dsl.test"))))
+  (append (call-next-method) '((test-op "tyclex.dsl.defio.test")
+                               (test-op "tyclex.dsl.definstance.test")
+                               (test-op "tyclex.dsl.defdata.test")
+                               (test-op "tyclex.dsl.define-type-class.test")
+                               )))
+
 (defmethod operate :around
            ((o test-op) (c (eql (find-system "tyclex.dsl"))) &rest keys)
   (flet ((jingoh.args (keys)
