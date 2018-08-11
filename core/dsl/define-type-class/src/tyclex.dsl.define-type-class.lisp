@@ -475,7 +475,6 @@
 	     form)
       expanded)))
 
-#++
 (if(or (eq #'funcall *macroexpand-hook*)
        (eq 'funcall *macroexpand-hook*))
   (setq *macroexpand-hook* 'infinite-expansion-detecter)
