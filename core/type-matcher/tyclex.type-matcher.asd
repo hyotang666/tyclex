@@ -4,7 +4,6 @@
   :depends-on
   (
    "tyclex.newtype"     ; Module for newtype.
-   "tyclex.adt"         ; Module for algebraic data types.
    "tyclex.unifier"     ; Module for unification.
    "tyclex.objects.adt" ; Module for adt objects.
    "millet"             ; Wrapper for implementation dependent utilities.
