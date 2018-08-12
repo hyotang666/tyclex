@@ -15,7 +15,9 @@
     ;; canonicalize
     (setf constraints (car constraints))
     ;; trivial syntax checks.
-    (assert (every #'symbolp types))
+    (assert (every (lambda(x)
+		     (typep x '(or symbol list)))
+		   types))
     (assert (and (every #'symbolp constraints)
 		 (notany #'keywordp constraints)))
     ;; Binds
