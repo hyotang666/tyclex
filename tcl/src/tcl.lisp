@@ -158,6 +158,10 @@
 			`(tyclex.curry:function-type ,name ,arg ,return)))
      (declaim ,@decls)))
 
+(do-external-symbols(s :tyclex)
+  (import s :tcl)
+  (export s :tcl))
+
 (do-external-symbols(s :cl)
   (multiple-value-bind(symbol status)(find-symbol (symbol-name s) :tcl)
     (unless status
