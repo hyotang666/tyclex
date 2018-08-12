@@ -2,6 +2,7 @@
   (unless(find-package :tyclex.unifier)
     (rename-package :unify :tyclex.unifier)
     (let((asdf::*asdf-session* nil))
+      (declare(ignore asdf::*asdf-session*)) ; for CCL.
       (asdf:load-system :cl-unification :force t))))
 
 (in-package :tyclex.unifier)
