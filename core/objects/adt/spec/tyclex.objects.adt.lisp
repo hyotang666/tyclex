@@ -475,3 +475,42 @@
 
 ;;;; Exceptional-Situations:
 
+(requirements-about ADT-TYPE-SPECIFIER-P)
+
+;;;; Description:
+;; setup
+#?(add-adt 'maybe :lambda-list '(a) :constructors '(just nothing))
+:be-the adt
+,:before (remove-adt 'maybe)
+
+;; example
+#?(adt-type-specifier-p 'maybe) => T
+#?(adt-type-specifier-p '(maybe *)) => T
+#?(adt-type-specifier-p '(maybe * *)) => NIL
+#?(adt-type-specifier-p 'not-exist) => NIL
+#?(adt-type-specifier-p "not adt type specifier") => NIL
+
+#+syntax
+(ADT-TYPE-SPECIFIER-P thing) ; => result
+
+;;;; Arguments and Values:
+
+; thing := T
+
+; result := BOOLEAN
+
+;;;; Affected By:
+; none
+
+;;;; Side-Effects:
+; none
+
+;;;; Notes:
+; `ADT-TYPE-SPECIFIER-P` checks only first elt is ADT, and length of lambda-list.
+#?(adt-type-specifier-p '(maybe "not type specifier")) => unspecified
+
+; Can handle curried simulated adt-type-specifier.
+#?(adt-type-specifier-p '((maybe) *)) => T
+
+;;;; Exceptional-Situations:
+
