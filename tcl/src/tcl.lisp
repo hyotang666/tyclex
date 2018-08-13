@@ -1,12 +1,13 @@
 (defpackage :tcl.builder(:use :cl))
 (in-package :tcl.builder)
 
-(handler-bind((package-error(lambda(condition)
-			      (declare(ignore condition))
-			      (let((continue(find-restart 'continue)))
-				(when continue
-				  (invoke-restart continue))))))
-  (make-package "TCL" :use nil))
+(eval-when(:compile-toplevel :load-toplevel :execute)
+  (handler-bind((package-error(lambda(condition)
+				(declare(ignore condition))
+				(let((continue(find-restart 'continue)))
+				  (when continue
+				    (invoke-restart continue))))))
+    (make-package "TCL" :use nil)))
 
 (defmacro tcl::defun (name lambda-list &body body &environment env)
   (if(or (listp name) ; setf form, ignore.
