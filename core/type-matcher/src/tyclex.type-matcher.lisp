@@ -15,7 +15,7 @@
 	((Variable-any-p b) env)
 	((Variablep b)(tyclex.unifier::var-unify b a env))
 	((eq a b)env)
-	((type-match-p b a)env)
+	((type-match-p b a T)env)
 	(t (call-next-method))))
 
 (defmacro defunify(lambda-list &body body)
@@ -148,7 +148,7 @@
 			(typep elt '(cons (eql values) *)))
 		      ftype-spec))
 
-(defun type-match-p(t1 t2)
+(defun type-match-p(t1 t2 &optional reccursivep)
   (labels((car-eq(t1 t2)
 	    (matrix-case:matrix-typecase(t1 t2)
 	      ((symbol symbol)(eq t1 t2))
@@ -178,7 +178,9 @@
 		 (otherwise t)))
 	      ((:list		(:newtype :adt :type-specifier :function))	nil)
 	      ((t :satisfier)							(typep t1 t2))
-	      (otherwise (Ignore-unification-failure(unify t1 t2))))))
+	      (otherwise (if reccursivep
+			   nil
+			   (Ignore-unification-failure(unify t1 t2)))))))
     (entry-point t1 t2)))
 
 (defun category-of(thing)
