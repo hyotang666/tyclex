@@ -64,7 +64,7 @@
 					     ()
 					     thing))))
 	      (lambda-list(adt-lambda-list adt)))
-	  (< (length form)(length lambda-list)))))))
+	  (<= (length form)(length lambda-list)))))))
 
 ;;;; ADT-CONSTRUCTOR data structure
 (defstruct(adt-constructor (:copier nil)(:predicate nil))
