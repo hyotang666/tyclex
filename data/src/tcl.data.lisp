@@ -1,5 +1,5 @@
 (defpackage :tcl.data
-  (:use :cl "tyclex.dsl.defdata")
+  (:use :cl #:tyclex.dsl.defdata)
   (:export
     #:maybe ; type-name
     #:just #:nothing ; constructors
