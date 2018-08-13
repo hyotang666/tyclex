@@ -57,7 +57,7 @@
   (labels((ENSURE-ADT(thing)
 	    (typecase thing
 	      (symbol (Find-adt thing nil))
-	      (list (adt-type-specifier-p (car thing))))))
+	      (list (ENSURE-ADT (car thing))))))
     (let((adt(ENSURE-ADT thing)))
       (when adt
 	(let*((form(cdr(alexandria:flatten (if (symbolp thing)
