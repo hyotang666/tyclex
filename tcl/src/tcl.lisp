@@ -159,14 +159,13 @@
 			`(tyclex.curry:function-type ,name ,arg ,return)))
      (declaim ,@decls)))
 
-(do-external-symbols(s :tyclex)
-  (import s :tcl)
-  (export s :tcl))
-
-(do-external-symbols(s :cl)
-  (multiple-value-bind(symbol status)(find-symbol (symbol-name s) :tcl)
-    (unless status
-      (import s :tcl))
-    (if status
-      (export symbol :tcl)
-      (export s :tcl))))
+(dolist(package '(:tyclex :cl))
+  (let(import export)
+    (do-external-symbols(symbol package)
+      (multiple-value-bind(s status)(find-symbol(symbol-name symbol) :tcl)
+	(if status
+	  (pushnew s export :test #'string=)
+	  (progn (push symbol import)
+		 (push symbol export)))))
+    (import import :tcl)
+    (export export :tcl)))
