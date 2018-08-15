@@ -84,7 +84,9 @@
 	(instance(get-instance (car form) infos))
 	(definitions(if instance
 		      (Instance-definitions instance)
-		      `(,(Interface-default (car form)))))
+		      (let((default(Interface-default (car form))))
+			(when default
+			  `(,default)))))
 	(types(and instance (Instance-types instance)))
 	(constraints(and instance (Instance-constraints instance)))
 	(instance-constraints-definitions
