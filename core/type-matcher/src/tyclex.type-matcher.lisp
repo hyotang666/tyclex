@@ -150,6 +150,13 @@
       env
       (call-next-method))))
 
+(defunify((a (eql 'array))(b cl:list))
+  (if(variablep(car b))
+    (extend-environment (car b) a env)
+    (if(eq a (car b))
+      env
+      (call-next-method))))
+
 (defunify((a symbol)(b cl:list))
   (if(Variablep a)
     (if(eq 'function (car b)) ; ?B (FUNCTION(?A)?B)
