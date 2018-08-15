@@ -73,6 +73,12 @@
       (extend-environment-with-t (cdr b)
 				 (Extend-environment(car b)'list env)))))
 
+(defunify((a (eql 'null))(b (eql 'cons)))
+  (let((variable(find-value-variable a env)))
+    (if variable
+      (replace-bind variable b env)
+      env)))
+
 #++original[fail]
 ; I do not why this code fails to unexpected diverge. (in SBCL, ECL)
 (defmethod Unify :around ((a cl:list)(b cl:list)
