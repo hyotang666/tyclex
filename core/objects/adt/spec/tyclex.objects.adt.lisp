@@ -162,8 +162,9 @@
 
 ;;;; Arguments and Values:
 
-; name := (and symbol (not (or keyword boolean))), otherwise error.
+; name := [ (and symbol (not (or keyword boolean))) | list ], otherwise error.
 #?(find-adt "not symbol") :signals error
+#?(find-adt '(name)) :be-the adt
 
 ; errorp := T, specify error or not when `ADT` is not found.
 ; The default it true.
@@ -426,8 +427,9 @@
 
 ;;;; Arguments and Values:
 
-; name := symbol, otherwise error
+; name := [ symbol | list ], otherwise error
 #?(find-adt-constructor "not symbol") :signals error
+#?(find-adt-constructor '(name)) :be-the ADT-CONSTRUCTOR
 
 ; errorp := BOOLEAN, specify error or not whcn `ADT-CONSTRUCTOR` is not found.
 ; The default is true.
