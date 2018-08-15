@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :tcl.functor.test
   :depends-on
-  (:jingoh "tcl.functor")
+  (:jingoh "tcl.functor" "tcl" "tcl.data" "tcl.io")
   :components
   ((:file "tcl.functor"))
   :perform
