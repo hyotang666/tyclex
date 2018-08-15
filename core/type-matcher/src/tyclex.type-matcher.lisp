@@ -143,6 +143,13 @@
       env
       (call-next-method))))
 
+(defunify((a (eql 'simple-vector))(b cl:list))
+  (if(variablep(car b))
+    (extend-environment (car b) a env)
+    (if(eq a (car b))
+      env
+      (call-next-method))))
+
 (defunify((a (eql 'string))(b cl:list))
   (if(variablep(car b))
     (extend-environment (car b) a env)
