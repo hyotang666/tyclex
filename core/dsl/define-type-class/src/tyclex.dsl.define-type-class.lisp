@@ -64,7 +64,7 @@
        (LET((BODY`(,',sub-name
 		    ,@(LOOP :FOR FORM :IN EXPANDED
 			    :COLLECT (expander:expand `(MACROLET,MACROS,FORM) env)))))
-	 (IF INSTANCE
+	 (IF MACROS
 	     ,(if(millet:type-specifier-p return-type)
 		``(MACROLET,MACROS (THE ,',return-type ,BODY))
 		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (ENWILD INFOS)))))
@@ -82,7 +82,9 @@
 	(infos(check-signature (Interface-lambda-list (car form))
 			       return-types))
 	(instance(get-instance (car form) infos))
-	(definitions(and instance (Instance-definitions instance)))
+	(definitions(if instance
+		      (Instance-definitions instance)
+		      `(,(Interface-default (car form)))))
 	(types(and instance (Instance-types instance)))
 	(constraints(and instance (Instance-constraints instance)))
 	(instance-constraints-definitions
