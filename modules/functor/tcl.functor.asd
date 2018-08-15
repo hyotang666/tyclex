@@ -2,7 +2,10 @@
 (in-package :asdf)
 (defsystem "tcl.functor"
   :depends-on
-  nil
+  (
+   "tcl"
+   "tcl.data"
+   )
   :pathname
   "src/"
   :components
