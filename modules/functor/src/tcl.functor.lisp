@@ -53,5 +53,7 @@
 
 (definstance(functor io)
   ((fmap(f io)
-     `(lambda()
-	(funcall ,f (funcall ,io))))))
+     `(make-instance 'io-action
+		     :instance (lambda()
+				 (funcall ,f (funcall ,io)))
+		     :type '(io *)))))
