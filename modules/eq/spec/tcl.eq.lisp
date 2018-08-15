@@ -1,5 +1,5 @@
 (defpackage :tcl.eq.spec
-  (:use :cl :jingoh :tcl.eq))
+  (:use :cl :jingoh :tcl.eq #:tcl.data))
 (in-package :tcl.eq.spec)
 (setup :tcl.eq)
 
