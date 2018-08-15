@@ -39,7 +39,7 @@
   (remhash name *adts*))
 
 (defun find-adt(name &optional(errorp t))
-  (or (gethash name *adts*)
+  (or (gethash (first-atom name) *adts*)
       (when errorp
 	(error "Missing ADT named ~S" name))))
 
@@ -54,17 +54,18 @@
     (makunbound name)))
 
 (defun adt-type-specifier-p(thing)
-  (labels((ENSURE-ADT(thing)
-	    (typecase thing
-	      (symbol (Find-adt thing nil))
-	      (list (ENSURE-ADT (car thing))))))
-    (let((adt(ENSURE-ADT thing)))
-      (when adt
-	(let*((form(cdr(alexandria:flatten (if (symbolp thing)
-					     ()
-					     thing))))
-	      (lambda-list(adt-lambda-list adt)))
-	  (<= (length form)(length lambda-list)))))))
+  (let((adt(find-adt (first-atom thing)nil)))
+    (when adt
+      (let*((form(cdr(alexandria:flatten (if (symbolp thing)
+					   ()
+					   thing))))
+	    (lambda-list(adt-lambda-list adt)))
+	(<= (length form)(length lambda-list))))))
+
+(defun first-atom(thing)
+  (if(atom thing)
+    thing
+    (first-atom(car thing))))
 
 ;;;; ADT-CONSTRUCTOR data structure
 (defstruct(adt-constructor (:copier nil)(:predicate nil))
@@ -82,10 +83,10 @@
   (check-type name symbol)
   (remhash name *adt-constructors*))
 
-(defun find-adt-constructor(name &optional (errorp t))
-  (or (gethash name *adt-constructors*)
+(defun find-adt-constructor(form &optional (errorp t))
+  (or (gethash (first-atom form) *adt-constructors*)
       (when errorp
-	(error "Missing ADT-CONSTRUCTOR named ~S" name))))
+	(error "Missing ADT-CONSTRUCTOR named ~S" form))))
 
 (defun adt-constructor-boundp(symbol)
   (check-type symbol symbol)
