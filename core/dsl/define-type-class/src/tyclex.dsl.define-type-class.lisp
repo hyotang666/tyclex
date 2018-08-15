@@ -67,7 +67,7 @@
 	 (IF MACROS
 	     ,(if(millet:type-specifier-p return-type)
 		``(MACROLET,MACROS (THE ,',return-type ,BODY))
-		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (ENWILD INFOS)))))
+		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (TYCLEX.UNIFIER:ENWILD INFOS)))))
 		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
 		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
 		     `(MACROLET,MACROS ,BODY))))
