@@ -61,7 +61,13 @@
 
 (defunify((a (eql 'null))(b cl:list))
   (if(not(Variablep(car b)))
-    (call-next-method)
+    (if(or (eq 'cl:list (car b))
+	   (eq 'list (car b)))
+      (let((variable(find-value-variable a env)))
+	(if variable
+	  (replace-bind variable b env)
+	  (call-next-method)))
+      (call-next-method))
     (if(cddr b)
       (call-next-method)
       (extend-environment-with-t (cdr b)

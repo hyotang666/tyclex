@@ -10,7 +10,8 @@
 			      (declare(ignore c))
 			      (when(find-restart 'continue)
 				(invoke-restart 'continue)))))
-  (export '(envar patternize enwild dewild ignore-unification-failure)))
+  (export '(envar patternize enwild dewild ignore-unification-failure find-value-variable
+		  replace-bind)))
 
 (defun envar(thing)
   (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
@@ -35,3 +36,18 @@
 (defmacro ignore-unification-failure(form)
   `(handler-case,form
      (unification-failure()NIL)))
+
+(defun find-value-variable(value env &key (test #'eql))
+  (declare (type environment env))
+  (labels ((find-value-var(frames)
+	     (unless(endp frames)
+	       (or (let((binding(find value (frame-bindings (car frames)) :test test :key #'binding-value)))
+		     (when binding
+		       (binding-variable binding)))
+		   (find-value-var (cdr frames))))))
+    (find-value-var (environment-frames env))))
+
+(defun replace-bind(variable value env)
+  (setf (binding-value (find-variable-binding variable env))
+	value)
+  env)
