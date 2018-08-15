@@ -45,18 +45,18 @@
 	`(PUSHNEW ',name (TYPE-CLASS-CONSTRAINTS ',constraint))))
 
 ;;; <add-interface>
-(defun <add-interface>(method name lambda-list return-type rest)
-  `(ADD-INTERFACE ',method
+(defun <add-interface>(interface name lambda-list return-type rest)
+  `(ADD-INTERFACE ',interface
 		  :TYPE-CLASS ',name
 		  :LAMBDA-LIST ',lambda-list
 		  :RETURN-TYPE ',return-type
-		  ,@(let((default(find method rest :key #'cadr)))
+		  ,@(let((default(find interface rest :key #'cadr)))
 		      (when default
 			`(:DEFAULT ',(cdr default))))))
 
 ;;; <defmacro>
-(defun <defmacro>(method gensyms lambda-list return-type &aux (sub-name(sub-name method)))
-  `(DEFMACRO,method(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
+(defun <defmacro>(interface gensyms lambda-list return-type &aux (sub-name(sub-name interface)))
+  `(DEFMACRO,interface(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (DECLARE(IGNORE ,@gensyms))
      (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS INSTANCE MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
        (DECLARE (IGNORE RETURN-TYPE)
