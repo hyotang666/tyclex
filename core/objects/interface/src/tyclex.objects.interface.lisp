@@ -13,6 +13,7 @@
     #:interface-instances
     ;; helpers
     #:find-interface #:add-interface #:remove-interface #:augment-instances
+    #:interface-boundp
     )
   )
 (in-package :tyclex.objects.interface)
@@ -48,6 +49,10 @@
 
 (defun augment-instances(interface cell)
   (push cell (interface-instances interface)))
+
+(defun interface-boundp(symbol)
+  (check-type symbol (and symbol (not (or keyword boolean))))
+  (values (gethash symbol *interfaces*)))
 
 ;;;; EASY READERS
 (defun interface-lambda-list(interface)
