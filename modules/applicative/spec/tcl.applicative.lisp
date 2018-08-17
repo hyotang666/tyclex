@@ -200,3 +200,118 @@
        (just "volta"))
 => (just "johntravolta")
 ,:test equal
+
+(requirements-about LIFT)
+
+;;;; Description:
+
+#+syntax
+(LIFT function &rest functor*) ; => result
+
+;;;; Arguments and Values:
+
+; function := 
+
+; functor* := 
+
+; result := 
+
+;;;; Affected By:
+
+;;;; Side-Effects:
+
+;;;; Notes:
+
+;;;; Exceptional-Situations:
+
+#?(lift (curry cons _ _) (just 3)(just '(4)))
+=> (just (3 4))
+,:test equal
+(requirements-about SEQUENCE-A)
+
+;;;; Description:
+
+#+syntax
+(SEQUENCE-A applicative*) ; => result
+
+;;;; Arguments and Values:
+
+; applicative* := 
+
+; result := 
+
+;;;; Affected By:
+
+;;;; Side-Effects:
+
+;;;; Notes:
+
+;;;; Exceptional-Situations:
+
+#?(sequence-a ((just 1)(just 2)))
+=> (just (1 2))
+,:test equal
+
+#?(sequence-a ((just 3)(just 2)(just 1)))
+=> (just (3 2 1))
+,:test equal
+
+#?(sequence-a ((just 3)nothing(just 1)))
+=> NOTHING
+
+#?(funcall (sequence-a ((curry + _ 3)
+			(curry + _ 2)
+			(curry + _ 1)))
+	   3)
+=> (6 5 4)
+,:test equal
+
+#?(mapcar (lambda(f)
+	    (funcall f 7))
+	  (list (curry > _ 4)
+		(curry < _ 10)
+		#'oddp))
+=> (T T T)
+,:test equal
+
+#?(every #'identity (mapcar (lambda(f)
+			      (funcall f 7))
+			    (list (curry > _ 4)
+				  (curry < _ 10)
+				  #'oddp)))
+=> T
+
+#?(funcall (sequence-a ((curry > _ 4)
+			(curry < _ 10)
+			#'oddp))
+	   7)
+=> (T T T)
+,:test equal
+
+#?(every #'identity
+	 (funcall (sequence-a((curry > _ 4)
+			      (curry < _ 10)
+			      #'oddp))
+		  7))
+=> T
+
+#?(sequence-a ('(1 2 3)'(4 5 6)))
+=> ((1 4)(1 5)(1 6)(2 4)(2 5)(2 6)(3 4)(3 5)(3 6))
+,:test equal
+
+#?(sequence-a ('(1 2 3)'(4 5 6)'(3 4 4)nil))
+=> nil
+
+#?(sequence-a ('(1 2)'(3 4)))
+=> ((1 3)(1 4)(2 3)(2 4))
+,:test equal
+
+#?(sequence-a ('(1 2)'(3 4)'(5 6)))
+=> ((1 3 5)(1 3 6)(1 4 5)(1 4 6)(2 3 5)(2 3 6)(2 4 5)(2 4 6))
+,:test equal
+
+#?(with-input-from-string(*standard-input* (format nil "heyh~%ho~%woo"))
+    (funcall (sequence-a ((get-line)(get-line)(get-line)))))
+=> ("heyh" "ho" "woo")
+,:test equal
+

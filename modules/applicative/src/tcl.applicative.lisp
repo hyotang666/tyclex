@@ -8,7 +8,7 @@
     ;; predicate
     #:applicative-p
     ;; helper
-    #:<*>* #:<$>
+    #:<*>* #:<$> #:lift #:lift* #:sequence-a #:sequence-a*
     ))
 (in-package :tcl.applicative)
 
@@ -16,6 +16,7 @@
   ((pure(a)(f a))
    (<*>((f(function(a)b))(f a))(f b))))
 
+;;;; Helpers
 (defmacro <*>*(&rest body)
   (labels((rec(body)
 	    (if(endp (cdr body))
@@ -32,6 +33,23 @@
 		    ,(car body)))))
     (rec(reverse functors))))
 
+(defmacro lift(function &rest functor*)
+  `(<$> ,function ,@functor*))
+
+(defun lift*(function &rest functor*)
+  (eval `(<$> ,function ,@functor*)))
+
+(defmacro sequence-a(applicative*)
+  (trivia:ematch applicative*
+    ((null)`(pure nil))
+    ((cons x xs)`(<$> (curry cons _ _)
+		      ,x
+		      (sequence-a ,xs)))))
+
+(defun sequence-a*(applicative*)
+  (eval `(sequence-a ,applicative*)))
+
+;;;; Instances
 (definstance(applicative list)
   ((<*>(list arg)
      (alexandria:with-gensyms(f)
