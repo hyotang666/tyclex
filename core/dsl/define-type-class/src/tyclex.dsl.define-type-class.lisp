@@ -431,9 +431,10 @@
 
 ;;;; CHECK-SIGNATURE
 (defun check-signature(lambda-list type*)
-  (tyclex.unifier:dewild (substitute-pattern lambda-list
-					     (tyclex.unifier:unify (tyclex.unifier:enwild type*)
-								   (tyclex.unifier:enwild lambda-list)))))
+  (loop :with environment = (tyclex.unifier:unify (tyclex.unifier:enwild type*)
+						  (tyclex.unifier:enwild lambda-list))
+	:for pattern :in lambda-list
+	:collect (tyclex.unifier:dewild (substitute-pattern pattern environment))))
 
 ;;;; GET-INSTANCE
 (defun get-instance(interface type*)
