@@ -3,7 +3,6 @@
 (defsystem "tyclex.objects.adt"
   :depends-on
   (
-   "alexandria" ; Public domain utilities.
    )
   :pathname
   "src/"

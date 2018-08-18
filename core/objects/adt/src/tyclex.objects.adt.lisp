@@ -56,11 +56,19 @@
 (defun adt-type-specifier-p(thing)
   (let((adt(find-adt (first-atom thing)nil)))
     (when adt
-      (let*((form(cdr(alexandria:flatten (if (symbolp thing)
-					   ()
-					   thing))))
+      (let*((form(cdr(lflatten (if (symbolp thing)
+				 ()
+				 thing))))
 	    (lambda-list(adt-lambda-list adt)))
 	(<= (length form)(length lambda-list))))))
+
+(defun lflatten(list)
+  (labels((rec(list &optional acc)
+	    (typecase(car list)
+	      (null (apply #'append acc))
+	      (atom (apply #'append (cons list acc)))
+	      (t (rec (car list)(cons (cdr list)acc))))))
+    (rec list)))
 
 (defun first-atom(thing)
   (if(atom thing)
