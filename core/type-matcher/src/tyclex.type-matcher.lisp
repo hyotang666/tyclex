@@ -217,7 +217,8 @@
       ((:type-specifier	:type-specifier)
        (or (subtypep t1 t2)
 	   (subtypep t2 t1)))
-      ((:type-specifier	(:newtype :function :list))			nil)
+      ((:type-specifier	(:newtype :function))				nil)
+      ((:type-specifier	:list)						(eq 'null t1))
       ((:type-specifier	:adt)
        (when(millet:type-specifier-p t2)
 	 (subtypep t1 t2)))
@@ -229,7 +230,8 @@
        (matrix-case:matrix-etypecase(t1 t2)
 	 ((list list)(every #'type-match-p (cdr t1)(cdr t2)))
 	 (otherwise t)))
-      ((:list		(:newtype :adt :type-specifier :function))	nil)
+      ((:list		(:newtype :adt :function))			nil)
+      ((:list		:type-specifier)				(eq 'null t2))
       ((t :satisfier)							(typep t1 t2))
       (otherwise (if reccursivep
 		   nil
