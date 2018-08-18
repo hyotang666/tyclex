@@ -472,7 +472,7 @@
 ;;; <type-class-predicate>
 (defun <type-class-predicate>(name)
   `(DEFUN,(intern(format nil "~A-P" name))(#0=#:arg)
-     (find #0# (Type-class-member ',name))))
+     (find #0# (Type-class-member ',name):test #'Type-match-p)))
 
 ;;;; MACROEXPAND-HOOK
 (define-condition infinite-expansion()())
