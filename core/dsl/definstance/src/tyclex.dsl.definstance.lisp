@@ -18,8 +18,10 @@
     (assert (every (lambda(x)
 		     (typep x '(or symbol list)))
 		   types))
-    (assert (and (every #'symbolp constraints)
-		 (notany #'keywordp constraints)))
+    (loop :for (type var) :in constraints :do
+	  (assert (or (eq type type-class)
+		      (Find-type-class type nil)))
+	  (assert (trestrul:find-leaf var types)))
     ;; Binds
     (let*((interfaces(Type-class-interfaces type-class))
 	  (defs(loop :for interface :in (set-difference interfaces (mapcar #'car definition+))
