@@ -1,7 +1,7 @@
 (defpackage :tyclex.type-matcher
   (:use :cl :tyclex.newtype :tyclex.unifier)
   (:shadowing-import-from :tyclex.newtype #:list)
-  (:import-from :tyclex.objects.adt #:adt-type-specifier-p)
+  (:import-from :tyclex.objects.adt #:adt-type-specifier-p #:lflatten)
   (:export
     #:type-match-p
     ))
@@ -206,7 +206,13 @@
     (matrix-case:matrix-case((category-of t1)(category-of t2))
       ((:newtype	:newtype)					(car-eq t1 t2))
       ((:newtype	(:adt :list :type-specifier :function))		nil)
-      ((:adt		:adt)						(car-eq t1 t2))
+      ((:adt		:adt)
+       (matrix-case:matrix-typecase(t1 t2)
+	 ((list list)(and (car-eq t1 t2)
+			  (every #'type-match-p
+				 (cdr (Lflatten t1))
+				 (cdr (Lflatten t2)))))
+	 (otherwise (car-eq t1 t2))))
       ((:adt		(:newtype :type-specifier :function :list))	nil)
       ((:type-specifier	:type-specifier)
        (or (subtypep t1 t2)
