@@ -88,7 +88,9 @@
 			(when default
 			  `(,default)))))
 	(types(and instance (Instance-types instance)))
-	(constraints(and instance (Instance-constraints instance)))
+	(type-class(Interface-type-class (car form)))
+	(constraints(and instance
+			 (remove type-class (Instance-constraints instance):key #'car)))
 	(instance-constraints-definitions
 	  (when constraints
 	    (let((constructors(mapcan (lambda(type)
@@ -105,7 +107,6 @@
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
-	(type-class(Interface-type-class (car form)))
 	(type-class-constraints-definitions(constraints-definitions (Type-class-constraints type-class)
 								    types)))
     (if(some (lambda(x)
