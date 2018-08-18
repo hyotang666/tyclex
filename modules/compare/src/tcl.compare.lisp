@@ -1,5 +1,5 @@
 (defpackage :tcl.compare
-  (:use :tcl #:tcl.ord)
+  (:use :tcl #:tcl.ord #:tcl.data)
   (:export
     #:compare #:lt #:gt #:lte #:gte #:compare-p
     )
@@ -7,7 +7,7 @@
 (in-package :tcl.compare)
 
 (define-type-class(compare a)((ord a))
-  ((compare(a a)(member :eq :lt :gt))
+  ((compare(a a)ordering)
    (lt(a a)boolean)
    (gt(a a)boolean)
    (lte(a a)boolean)

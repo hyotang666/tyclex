@@ -5,6 +5,7 @@
   (
    "tcl"
    "tcl.ord"
+   "tcl.data"
    )
   :pathname
   "src/"
