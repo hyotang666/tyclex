@@ -288,7 +288,7 @@
     ((function)
      (if(listp (second form))
        `(function * ,(compute-return-type(car(last(cddr(second form))))env))
-       (introspect-environment:function-type(second form)env)))
+       (canonicalize-ftype(introspect-environment:function-type(second form)env))))
     ((if)
      (let((then(compute-return-type(third form)env))
 	  (else(compute-return-type(fourth form)env)))
@@ -418,6 +418,11 @@
 	(ensure-t (caddr return-type))
 	(ensure-t (cadr return-type)))
       (ensure-t return-type))))
+
+(defun canonicalize-ftype(ftype)
+  (list (first ftype)
+	(second ftype)
+	(canonicalize-return-type (third ftype))))
 
 (defun compute-constructor-form-return-type(var env)
   (let*((adt-constructor(nth-value 1 (Adt-value-p var)))
