@@ -174,7 +174,7 @@
 	   (Data-type-of (eval var))
 	   T))))
     ((typep var '(cons (cons (eql lambda) *) *)) ; ((lambda(...)...)...)
-     (compute-standard-form-return-type (car(last(cddar var))) env))
+     (compute-return-type (car(last(cddar var))) env))
     ((and (listp var) ; interface call.
 	  (Interface-boundp (car var)))
      (compute-interface-call-return-type var))
