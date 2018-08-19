@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (eval-when(:compile-toplevel :load-toplevel :execute)
   (unless(find-package :tyclex.unifier)
     (rename-package :unify :tyclex.unifier)
