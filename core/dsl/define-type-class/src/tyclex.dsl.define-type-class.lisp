@@ -82,11 +82,7 @@
 	(infos(check-signature (Interface-lambda-list (car form))
 			       return-types))
 	(instance(get-instance (car form) infos))
-	(definitions(if instance
-		      (Instance-definitions instance)
-		      (let((default(Interface-default (car form))))
-			(when default
-			  `(,default)))))
+	(definitions(and instance (Instance-definitions instance)))
 	(types(and instance (Instance-types instance)))
 	(type-class(Interface-type-class (car form)))
 	(constraints(and instance
