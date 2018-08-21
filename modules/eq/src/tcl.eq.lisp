@@ -1,4 +1,4 @@
-(defpackage :tcl.eq
+(tcl:defpackage :tcl.eq
   (:use :tcl :tcl.data)
   (:export
     #:eq-p

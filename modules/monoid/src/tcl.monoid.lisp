@@ -1,4 +1,4 @@
-(defpackage :tcl.monoid
+(tcl:defpackage :tcl.monoid
   (:use :tcl #:tcl.data)
   (:export
     ;; type-class

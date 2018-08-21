@@ -1,4 +1,4 @@
-(defpackage :tcl.monad
+(tcl:defpackage :tcl.monad
   (:use :tcl #:tcl.data)
   (:shadow #:return #:do)
   (:export

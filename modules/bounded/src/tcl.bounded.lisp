@@ -1,4 +1,4 @@
-(defpackage :tcl.bounded
+(tcl:defpackage :tcl.bounded
   (:use :tcl)
   (:export))
 (in-package :tcl.bounded)

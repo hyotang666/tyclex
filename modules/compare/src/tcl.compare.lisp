@@ -1,4 +1,4 @@
-(defpackage :tcl.compare
+(tcl:defpackage :tcl.compare
   (:use :tcl #:tcl.ord #:tcl.data)
   (:export
     #:compare #:lt #:gt #:lte #:gte #:compare-p

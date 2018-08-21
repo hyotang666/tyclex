@@ -1,4 +1,4 @@
-(defpackage :tcl.functor
+(tcl:defpackage :tcl.functor
   (:use :tcl #:tcl.data)
   (:export
     ;; type-class

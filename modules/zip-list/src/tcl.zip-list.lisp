@@ -1,4 +1,4 @@
-(defpackage :tcl.zip-list
+(tcl:defpackage :tcl.zip-list
   (:use #:tcl #:tcl.applicative #:tcl.functor)
   (:export
     ;; type-name

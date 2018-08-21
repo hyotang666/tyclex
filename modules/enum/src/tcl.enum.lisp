@@ -1,4 +1,4 @@
-(defpackage :tcl.enum
+(tcl:defpackage :tcl.enum
   (:use :tcl)
   (:export
     ;; type-class
