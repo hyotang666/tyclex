@@ -338,7 +338,7 @@
     ((:function		:function)		'function)
     ((:function		:class)			(find-diverging-class 'function t2))
     ((:function		(:compound :type))	(find-diverging-class 'function t2))
-    ((t			:type-variable) 	t2)
+    ((t			:type-variable)		(if (eq t t1) t1 t2))
     ((t			:unknown)		(error "nyi ~S ~S"t1 t2))
     ((:function		:may-pattern)
      (or (tyclex.unifier:ignore-unification-failure(tyclex.unifier:unify t1 t2))
@@ -364,7 +364,7 @@
      (if(eq t1 t2)
        t1
        (error "nyi ~S ~S"t1 t2)))
-    ((:type-variable	t)			t1)
+    ((:type-variable	t)			(if (eq t t2) t2 t1))
     ((:unknown		:unknown)		(error "nyi ~S ~S" t1 t2))
     ((:unknown		t)			(error "nyi ~S ~S" t1 t2))
     ((:may-pattern	:may-pattern)		(mapcar #'great-common-type t1 t2))
