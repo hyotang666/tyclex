@@ -76,7 +76,8 @@
 
 (defun parse-whole(form &optional (sub-name '#:sub-name) env)
   (let*((*macroexpand-hook* 'funcall) ; for easy debugging.
-	(expanded(loop :for form :in (copy-list (cdr form))
+	(expanded(loop :with *macroexpand-hook* = 'funcall ; for easy debugging.
+		       :for form :in (copy-list (cdr form))
 		       :collect(expander:expand form env)))
 	(return-types(compute-return-types expanded env))
 	(infos(check-signature (Interface-lambda-list (car form))
