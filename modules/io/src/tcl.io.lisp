@@ -1,5 +1,5 @@
 (defpackage :tcl.io
-  (:use :cl #:tyclex.dsl.defio #:tyclex.dsl.defdata)
+  (:use :cl #:tyclex.dsl.defio #:tyclex.dsl.defdata #:tyclex.objects.io-action)
   (:export
     #:put-char #:put-string #:put-string-line #:put-form
     #:get-char #:get-line #:get-form
