@@ -362,7 +362,7 @@
     ((:compound		:function)		(find-diverging-class 'function t1))
     ((:compound		:class)			(find-diverging-class t2 t1))
     ((:type-variable	:type-variable)
-     (if(eq t1 t2)
+     (if(string= t1 t2)
        t1
        (error "nyi ~S ~S"t1 t2)))
     ((:type-variable	t)			(if (eq t t2) t2 t1))
