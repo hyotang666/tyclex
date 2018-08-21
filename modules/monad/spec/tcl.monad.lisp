@@ -1,4 +1,4 @@
-(defpackage :tcl.monad.spec
+(tcl:defpackage :tcl.monad.spec
   (:use #:tcl :jingoh #:tcl.monad #:tcl.data)
   (:shadowing-import-from :tcl.monad #:do #:return)
   )

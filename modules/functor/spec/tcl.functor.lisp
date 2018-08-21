@@ -1,4 +1,4 @@
-(defpackage :tcl.functor.spec
+(tcl:defpackage :tcl.functor.spec
   (:use :tcl :jingoh :tcl.functor #:tcl.data #:tcl.io))
 (in-package :tcl.functor.spec)
 (setup :tcl.functor)

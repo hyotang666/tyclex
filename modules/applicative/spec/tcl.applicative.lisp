@@ -1,4 +1,4 @@
-(defpackage :tcl.applicative.spec
+(tcl:defpackage :tcl.applicative.spec
   (:use :tcl :jingoh :tcl.applicative #:tcl.io #:tcl.data))
 (in-package :tcl.applicative.spec)
 (setup :tcl.applicative)

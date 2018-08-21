@@ -1,4 +1,4 @@
-(defpackage :tcl.zip-list.spec
+(tcl:defpackage :tcl.zip-list.spec
   (:use #:tcl :jingoh :tcl.zip-list #:tcl.applicative))
 (in-package :tcl.zip-list.spec)
 (setup :tcl.zip-list)

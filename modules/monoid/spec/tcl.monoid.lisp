@@ -1,4 +1,4 @@
-(defpackage :tcl.monoid.spec
+(tcl:defpackage :tcl.monoid.spec
   (:use #:tcl :jingoh #:tcl.monoid #:tcl.compare #:tcl.data))
 (in-package :tcl.monoid.spec)
 (setup :tcl.monoid)
