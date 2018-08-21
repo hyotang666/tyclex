@@ -159,6 +159,26 @@
 			`(tyclex.curry:function-type ,name ,arg ,return)))
      (declaim ,@decls)))
 
+(defmacro tcl::defpackage(name &rest args)
+  `(eval-when(:compile-toplevel :load-toplevel :execute)
+     (when(find-package ',name)
+       (handler-bind((package-error(lambda(condition)
+				     (let((restart(find-restart 'continue)))
+				       (when restart
+					 (warn 'package-warning
+					       :format-control "~A~%~A"
+					       :format-arguments (list condition restart))
+					 (invoke-restart restart))))))
+	 (delete-package ',name)))
+     (defpackage ,name ,@args)))
+
+(define-condition package-warning(style-warning simple-condition)
+  ()
+  (:report (lambda(condition stream)
+	     (apply #'format stream
+		    (simple-condition-format-control condition)
+		    (simple-condition-format-arguments condition)))))
+
 (dolist(package '(:tyclex :cl))
   (let(import export)
     (do-external-symbols(symbol package)
