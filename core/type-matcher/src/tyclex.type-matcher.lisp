@@ -97,6 +97,20 @@
 		(cdr a)) ; probably haskell style, e.g. (function return).
 	    (cdr b)
 	    (Extend-environment (car b)(car a)env)))
+    (((satisfies Variablep)t)
+     (let((len-a (length a))
+	  (len-b (length b)))
+       (cond
+	 ((= len-a len-b)(call-next-method))
+	 ((< len-a len-b)(call-next-method a (curry-simulate b a)))
+	 (t (call-next-method)))))
+    ((t (satisfies Variablep))
+     (let((len-a (length a))
+	  (len-b (length b)))
+       (cond
+	 ((= len-a len-b)(call-next-method))
+	 ((< len-a len-b)(call-next-method))
+	 (t (call-next-method (curry-simulate a b) b)))))
     (otherwise (call-next-method))))
 
 ;#++macroexpand-1ed-when-readtime[success]
@@ -117,7 +131,28 @@
 				 (cdr a)) ; probably haskell style, e.g. (function return).
 			     (cdr b)
 			     (Extend-environment (car b)(car a)env)))
+		     (((satisfies Variablep)t)
+		      (let((len-a (length a))
+			   (len-b (length b)))
+			(cond
+			  ((= len-a len-b)(call-next-method))
+			  ((< len-a len-b)(call-next-method a (curry-simulate b a)))
+			  (t (call-next-method)))))
+		     ((t (satisfies Variablep))
+		      (let((len-a (length a))
+			   (len-b (length b)))
+			(cond
+			  ((= len-a len-b)(call-next-method))
+			  ((< len-a len-b)(call-next-method))
+			  (t (call-next-method (curry-simulate a b) b)))))
 		     (otherwise (call-next-method)))))
+
+(defun curry-simulate(long short)
+  (labels((rec(count list)
+	    (if(zerop count)
+	      list
+	      (rec (1- count)(cons (subseq list 0 2)(cddr list))))))
+    (rec (- (length long)(length short))long)))
 
 (defunify((a (eql 'cons))(b (eql 'list)))
   env)
