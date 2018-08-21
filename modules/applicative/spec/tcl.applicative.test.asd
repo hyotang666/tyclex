@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :tcl.applicative.test
   :depends-on
-  (:jingoh "tcl.applicative")
+  (:jingoh "tcl.applicative" "tcl.io" "tcl.data" "tcl")
   :components
   ((:file "tcl.applicative"))
   :perform
