@@ -156,8 +156,8 @@
 	     :when (ftype-function-formp decl)
 	     :collect (destructuring-bind(ftype (function arg return)name)decl
 			(declare(ignore ftype function))
-			`(tyclex.curry:function-type ,name ,arg ,return)))
-     (declaim ,@decls)))
+			`(tyclex.curry:function-type ,name ,arg ,return))
+	     :else :collect `(declaim ,decl))))
 
 (defun ftype-function-formp(form)
   (typep form '(cons (eql ftype)
