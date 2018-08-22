@@ -136,8 +136,9 @@
   (loop :for constraint :in constraints
 	:append (loop :for interface :in (Type-class-interfaces (alexandria:ensure-car constraint))
 		      :thereis (loop :for instance :in (Interface-instances interface)
-				     :when (find types (Instance-types instance)
-						 :test #'Type-match-p)
+				     :when (every #'Type-match-p
+						  types
+						  (Instance-types instance))
 				     :return (Instance-definitions instance)))))
 
 (defun sub-name(symbol)
