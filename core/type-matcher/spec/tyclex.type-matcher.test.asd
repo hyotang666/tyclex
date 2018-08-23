@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :tyclex.type-matcher.test
   :depends-on
-  (:jingoh "tyclex.type-matcher")
+  (:jingoh "tyclex.type-matcher" "millet")
   :components
   ((:file "tyclex.type-matcher"))
   :perform
