@@ -59,20 +59,22 @@
   `(DEFMACRO,interface(&WHOLE WHOLE ,@gensyms &ENVIRONMENT ENV)
      (DECLARE(IGNORE ,@gensyms))
      (MULTIPLE-VALUE-BIND(EXPANDED RETURN-TYPE INFOS INSTANCE MACROS)(PARSE-WHOLE WHOLE ',sub-name ENV)
-       (DECLARE (IGNORE RETURN-TYPE INSTANCE)
+       (DECLARE (IGNORE RETURN-TYPE)
 		(IGNORABLE INFOS))
        (LET((BODY`(,',sub-name
 		    ,@(LOOP :FOR FORM :IN EXPANDED
 			    :COLLECT (expander:expand `(MACROLET,MACROS,FORM) env)))))
-	 (IF MACROS
-	     ,(if(millet:type-specifier-p return-type)
-		``(MACROLET,MACROS (THE ,',return-type ,BODY))
-		`(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (TYCLEX.UNIFIER:ENWILD INFOS)))))
-		   (IF(MILLET:TYPE-SPECIFIER-P RETURN)
-		     `(MACROLET,MACROS (THE ,RETURN ,BODY))
-		     `(MACROLET,MACROS ,BODY))))
-	     (PROGN
-	       WHOLE))))))
+	 (IF(NULL INSTANCE)
+	   (RPLACD WHOLE EXPANDED)
+	   (IF MACROS
+	       ,(if(millet:type-specifier-p return-type)
+		  ``(MACROLET,MACROS (THE ,',return-type ,BODY))
+		  `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (TYCLEX.UNIFIER:ENWILD INFOS)))))
+		     (IF(MILLET:TYPE-SPECIFIER-P RETURN)
+		       `(MACROLET,MACROS (THE ,RETURN ,BODY))
+		       `(MACROLET,MACROS ,BODY))))
+	       (PROGN
+		 WHOLE)))))))
 
 (defun parse-whole(form &optional (sub-name '#:sub-name) env)
   (let*((*macroexpand-hook* 'funcall) ; for easy debugging.
