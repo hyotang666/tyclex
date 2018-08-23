@@ -2,7 +2,10 @@
 (in-package :asdf)
 (defsystem "tcl.state"
   :depends-on
-  nil
+  (
+   "tcl"
+   "tcl.monad"
+   )
   :pathname
   "src/"
   :components
