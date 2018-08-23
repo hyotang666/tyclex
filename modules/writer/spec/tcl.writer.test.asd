@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :tcl.writer.test
   :depends-on
-  (:jingoh "tcl.writer")
+  (:jingoh "tcl.writer" "tcl.monad")
   :components
   ((:file "tcl.writer"))
   :perform

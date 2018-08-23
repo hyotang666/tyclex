@@ -2,7 +2,12 @@
 (in-package :asdf)
 (defsystem "tcl.writer"
   :depends-on
-  nil
+  (
+   "tcl"
+   "tcl.monad"
+   "tcl.monoid"
+   "alexandria"
+  )
   :pathname
   "src/"
   :components
