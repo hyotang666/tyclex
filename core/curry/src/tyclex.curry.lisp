@@ -4,7 +4,7 @@
     ;; Main API
     #:curry
     ;; Helpers
-    #:function-type-of #:function-type
+    #:function-type-of #:function-type #:<Non-Curry-Form>
     ))
 (in-package :tyclex.curry)
 
@@ -34,7 +34,7 @@
 
 ;;; <Section-Form>
 (defun <Section-Form>(op args)
-  (let*((gensyms(alexandria:make-gensym-list(count-if #'underscorep args)))
+  (let*((gensyms(underscore-gensyms args))
 	(optional-lambda-list(optional-lambda-list gensyms)))
     (if gensyms
       (<Curry-Form> (<Section-Body-Form> op args gensyms)
@@ -43,6 +43,9 @@
 			 (or (third(function-type-of op))
 			     (third(introspect-environment:function-type op)))))
       `(,op ,@args))))
+
+(defun underscore-gensyms(args)
+  (alexandria:make-gensym-list(count-if #'underscorep args)))
 
 (defun underscorep (thing)
   (and (symbolp thing)
@@ -96,6 +99,12 @@
 		  (car body)))
 	    )
       (ENTRY-POINT optional-lambda-list))))
+
+;;;; <non-curry-form>
+(defun <non-curry-form> (op args)
+  (let((gensyms(underscore-gensyms args)))
+    `(lambda(,@gensyms)
+       ,@(<section-body-form> op args gensyms))))
 
 ;;;; FUNCTION-TYPE
 (defmacro function-type (name args return)
