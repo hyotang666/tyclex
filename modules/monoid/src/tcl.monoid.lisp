@@ -34,9 +34,9 @@
     (rec form*)))
 
 ;;;; Newtypes
-(define-newtype product() 'integer)
+(define-newtype product(a) a)
 
-(define-newtype sum() 'integer)
+(define-newtype sum(a) a)
 
 (define-newtype any() 'boolean)
 
