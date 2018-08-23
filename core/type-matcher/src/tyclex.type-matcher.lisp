@@ -174,14 +174,16 @@
 (defunify((a (eql 'vector))(b cl:list))
   (if(variablep(car b))
     (extend-environment (car b) a env)
-    (if(eq a (car b))
+    (if(or (eq a (car b))
+	   (eq 'simple-vector (car b)))
       env
       (call-next-method))))
 
 (defunify((a (eql 'simple-vector))(b cl:list))
   (if(variablep(car b))
     (extend-environment (car b) a env)
-    (if(eq a (car b))
+    (if(or (eq a (car b))
+	   (eq 'vector (car b)))
       env
       (call-next-method))))
 
