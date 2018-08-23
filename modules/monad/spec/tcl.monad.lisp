@@ -309,3 +309,9 @@
 #?(do (string x _) <- (just "")
     (return x))
 => NOTHING
+
+#?(do a <- (curry * 2 _)
+    b <- (curry + 10 _)
+    (return (+ a b)))
+:satisfies #`(& (functionp $result)
+		(= 19 (funcall $result 3)))
