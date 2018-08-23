@@ -499,7 +499,10 @@
       expanded)))
 
 (if(or (eq #'funcall *macroexpand-hook*)
-       (eq 'funcall *macroexpand-hook*))
+       (eq 'funcall *macroexpand-hook*)
+       (and (symbolp *macroexpand-hook*)
+	    (null(symbol-package *macroexpand-hook*))
+	    (string= *macroexpand-hook* 'infinite-expansion-detecter)))
   (setq *macroexpand-hook* 'infinite-expansion-detecter)
   (if(eq 'infinite-expansion-detecter *macroexpand-hook*)
     nil
