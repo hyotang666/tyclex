@@ -37,7 +37,8 @@
   (let*((gensyms(alexandria:make-gensym-list(count-if #'underscorep args)))
 	(optional-lambda-list(optional-lambda-list gensyms)))
     (if gensyms
-      (<Curry-Form> (<Section-Body-Form> op args gensyms) optional-lambda-list
+      (<Curry-Form> (<Section-Body-Form> op args gensyms)
+		    optional-lambda-list
 		    (and (symbolp op)
 			 (or (third(function-type-of op))
 			     (third(introspect-environment:function-type op)))))
