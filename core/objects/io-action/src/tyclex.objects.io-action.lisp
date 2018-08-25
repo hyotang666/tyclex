@@ -16,7 +16,7 @@
     ;; constructor
     #:make-action
     ;; reader
-    #:action-type
+    #:action-type #:action-body #:action-lambda-list
     ;; helpers
     #:add-io #:remove-io #:io-boundp #:io-makunbound #:find-io
     )
@@ -39,7 +39,9 @@
 
 ;;;; ACTION data structure.
 (defstruct(action (:copier nil)(:predicate nil))
-  (type (error "required") :type (cons (eql io)(cons * null)) :read-only t))
+  (type (error "required") :type (cons (eql io)(cons * null)) :read-only t)
+  (body (error "required") :type cons :read-only t)
+  (lambda-list (error "required") :type list :read-only t))
 
 (defvar *io-functions* (make-hash-table :test #'eq))
 
