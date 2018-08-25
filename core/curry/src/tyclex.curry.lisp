@@ -108,11 +108,7 @@
     (let*((underscore-num(count-if #'underscorep (cddr curry-form)))
 	  (arg-num(length actual-args))
 	  (diff(- underscore-num arg-num)))
-      (flet((MAKE-BIND(actual-args gensyms)
-	      (loop :for arg :in actual-args
-		    :for symbol :in gensyms
-		    :collect `(,symbol ,arg)))
-	    (UNDERSCORE-TO-ACTUAL-ARG(whole gensyms)
+      (flet((UNDERSCORE-TO-ACTUAL-ARG(whole gensyms)
 	      (loop :for elt :in whole
 		    :when (and (symbolp elt)
 			       (string= "_" elt))
@@ -122,16 +118,11 @@
 	(cond
 	  ((minusp diff)(error "Too much args. ~S ~S"curry-form actual-args))
 	  ((zerop diff)
-	   (let((gensyms(alexandria:make-gensym-list arg-num)))
-	     `(LET,(MAKE-BIND actual-args gensyms)
-		,(UNDERSCORE-TO-ACTUAL-ARG curry-form gensyms))
-	     ))
-	  (t (let*((gensyms(alexandria:make-gensym-list arg-num))
-		   (new-whole(UNDERSCORE-TO-ACTUAL-ARG curry-form gensyms)))
-	       `(LET,(MAKE-BIND actual-args gensyms)
-		  ,(<Section-Form> (cadr curry-form)
-				   (cddr new-whole)
-				   new-whole)))))))))
+	   (UNDERSCORE-TO-ACTUAL-ARG curry-form actual-args))
+	  (t (let((new-whole(UNDERSCORE-TO-ACTUAL-ARG curry-form actual-args)))
+	       (<Section-Form> (cadr curry-form)
+			       (cddr new-whole)
+			       new-whole))))))))
 
 (defun curry-form-p(form)
   (typep form '(cons (eql curry) *)))
