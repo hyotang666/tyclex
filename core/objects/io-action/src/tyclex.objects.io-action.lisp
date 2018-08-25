@@ -18,7 +18,7 @@
     ;; reader
     #:action-type
     ;; helpers
-    #:add-io #:remove-io #:io-boundp #:io-makunbound
+    #:add-io #:remove-io #:io-boundp #:io-makunbound #:find-io
     )
   )
 (in-package :tyclex.objects.io-action)
@@ -51,6 +51,11 @@
 (defun remove-io(name)
   (check-type name (and symbol (not (or keyword boolean))))
   (remhash name *io-functions*))
+
+(defun find-io(name &optional errorp)
+  (or (gethash name *io-functions*)
+      (when errorp
+	(error "Missing io named ~S" name))))
 
 (defun io-boundp(symbol)
   (check-type symbol symbol)
