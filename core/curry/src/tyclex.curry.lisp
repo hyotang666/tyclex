@@ -4,7 +4,9 @@
     ;; Main API
     #:curry
     ;; Helpers
-    #:function-type-of #:function-type #:<Non-Curry-Form>
+    #:function-type-of #:function-type
+    ;; Decurry
+    #:decurry #:recurry #:curry-form-p #:expanded-curry-form-p
     ))
 (in-package :tyclex.curry)
 
@@ -19,29 +21,23 @@
   (c2mop:set-funcallable-instance-function c (curried-function c)))
 
 ;;;; CURRY
-(defmacro curry (op &rest args)
+(defmacro curry (&whole whole op &rest args)
   ;; Trivial syntax check.
-  (check-type op (or symbol (cons (eql lambda)T)))
-  (when(typep op '(cons (eql lambda)t))
-    (assert (every #'symbolp (cadr op)))
-    (assert (notany (lambda(elt)
-		      (find elt lambda-list-keywords))
-		    (cadr op))))
+  (check-type op symbol)
+  (assert args)
   ;; body
-  (if(null args)
-    `#',op
-    (<Section-Form> op args)))
+  (<Section-Form> op args whole))
 
 ;;; <Section-Form>
-(defun <Section-Form>(op args)
+(defun <Section-Form>(op args whole)
   (let*((gensyms(underscore-gensyms args))
 	(optional-lambda-list(optional-lambda-list gensyms)))
     (if gensyms
       (<Curry-Form> (<Section-Body-Form> op args gensyms)
 		    optional-lambda-list
-		    (and (symbolp op)
-			 (or (third(function-type-of op))
-			     (third(introspect-environment:function-type op)))))
+		    (or (third(function-type-of op))
+			(third(introspect-environment:function-type op)))
+		    whole)
       `(,op ,@args))))
 
 (defun underscore-gensyms(args)
@@ -69,7 +65,7 @@
     `((,op ,@(rec args gensyms)))))
 
 ;;; <Curry-Form>
-(defun <Curry-Form> (body optional-lambda-list return-type)
+(defun <Curry-Form> (body optional-lambda-list return-type whole)
   (let((curry (gensym "CURRY")))
     (labels((ENTRY-POINT(list)
 	      (if(endp list)
@@ -82,6 +78,7 @@
 					    :ARITY ,(length list)
 					    :RETURN-TYPE ',return-type
 					    ))))
+		   ',whole ; for decurry.
 		   (MAKE-INSTANCE 'CURRY
 				  :FUNCTION #',curry
 				  :ARITY ,(length list)
@@ -100,11 +97,53 @@
 	    )
       (ENTRY-POINT optional-lambda-list))))
 
-;;;; <non-curry-form>
-(defun <non-curry-form> (op args)
-  (let((gensyms(underscore-gensyms args)))
-    `(lambda(,@gensyms)
-       ,@(<section-body-form> op args gensyms))))
+;;;; DECURRY
+(defun decurry (form actual-args)
+  (recurry (introspect-environment:constant-form-value(third form))
+	   actual-args))
+
+(defun recurry(curry-form actual-args)
+  (if(null actual-args)
+    curry-form
+    (let*((underscore-num(count-if #'underscorep (cddr curry-form)))
+	  (arg-num(length actual-args))
+	  (diff(- underscore-num arg-num)))
+      (flet((MAKE-BIND(actual-args gensyms)
+	      (loop :for arg :in actual-args
+		    :for symbol :in gensyms
+		    :collect `(,symbol ,arg)))
+	    (UNDERSCORE-TO-ACTUAL-ARG(whole gensyms)
+	      (loop :for elt :in whole
+		    :when (and (symbolp elt)
+			       (string= "_" elt))
+		    :collect (or (pop gensyms)
+				 elt)
+		    :else :collect elt)))
+	(cond
+	  ((minusp diff)(error "Too much args. ~S ~S"curry-form actual-args))
+	  ((zerop diff)
+	   (let((gensyms(alexandria:make-gensym-list arg-num)))
+	     `(LET,(MAKE-BIND actual-args gensyms)
+		,(UNDERSCORE-TO-ACTUAL-ARG curry-form gensyms))
+	     ))
+	  (t (let*((gensyms(alexandria:make-gensym-list arg-num))
+		   (new-whole(UNDERSCORE-TO-ACTUAL-ARG curry-form gensyms)))
+	       `(LET,(MAKE-BIND actual-args gensyms)
+		  ,(<Section-Form> (cadr curry-form)
+				   (cddr new-whole)
+				   new-whole)))))))))
+
+(defun curry-form-p(form)
+  (typep form '(cons (eql curry) *)))
+
+(defun expanded-curry-form-p(form)
+  (and (listp form)
+       (eq 'labels (car form))
+       (let((body (cddr form)))
+	 (and (every #'listp body)
+	      (= 2 (length body))
+	      (eq 'make-instance (caadr body))
+	      (equal (cadadr body) '(quote curry))))))
 
 ;;;; FUNCTION-TYPE
 (defmacro function-type (name args return)
