@@ -509,3 +509,50 @@
     (if(y-or-n-p "~%TYCLEX try to replace *MACROEXPAND-HOOK*, but already set. ~S~%Really replace it?"*macroexpand-hook*)
       (setq *macroexpand-hook* 'infinite-expansion-detecter)
       (warn "TYCLEX could not detect infinite macro expansion."))))
+
+;;;; EXPANDTABLE
+(defun |funcall-expander|(form env)
+  (let*((function (second form))
+	(args (cddr form))
+	(the (when (and (listp function)
+			(eq 'the (car function)))
+	       (setf function (third function)) ; as canonicalize.
+	       (second function))))
+    (cond
+      ((tyclex.curry:curry-form-p function)
+       (expander:expand (tyclex.curry:recurry function args)
+			env))
+      ((tyclex.curry:expanded-curry-form-p function)
+       (expander:expand (tyclex.curry:decurry function args)
+			env))
+      ((and (listp function)
+	    (Io-boundp (car function)))
+       (let((io(Find-io(car function))))
+	 (if(null (cdr function))
+	   (pretty-body (expander:expand* (Action-body io)env) the)
+	   `(DESTRUCTURING-BIND,(Action-lambda-list io)(LIST ,@(cdr function))
+	      ,@(expander:expand* (Action-body io) env)))))
+      ((and (listp function)
+	    (every #'equal function '(make-instance 'io-action)))
+       (pretty-body (cddadr (getf function :instance)) the))
+      (t (let((expanded(expander:expand* (cdr form) env)))
+	   (if(every #'equalp expanded (cdr form))
+	     form
+	     (|funcall-expander| (cons (car form)expanded)env)))))))
+
+(defun pretty-body(form the)
+  (let((return-type (when the
+		      (typecase the
+			((cons (eql io)*)(second the))
+			((cons (eql function)*) (third the))))))
+    (if(cdr form)
+      (if return-type
+	`(the ,return-type (progn ,@form))
+	`(PROGN ,@form))
+      (if return-type
+	`(the ,return-type ,(car form))
+	(car form)))))
+
+(expander:defexpandtable :tyclex
+  (:use standard)
+  (:add |funcall-expander| funcall))
