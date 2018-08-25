@@ -13,7 +13,7 @@
        ;; note: type assertion too complex to check:
        #+sbcl(declare (sb-ext:muffle-conditions sb-ext:compiler-note))
        (PROCLAIM '(FTYPE(FUNCTION,types(IO ,return)),name))
-       (ADD-IO ',name :TYPE '(IO ,return))
+       (ADD-IO ',name :TYPE '(IO ,return) :BODY ',body :lambda-list ',vars)
        (DEFUN,name,vars
 	 (MAKE-INSTANCE 'IO-ACTION
 			:INSTANCE (LAMBDA(),@body)
