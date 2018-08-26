@@ -240,6 +240,7 @@
 			(typep elt '(cons (eql values) *)))
 		      ftype-spec))
 
+;;;; TYPE-MATCH-P
 (defun type-match-p(t1 t2 &optional reccursivep)
   (labels((car-eq(t1 t2)
 	    (matrix-case:matrix-typecase(t1 t2)
