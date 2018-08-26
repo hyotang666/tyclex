@@ -168,16 +168,16 @@
 
 (defmacro tcl::defpackage(name &rest args)
   `(eval-when(:compile-toplevel :load-toplevel :execute)
-     (when(find-package ',name)
-       (handler-bind((package-error(lambda(condition)
-				     (let((restart(find-restart 'continue)))
-				       (when restart
-					 (warn 'package-warning
-					       :format-control "~A~%~A"
-					       :format-arguments (list condition restart))
-					 (invoke-restart restart))))))
-	 (delete-package ',name)))
-     (defpackage ,name ,@args)))
+     (handler-bind(#+sbcl (sb-ext:name-conflict (restart-invoker 'sb-impl::take-new))
+		   #+sbcl (warning #'muffle-warning)
+		   )
+       (defpackage ,name ,@args))))
+
+(defun restart-invoker(restart-name &rest args)
+  (lambda(condition)
+    (let((restart(find-restart restart-name condition)))
+      (when restart
+	(apply #'invoke-restart restart args)))))
 
 (define-condition package-warning(style-warning simple-condition)
   ()
