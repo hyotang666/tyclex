@@ -358,6 +358,8 @@
     ((:class		(:compound :type))	(find-diverging-class t1 t2))
     (((:type :class :compound)	:may-pattern)	T) ; give up.
     (((:compound :type)	(:compound :type))
+     (setf t1 (subst t '* t1)
+	   t2 (subst t '* t2))
      (cond
        ((subtypep t1 t2)t2)
        ((subtypep t2 t1)t1)
