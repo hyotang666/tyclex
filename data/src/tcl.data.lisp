@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tcl.data
   (:use :cl #:tyclex.dsl.defdata)
   (:export

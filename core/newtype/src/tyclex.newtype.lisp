@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.newtype
   (:use :cl)
   (:shadow #:list)

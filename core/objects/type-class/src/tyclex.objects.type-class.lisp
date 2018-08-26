@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.objects.type-class
   (:use :cl)
   (:export

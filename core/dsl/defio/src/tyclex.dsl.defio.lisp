@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.dsl.defio
   (:use :cl #:tyclex.objects.io-action)
   (:export

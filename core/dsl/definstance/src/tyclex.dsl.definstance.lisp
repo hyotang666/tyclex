@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.dsl.definstance
   (:use :cl #:tyclex.objects.type-class #:tyclex.objects.interface)
   (:import-from #:tyclex.objects.instance #:make-type-class-instance)

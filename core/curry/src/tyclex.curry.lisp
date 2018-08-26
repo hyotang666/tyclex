@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.curry
   (:use :cl)
   (:export

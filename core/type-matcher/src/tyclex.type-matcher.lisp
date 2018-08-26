@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.type-matcher
   (:use :cl :tyclex.newtype :tyclex.unifier)
   (:shadowing-import-from :tyclex.newtype #:list)

@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tyclex.dsl.define-type-class
   (:use :cl #:tyclex.objects #:tyclex.dsl.defdata)
   (:import-from #:tyclex.type-matcher #:type-match-p #:great-common-type)

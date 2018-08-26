@@ -1,3 +1,4 @@
+(in-package :cl-user)
 (defpackage :tcl.builder(:use :cl))
 (in-package :tcl.builder)
 
