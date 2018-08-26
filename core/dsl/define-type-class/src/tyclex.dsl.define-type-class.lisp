@@ -1,7 +1,36 @@
 (in-package :cl-user)
 (defpackage :tyclex.dsl.define-type-class
-  (:use :cl #:tyclex.objects #:tyclex.dsl.defdata)
-  (:import-from #:tyclex.type-matcher #:type-match-p #:great-common-type)
+  (:use :cl)
+
+  (:import-from :tyclex.dsl.defdata
+		#:adt-value-p #:class-name-of #:data-type-of)
+  (:import-from :tyclex.type-matcher
+		#:type-match-p #:great-common-type)
+  ;; Objects
+  (:import-from :tyclex.objects.type-class
+		;; Slot readers.
+		#:type-class-constraints #:type-class-interfaces #:type-class-member
+		;; Helpers.
+		#:find-type-class #:add-type-class)
+  (:import-from :tyclex.objects.io-action
+		;; Slot readers.
+		#:action-body #:action-lambda-list #:action-type
+		;; Helpers.
+		#:find-io #:io-boundp)
+  (:import-from :tyclex.objects.adt
+		;; Slot readers.
+		#:adt-constructor-arg-types #:adt-constructor-type-of #:adt-lambda-list
+		;; Helpers.
+		#:adt-type-specifier-p #:find-adt)
+  (:import-from :tyclex.objects.instance
+		;; Slot readers.
+		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types)
+  (:import-from :tyclex.objects.interface
+		;; SLot readers.
+		#:interface-instances #:interface-lambda-list #:interface-return-type #:interface-type-class
+		;; Helpers.
+		#:add-interface #:interface-boundp)
+
   (:export
     ;; Main API
     #:define-type-class
