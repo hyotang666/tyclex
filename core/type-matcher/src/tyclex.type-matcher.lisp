@@ -3,7 +3,7 @@
   (:shadowing-import-from :tyclex.newtype #:list)
   (:import-from :tyclex.objects.adt #:adt-type-specifier-p #:lflatten)
   (:export
-    #:type-match-p
+    #:type-match-p #:great-common-type
     ))
 (in-package :tyclex.type-matcher)
 
@@ -212,7 +212,13 @@
   (if(Variablep a)
     (if(eq 'function (car b)) ; ?B (FUNCTION(?A)?B)
       (Extend-environment a b env)
-      (call-next-method))
+      (if(Newtype-type-specifier-p b)
+	(let*((new-env(call-next-method))
+	      (value(Find-variable-value a new-env)))
+	  (if(eq value b)
+	    new-env
+	    (Replace-bind a (great-common-type value b)new-env)))
+	(call-next-method)))
     (if(Newtype-type-specifier-p a)
       (if(Variablep (car b))
 	(if(Find-variable-value (car b) env)
@@ -310,3 +316,86 @@
 	 ((typep thing '(cons (eql cl:list)t)) :list)
 	 ((typep thing '(cons (eql cons)t)) :list)
 	 (t :unknown)))))
+
+;;;; GREAT-COMMON-TYPE
+(defun great-common-type(t1 t2 &optional reccursivep)
+  (matrix-case:matrix-case((type-category-of t1)(type-category-of t2))
+    ((:function		:function)		'function)
+    ((:function		:class)			(find-diverging-class 'function t2))
+    ((:function		(:compound :type))	(find-diverging-class 'function t2))
+    ((t			:type-variable)		(if (eq t t1) t1 t2))
+    ((t			:unknown)		(error "nyi ~S ~S"t1 t2))
+    ((:function		:may-pattern)
+     (or (Ignore-unification-failure(Unify t1 t2))
+	 t2))
+    ((:class		:class)			(find-diverging-class t1 t2))
+    ((:class		:function)		(find-diverging-class t1 'function))
+    ((:class		(:compound :type))	(find-diverging-class t1 t2))
+    (((:type :class :compound)	:may-pattern)	T) ; give up.
+    (((:compound :type)	(:compound :type))
+     (setf t1 (subst t '* t1)
+	   t2 (subst t '* t2))
+     (cond
+       ((subtypep t1 t2)t2)
+       ((subtypep t2 t1)t1)
+       (t (if reccursivep
+	    T ; give up.
+	    (great-common-type (millet:type-expand t1)
+			       (millet:type-expand t2)
+			       t)))))
+    ((:type		:function)		(find-diverging-class 'function t1))
+    ((:type		:class)			(find-diverging-class t2 t1))
+    ((:compound		:function)		(find-diverging-class 'function t1))
+    ((:compound		:class)			(find-diverging-class t2 t1))
+    ((:type-variable	:type-variable)
+     (if(string= t1 t2)
+       t1
+       (error "nyi ~S ~S"t1 t2)))
+    ((:type-variable	t)			(if (eq t t2) t2 t1))
+    ((:unknown		:unknown)		(error "nyi ~S ~S" t1 t2))
+    ((:unknown		t)			(error "nyi ~S ~S" t1 t2))
+    ((:may-pattern	:may-pattern)		(mapcar #'great-common-type t1 t2))
+    ((:may-pattern	:function)
+     (or (Ignore-unification-failure(Unify t1 t2))
+	 t1))
+    ((:may-pattern	(:type :class :compound))	t) ; give up.
+    ))
+
+(defun type-category-of(type)
+  (if(millet:type-specifier-p type)
+    (if(symbolp type)
+      (if(find type '(function standard-generic-function) :test #'eq)
+	:function
+	(if(find-class type nil)
+	  :class
+	  :type))
+      :compound)
+    (if(symbolp type)
+      (if(Variablep type)
+	:type-variable
+	:unknown)
+      (if(typep type '(cons (eql function)t))
+	:function
+	:may-pattern))))
+
+(defun find-diverging-class(class type)
+  (labels((rec(classes &optional acc)
+	    (if(endp classes)
+	      (if(null(cdr acc))
+		(car acc)
+		(reduce (lambda(pre suc)
+			  (if(subtypep pre suc)
+			    pre
+			    suc))
+			acc))
+	      (if(subtypep type (car classes))
+		(rec (cdr classes)(cons (class-name(car classes)) acc))
+		(rec (append (cdr classes)
+			     (c2mop:class-direct-superclasses (car classes)))
+		     acc)))))
+    (setf class (find-class class)) ; as canonicalize.
+    (cond
+      ((subtypep class type) type)
+      ((subtypep type class) (class-name class))
+      (t (rec (c2mop:class-direct-superclasses class))))))
+

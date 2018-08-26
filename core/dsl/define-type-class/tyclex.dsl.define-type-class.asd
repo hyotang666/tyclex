@@ -10,7 +10,6 @@
    "tyclex.dsl.defdata"         ; Module for DEFDATA syntax.
    "millet"                     ; Wrapper for implementation dependent utilities.
    "introspect-environment"     ; Wrapper for environment introspection.
-   "closer-mop"                 ; Wrapper for meta object protocols.
    "alexandria"                 ; Public domain utilities.
    "expander"                   ; Macroexpand-all.
    "trestrul"                   ; Utilities for tree structured list.

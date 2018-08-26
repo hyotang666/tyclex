@@ -7,6 +7,7 @@
    "tyclex.unifier"     ; Module for unification.
    "tyclex.objects.adt" ; Module for adt objects.
    "millet"             ; Wrapper for implementation dependent utilities.
+   "closer-mop"         ; Wrapper for meta object protocols.
    "trestrul"           ; Tiny utilities for tree structured list.
    "matrix-case"        ; Tiny utilities for control flow.
    )
