@@ -219,7 +219,9 @@
 	  env
 	  (Extend-environment (car b) a env))
 	(call-next-method))
-      (call-next-method))))
+      (if(Newtype-type-specifier-p b)
+	(unify a (millet:type-expand b)env)
+	(call-next-method)))))
 
 (defunify((a (eql t))(b symbol))
   (if(Variablep b)
