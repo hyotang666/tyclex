@@ -320,6 +320,7 @@
 
 ;;;; GREAT-COMMON-TYPE
 (defun great-common-type(t1 t2 &optional reccursivep)
+  (setf t1 (dewild t1) t2 (dewild t2))
   (matrix-case:matrix-case((type-category-of t1)(type-category-of t2))
     ((:function		:function)		'function)
     ((:function		:class)			(find-diverging-class 'function t2))
