@@ -8,6 +8,7 @@
     #:function-type-of #:function-type
     ;; Decurry
     #:decurry #:recurry #:curry-form-p #:expanded-curry-form-p
+    #:expanded-curry-form-arity #:expanded-curry-form-return-type
     ))
 (in-package :tyclex.curry)
 
@@ -136,6 +137,16 @@
 	      (= 2 (length body))
 	      (eq 'make-instance (caadr body))
 	      (equal (cadadr body) '(quote curry))))))
+
+(defun expanded-curry-form-arity(form)
+  (let*((make-instance(fourth form))
+	(arity(getf make-instance :arity)))
+    (introspect-environment:constant-form-value arity)))
+
+(defun expanded-curry-form-return-type(form)
+  (let*((make-instance(fourth form))
+	(return-type(getf make-instance :return-type)))
+    (introspect-environment:constant-form-value return-type)))
 
 ;;;; FUNCTION-TYPE
 (defmacro function-type (name args return)

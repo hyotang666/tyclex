@@ -3,11 +3,13 @@
 (defsystem "tyclex.dsl.define-type-class"
   :depends-on
   (
-   "tyclex.objects"             ; Interface for object modules.
+   "tyclex.objects.type-class"
+   "tyclex.objects.interface"
+   "tyclex.objects.instance"
+   "tyclex.objects.io-action"
    "tyclex.unifier"             ; Module for unification.
    "tyclex.type-matcher"        ; Module for type matching.
    "tyclex.curry"               ; Module for currying.
-   "tyclex.dsl.defdata"         ; Module for DEFDATA syntax.
    "millet"                     ; Wrapper for implementation dependent utilities.
    "introspect-environment"     ; Wrapper for environment introspection.
    "alexandria"                 ; Public domain utilities.

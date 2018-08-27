@@ -6,6 +6,8 @@
     #:io-action
     ;; reader
     #:io-type
+    ;; Helpers
+    #:io-action-construct-form-p #:io-action-construct-form-return-type
     )
   (:export
     ;; type-name
@@ -19,7 +21,7 @@
     ;; reader
     #:action-type #:action-body #:action-lambda-list
     ;; helpers
-    #:add-io #:remove-io #:io-boundp #:io-makunbound #:find-io
+    #:add-io #:remove-io #:io-boundp #:io-makunbound #:find-io #:io-form-p
     )
   )
 (in-package :tyclex.objects.io-action)
@@ -32,6 +34,13 @@
 
 (defmethod initialize-instance :after ((c io-action) &key)
   (c2mop:set-funcallable-instance-function c (action-of c)))
+
+(defun io-action-construct-form-p(thing)
+  (and (listp thing)
+       (every #'equal thing '(make-instance 'io-action))))
+
+(defun io-action-construct-form-return-type(io-action-construct-form)
+  (getf io-action-construct-form :type))
 
 ;;; IO type constructor.
 (tyclex.newtype:define-newtype io (a)
@@ -67,3 +76,8 @@
 (defun io-makunbound(symbol)
   (remove-io symbol)
   (fmakunbound symbol))
+
+(defun io-form-p(thing)
+  (and (listp thing)
+       (symbolp (car thing))
+       (io-boundp (car thing))))

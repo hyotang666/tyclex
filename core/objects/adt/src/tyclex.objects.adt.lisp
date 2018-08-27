@@ -20,7 +20,7 @@
     #:adt-constructor-type-of #:adt-constructor-arg-types
     ;; helpers
     #:add-adt-constructor #:remove-adt-constructor #:find-adt-constructor
-    #:adt-constructor-boundp
+    #:adt-constructor-boundp #:adt-constructor-form-p
     )
   )
 (in-package :tyclex.objects.adt)
@@ -100,3 +100,6 @@
 (defun adt-constructor-boundp(symbol)
   (check-type symbol symbol)
   (find-adt-constructor symbol))
+
+(defun adt-constructor-form-p(thing)
+  (find-adt-constructor form nil))

@@ -14,7 +14,7 @@
     #:interface-instances
     ;; helpers
     #:find-interface #:add-interface #:remove-interface #:augment-instances
-    #:interface-boundp
+    #:interface-boundp #:interface-form-p
     )
   )
 (in-package :tyclex.objects.interface)
@@ -54,6 +54,11 @@
 (defun interface-boundp(symbol)
   (check-type symbol (and symbol (not (or keyword boolean))))
   (values (gethash symbol *interfaces*)))
+
+(defun interface-form-p(thing)
+  (and (listp thing)
+       (symbolp (car thing))
+       (interface-boundp (car thing))))
 
 ;;;; EASY READERS
 (defun interface-lambda-list(interface)

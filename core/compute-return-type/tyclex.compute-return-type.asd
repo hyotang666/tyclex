@@ -2,7 +2,16 @@
 (in-package :asdf)
 (defsystem "tyclex.compute-return-type"
   :depends-on
-  nil
+  (
+   "tyclex.objects.adt"
+   "tyclex.dsl.defdata"
+   "tyclex.unifier"
+   "tyclex.curry"
+   "tyclex.type-matcher"
+   "introspect-environment"     ; Wrapper for environment introspection.
+   "trestrul"                   ; Utilities for tree structured list.
+   "expander"                   ; Macroexpand all.
+   )
   :pathname
   "src/"
   :components
