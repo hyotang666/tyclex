@@ -93,7 +93,7 @@
 	   (IF MACROS
 	       ,(if(millet:type-specifier-p return-type)
 		  ``(MACROLET,MACROS (THE ,',return-type ,BODY))
-		  `(LET((RETURN(SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (TYCLEX.UNIFIER:ENWILD INFOS)))))
+		  `(LET((RETURN(TYCLEX.UNIFIER:SUBSTITUTE-PATTERN ',return-type (TYCLEX.UNIFIER:UNIFY ',lambda-list (TYCLEX.UNIFIER:ENWILD INFOS)))))
 		     (IF(MILLET:TYPE-SPECIFIER-P RETURN)
 		       `(MACROLET,MACROS (THE ,RETURN ,BODY))
 		       `(MACROLET,MACROS ,BODY))))
@@ -159,7 +159,7 @@
   (loop :with environment = (tyclex.unifier:unify (tyclex.unifier:enwild type*)
 						  (tyclex.unifier:enwild lambda-list))
 	:for pattern :in lambda-list
-	:collect (tyclex.unifier:dewild (substitute-pattern pattern environment))))
+	:collect (tyclex.unifier:dewild (tyclex.unifier:substitute-pattern pattern environment))))
 
 ;;;; GET-INSTANCE
 (defun get-instance(interface type*)
