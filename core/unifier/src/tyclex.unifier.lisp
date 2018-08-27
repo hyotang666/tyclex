@@ -12,7 +12,7 @@
 			      (when(find-restart 'continue)
 				(invoke-restart 'continue)))))
   (export '(envar patternize enwild dewild ignore-unification-failure find-value-variable
-		  replace-bind)))
+		  replace-bind substitute-pattern)))
 
 (defun envar(thing)
   (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
@@ -52,3 +52,21 @@
   (setf (binding-value (find-variable-binding variable env))
 	value)
   env)
+
+(defun substitute-pattern(pattern environment)
+  (let((type-spec (dewild (trestrul:asubst-if
+			    (lambda(var)
+			      (let((return-type (find-variable-value var environment)))
+				(typecase return-type
+				  ((cons (eql values)t) (cadr return-type))
+				  (null var)
+				  (t return-type))))
+			    #'variablep
+			    pattern))))
+    (typecase type-spec
+      ((cons (eql function)(cons * null))
+       `(FUNCTION * ,(cadr type-spec)))
+      ((cons (eql list)(cons * null))
+       'list)
+      (otherwise type-spec))))
+
