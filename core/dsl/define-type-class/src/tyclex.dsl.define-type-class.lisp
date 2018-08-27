@@ -142,22 +142,6 @@
 							   type-class-constraints-definitions
 							   instance-constraints-definitions)))))
 
-#++
-(let*((return-types(mapcar #'second constructors))
-      (instance-tables(loop :for tc :in constraints
-			    :append (dolist(interface (Type-class-interfaces tc))
-				      (let((instances (Interface-instances interface)))
-					(when instances
-					  (return (list instances)))))))
-      (instances(loop :for instance-table :in instance-tables
-		      :collect (find-if (lambda(instance)
-					  (find-if (lambda(return-type)
-						     (Type-match-p return-type (car(Instance-types instance))))
-						   return-types))
-					instance-table))))
-  (when instances
-    (alexandria:mappend #'Instance-definitions instances)))
-
 (defun constraints-definitions(constraints types)
   (loop :for constraint :in constraints
 	:append (loop :for interface :in (Type-class-interfaces (alexandria:ensure-car constraint))
