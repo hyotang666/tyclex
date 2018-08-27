@@ -265,23 +265,7 @@
   (let((pattern(Interface-return-type(car call-form)))
        (environment(tyclex.unifier:unify (Interface-lambda-list(car call-form))
 					 (tyclex.unifier:enwild (compute-return-types(cdr call-form))))))
-    (substitute-pattern pattern environment)))
-
-(defun substitute-pattern(pattern environment)
-  (let((type-spec (tyclex.unifier:dewild (trestrul:asubst-if (lambda(var)
-							       (let((return-type (tyclex.unifier:find-variable-value var environment)))
-								 (typecase return-type
-								   ((cons (eql values)t) (cadr return-type))
-								   (null var)
-								   (t return-type))))
-							     #'tyclex.unifier:variablep
-							     pattern))))
-    (typecase type-spec
-      ((cons (eql function)(cons * null))
-       `(FUNCTION * ,(cadr type-spec)))
-      ((cons (eql list)(cons * null))
-       'list)
-      (otherwise type-spec))))
+    (tyclex.unifier:substitute-pattern pattern environment)))
 
 (defun compute-standard-form-return-type(form env)
   (cond
