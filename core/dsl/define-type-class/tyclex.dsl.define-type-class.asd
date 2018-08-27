@@ -10,6 +10,7 @@
    "tyclex.unifier"             ; Module for unification.
    "tyclex.type-matcher"        ; Module for type matching.
    "tyclex.curry"               ; Module for currying.
+   "tyclex.compute-return-type"
    "millet"                     ; Wrapper for implementation dependent utilities.
    "introspect-environment"     ; Wrapper for environment introspection.
    "alexandria"                 ; Public domain utilities.
