@@ -25,18 +25,20 @@
   ;; trivial-syntax-check.
   (assert(typep name '(and symbol (not (or keyword boolean)))))
   (assert(listp lambda-list))
+  (assert(typep lambda-list '(or null
+				 (cons * null)
+				 (cons (eql &optional)(cons * null)))))
   ;; body
-  `(PROGN (ADD-NEWTYPE ',name)
-	  (DEFTYPE ,name ,lambda-list ,@body)
-	  (DEFMACRO,name(arg)
-	    `(THE ,',(enough-type-specifier name lambda-list) ,arg))))
+  (let((arg(gensym "ARG")))
+    `(PROGN (ADD-NEWTYPE ',name)
+	    (DEFTYPE ,name ,lambda-list ,@body)
+	    (DEFMACRO,name(,arg)
+	      `(THE ,',(enough-type-specifier name lambda-list arg) ,,arg)))))
 
-(defun enough-type-specifier(name lambda-list)
-  (let((*s(loop :repeat (length (first(lambda-fiddle:split-lambda-list lambda-list)))
-		:collect '*)))
-    (if *s
-      `(,name ,@*s)
-      name)))
+(defun enough-type-specifier(name lambda-list var)
+  (if(null lambda-list)
+    name
+    `(,name (uiop:symbol-call "TYCLEX.COMPUTE-RETURN-TYPE" "COMPUTE-RETURN-TYPE" ,var))))
 
 (setf (symbol-function 'denew)#'third)
 

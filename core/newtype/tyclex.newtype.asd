@@ -3,7 +3,6 @@
 (defsystem "tyclex.newtype"
   :depends-on
   (
-   "lambda-fiddle"      ; Tiny utilities for lambda-list parsing.
    )
   :pathname
   "src/"
