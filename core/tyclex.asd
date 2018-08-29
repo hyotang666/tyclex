@@ -3,12 +3,13 @@
 (defsystem "tyclex"
   :depends-on
   (
-   "tyclex.objects"     ; Objects for tyclex modules.
-   "tyclex.unifier"     ; Unification system for tyclex module.
-   "tyclex.newtype"     ; Newtype system as tyclex module.
-   "tyclex.type-matcher"; Type matching system as tyclex module.
-   "tyclex.curry"       ; Currying system as tyclex module.
-   "tyclex.dsl"         ; DSL for tyclex.
+   "tyclex.objects"             ; Objects for tyclex modules.
+   "tyclex.unifier"             ; Unification system for tyclex module.
+   "tyclex.newtype"             ; Newtype system as tyclex module.
+   "tyclex.type-matcher"        ; Type matching system as tyclex module.
+   "tyclex.curry"               ; Currying system as tyclex module.
+   "tyclex.compute-return-type" ; Module for computing S-Expression return type.
+   "tyclex.dsl"                 ; DSL for tyclex.
    )
   :pathname
   "src/"

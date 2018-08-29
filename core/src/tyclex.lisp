@@ -7,6 +7,7 @@
 				       #:tyclex.objects
 				       #:tyclex.dsl
 				       #:tyclex.type-matcher
+				       #:tyclex.compute-return-type
 				       ,@(when(eq :use key)
 					   (list :cl))
 				       )))))
