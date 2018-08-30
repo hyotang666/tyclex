@@ -26,6 +26,9 @@
   )
 (in-package :tyclex.objects.io-action)
 
+;;;; Conditions
+(define-condition missing-io(tyclex.conditions:missing)())
+
 ;;;; IO-ACTION in order to distinguish from plain function.
 (defclass io-action ()
   ((instance :initarg :instance :reader action-of)
@@ -49,9 +52,12 @@
 
 ;;;; ACTION data structure.
 (defstruct(action (:copier nil)(:predicate nil))
-  (type (error "required") :type (cons (eql io)(cons * null)) :read-only t)
-  (body (error "required") :type cons :read-only t)
-  (lambda-list (error "required") :type list :read-only t))
+  (type (error 'tyclex.conditions:slot-uninitialized :name 'type)
+	:type (cons (eql io)(cons * null))	:read-only t)
+  (body (error 'tyclex.conditions:slot-uninitialized :name 'body)
+	:type cons				:read-only t)
+  (lambda-list (error 'tyclex.conditions:slot-uninitialzied :name 'lambda-list)
+	       :type list			:read-only t))
 
 (defvar *io-functions* (make-hash-table :test #'eq))
 
@@ -67,7 +73,7 @@
 (defun find-io(name &optional errorp)
   (or (gethash name *io-functions*)
       (when errorp
-	(error "Missing io named ~S" name))))
+	(error 'missing-io :name name))))
 
 (defun io-boundp(symbol)
   (check-type symbol symbol)

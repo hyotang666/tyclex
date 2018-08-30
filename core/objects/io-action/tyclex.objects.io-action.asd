@@ -5,6 +5,7 @@
   (
    "closer-mop"         ; Wrapper for meta object protocols.
    "tyclex.newtype"     ; Tyclex module for newtype.
+   "tyclex.conditions"
    )
   :pathname
   "src/"
