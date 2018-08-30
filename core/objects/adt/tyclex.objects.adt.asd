@@ -3,6 +3,8 @@
 (defsystem "tyclex.objects.adt"
   :depends-on
   (
+   "tyclex.conditions"
+   "tyclex.objects.adt-constructor"
    )
   :pathname
   "src/"
