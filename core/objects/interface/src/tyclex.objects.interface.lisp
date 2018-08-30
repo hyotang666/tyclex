@@ -57,7 +57,7 @@
 
 (defun interface-boundp(symbol)
   (check-type symbol (and symbol (not (or keyword boolean))))
-  (values (gethash symbol *interfaces*)))
+  (find-interface symbol nil))
 
 (defun interface-form-p(thing)
   (and (listp thing)
