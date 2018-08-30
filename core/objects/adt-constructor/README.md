@@ -1,23 +1,5 @@
-# tyclex.objects.adt-constructor 0.0.0
-## What is this?
+`TYCLEX.OBJECTS.ADT-CONSTRUCTOR` responds to provide object which contains information about `ADT-CONSTRUCTOR`.
+In addition, trivial helpers are also provided.
 
-### Current lisp world
-
-### Issues
-
-### Proposal
-
-## Usage
-
-## From developer
-
-### Product's goal
-
-### License
-
-### Developed with
-
-### Tested with
-
-## Installation
+An object called `ADT-CONSTRUCTOR` is part of `ADT`, and which provides information about constructor function which generate `ADT` value.
 
