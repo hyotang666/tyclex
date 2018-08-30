@@ -5,7 +5,7 @@
     #:tyclex-condition
     #:tyclex-error
 
-    #:slot-uninitialzied
+    #:slot-uninitialized
     #:missing
     #:redefinition-warning
     ))
