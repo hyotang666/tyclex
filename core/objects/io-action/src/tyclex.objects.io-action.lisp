@@ -21,7 +21,7 @@
     ;; reader
     #:action-type #:action-body #:action-lambda-list
     ;; helpers
-    #:add-io #:remove-io #:io-boundp #:io-makunbound #:find-io #:io-form-p
+    #:add-io #:remove-io #:io-boundp #:io-makunbound #:get-io #:io-form-p
     )
   )
 (in-package :tyclex.objects.io-action)
@@ -63,25 +63,34 @@
 
 ;; Trivial helpers
 
-(defun add-io(name &rest args)
-  (setf(gethash name *io-functions*)(apply #'make-action args)))
-
-(defun remove-io(name)
-  (check-type name (and symbol (not (or keyword boolean))))
-  (remhash name *io-functions*))
-
-(defun find-io(name &optional errorp)
-  (or (gethash name *io-functions*)
+(defun get-io(name &optional errorp)
+  (or (values(gethash name *io-functions*))
       (when errorp
 	(error 'missing-io :name name))))
 
-(defun io-boundp(symbol)
-  (check-type symbol symbol)
-  (values(gethash symbol *io-functions*)))
+(defun (setf get-io)(new-value name &optional errorp)
+  (declare(ignore errorp))
+  (check-type name (and symbol (not (or keyword boolean))))
+  (check-type new-value action)
+  (when(get-io name nil)
+    (warn 'tyclex.conditions:redefinition-warning :name name))
+  (setf (gethash name *io-functions*) new-value))
+
+(defun add-io(name &rest args)
+  (setf (get-io name)
+	(apply #'make-action args)))
+
+(defun remove-io(name)
+  (remhash name *io-functions*))
 
 (defun io-makunbound(symbol)
-  (remove-io symbol)
-  (fmakunbound symbol))
+  (when(get-io symbol nil)
+    (remove-io symbol)
+    (fmakunbound symbol)))
+
+(defun io-boundp(symbol)
+  (check-type symbol symbol)
+  (get-io symbol nil))
 
 (defun io-form-p(thing)
   (and (listp thing)
