@@ -62,7 +62,7 @@
 (defun interface-form-p(thing)
   (and (listp thing)
        (symbolp (car thing))
-       (interface-boundp (car thing))))
+       (find-interface (car thing)nil)))
 
 ;;;; EASY READERS
 (defun interface-lambda-list(interface)
