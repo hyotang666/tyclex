@@ -1,6 +1,8 @@
 (in-package :cl-user)
 (defpackage :tyclex.objects.type-class
   (:use :cl)
+  (:import-from :tyclex.objects.interface
+		#:interface-makunbound)
   (:export
     ;; as type name
     #:type-class
@@ -50,7 +52,9 @@
 	(apply #'make-type-class :name name args)))
 
 (defun remove-type-class(name)
-  (remhash name *type-classes*))
+  (when(find-type-class name nil)
+    (mapc #'Interface-makunbound (type-class-interfaces name))
+    (remhash name *type-classes*)))
 
 ;; readers and accessors.
 (defun type-class-name(arg)
