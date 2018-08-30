@@ -19,6 +19,9 @@
   )
 (in-package :tyclex.objects.interface)
 
+;;;; Condition
+(define-condition missing-interface(tyclex.conditions:missing)())
+
 ;;;; INTERFACE OBJECT
 (defstruct(interface (:copier nil)
 		     (:predicate interfacep)
@@ -26,7 +29,8 @@
   "Represents type class interface"
   (lambda-list	nil			:type list		:read-only t)
   (return-type	nil			:type (or list symbol)	:read-only t)
-  (type-class	(error "required")	:type symbol		:read-only t)
+  (type-class	(error 'tyclex.conditions:slot-uninitialized :name 'type-class)
+					:type symbol		:read-only t)
   (instances	nil			:type list			    )
   (default	nil			:type list		:read-only t))
 
@@ -38,7 +42,7 @@
     interface
     (or (gethash interface *interfaces*)
 	(when errorp
-	  (error "Missing interface named ~S" interface)))))
+	  (error 'missing-interface :name interface)))))
 
 (defun add-interface(interface &rest args)
   (check-type interface (and symbol (not (or keyword boolean))))

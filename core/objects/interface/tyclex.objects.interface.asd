@@ -2,7 +2,9 @@
 (in-package :asdf)
 (defsystem "tyclex.objects.interface"
   :depends-on
-  nil
+  (
+   "tyclex.conditions"
+   )
   :pathname
   "src/"
   :components
