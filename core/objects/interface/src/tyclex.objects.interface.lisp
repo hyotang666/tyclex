@@ -14,7 +14,7 @@
     #:interface-instances
     ;; helpers
     #:find-interface #:add-interface #:remove-interface #:augment-instances
-    #:interface-boundp #:interface-form-p
+    #:interface-boundp #:interface-form-p #:interface-makunbound
     )
   )
 (in-package :tyclex.objects.interface)
@@ -63,6 +63,12 @@
   (and (listp thing)
        (symbolp (car thing))
        (find-interface (car thing)nil)))
+
+(defun interface-makunbound(symbol)
+  (check-type symbol symbol)
+  (when(find-interface symbol nil)
+    (remove-interface symbol)
+    (fmakunbound symbol)))
 
 ;;;; EASY READERS
 (defun interface-lambda-list(interface)
