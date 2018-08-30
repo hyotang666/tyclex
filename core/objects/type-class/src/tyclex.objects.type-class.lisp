@@ -18,11 +18,16 @@
   )
 (in-package :tyclex.objects.type-class)
 
+;;;; Conditions
+(define-condition missing-type-class(tyclex.conditions:missing)())
+
 ;;;; TYPE-CLASS OBJECT
 (defstruct(type-class (:copier nil)
 		      (:conc-name type-))
-  (name 	(error "Name is required.")	:type (or symbol list)	:read-only t)
-  (vars		(error "Var is required.")	:type list		:read-only t)
+  (name 	(error 'tyclex.conditions:slot-uninitialized :name 'name)
+						:type (or symbol list)	:read-only t)
+  (vars		(error 'tyclex.conditions:slot-uninitialzied :name 'vars)
+						:type list		:read-only t)
   (interfaces	nil				:type list		:read-only t)
   (member	nil				:type list)
   (constraints	nil				:type list))
@@ -35,10 +40,12 @@
     arg
     (or (gethash arg *type-classes*)
 	(when errorp
-	  (error "Missing type-class named ~S." arg)))))
+	  (error 'missing-type-class :name arg)))))
 
 (defun add-type-class(name &rest args)
   (check-type name (and symbol (not (or keyword boolean))))
+  (when(find-type-class name nil)
+    (warn 'tyclex.conditions:redefinition-warning :name name))
   (setf (gethash name *type-classes*)
 	(apply #'make-type-class :name name args)))
 
