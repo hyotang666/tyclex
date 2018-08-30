@@ -16,8 +16,12 @@
 		    (:constructor make-type-class-instance)
 		    (:copier nil))
   "Represents interface instance."
-  (signature  	(error "SIGNATURE is required.")  	:type list :read-only t)
-  (definitions	(error "DEFINITIONS is required.")  	:type list :read-only t)
-  (types      	(error "TYPES is required.")      	:type list :read-only t)
-  (constraints	(error "CONSTRAINTS is required.")	:type list :read-only t))
+  (signature  	(error 'tyclex.conditions:slot-uninitialized :name 'signature)
+		:type list :read-only t)
+  (definitions	(error 'tyclex.conditions:slot-uninitialized :name 'definitions)
+		:type list :read-only t)
+  (types      	(error 'tyclex.conditions:slot-uninitialized :name 'types)
+		:type list :read-only t)
+  (constraints	(error 'tyclex.conditions:slot-uninitialized :name 'constraints)
+		:type list :read-only t))
 
