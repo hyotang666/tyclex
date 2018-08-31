@@ -25,6 +25,8 @@
 		#:add-interface)
   (:import-from :tyclex.compute-return-type
 		#:compute-return-types #:canonicalize-return-type)
+  (:import-from :tyclex.curry
+		#:curry-form-p #:recurry #:expanded-curry-form-p #:decurry)
 
   (:export
     ;; Main API
@@ -232,11 +234,11 @@
 	       (setf function (third function)) ; as canonicalize.
 	       (second function))))
     (cond
-      ((tyclex.curry:curry-form-p function)
-       (expander:expand (tyclex.curry:recurry function args)
+      ((Curry-form-p function)
+       (expander:expand (Recurry function args)
 			env))
-      ((tyclex.curry:expanded-curry-form-p function)
-       (expander:expand (tyclex.curry:decurry function args)
+      ((Expanded-curry-form-p function)
+       (expander:expand (Decurry function args)
 			env))
       ((and (listp function)
 	    (Io-boundp (car function)))
