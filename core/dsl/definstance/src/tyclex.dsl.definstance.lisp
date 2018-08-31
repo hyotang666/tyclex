@@ -15,6 +15,15 @@
     ))
 (in-package :tyclex.dsl.definstance)
 
+;;;; Conditions
+(define-condition missing-default-instance(tyclex.conditions:missing)())
+
+(define-condition unknown-interface(tyclex.conditions:tyclex-error simple-condition)()
+  (:report (lambda(condition stream)
+	     (apply #'format stream
+		    (simple-condition-format-control condition)
+		    (simple-condition-format-arguments condition)))))
+
 ;;;; DEFISTANCE
 (defmacro definstance((type-class &rest args)definition+)
   ;; trivial syntax checks.
@@ -36,9 +45,10 @@
 	  (defs(loop :for interface :in (set-difference interfaces (mapcar #'car definition+))
 		     :collect (or (Interface-default interface)
 				  (if(find interface interfaces)
-				    (error "Default instance missing. ~S" interface)
-				    (error "Unknown interface. ~S~%~S supports only ~S"
-					   interface type-class interfaces)))
+				    (error 'missing-default-instance :name interface)
+				    (error 'unknown-interface
+					   :format-control "Unknown interface. ~S~%~S supports only ~S"
+					   :format-arguments (list interface type-class interfaces))))
 		     :into defaults
 		     :finally (return (append definition+ defaults)))))
       (when constraints

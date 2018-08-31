@@ -7,6 +7,7 @@
    "tyclex.objects.type-class"  ; Module for type-class object.
    "tyclex.objects.interface"   ; Module for interface object.
    "tyclex.objects.instance"    ; Module for cell object.
+   "tyclex.conditions"
    "split-sequence"             ; Sequence splitting utilities.
    "trestrul"                   ; Utilities for tree structured list.
    )
