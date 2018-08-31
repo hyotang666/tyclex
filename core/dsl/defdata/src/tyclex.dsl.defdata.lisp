@@ -19,6 +19,7 @@
     (check-type name valid-name)
     (assert(every #'Find-type-class deriving))
     (assert(every (lambda(x)(typep x 'valid-name)) lambda-list))
+    (assert(notany (lambda(x)(find x lambda-list-keywords :test #'eq))lambda-list))
     (dolist(constructor constructor*)
       (assert(symbolp(alexandria:ensure-car constructor))))
     ;; body
