@@ -7,7 +7,7 @@
     ;; reader
     #:io-type
     ;; Helpers
-    #:io-action-construct-form-p #:io-action-construct-form-return-type
+    #:io-action-construct-form-p #:io-action-construct-form-return-type #:io-action-construct-form-function-form
     )
   (:export
     ;; type-name
@@ -44,6 +44,9 @@
 
 (defun io-action-construct-form-return-type(io-action-construct-form)
   (getf io-action-construct-form :type))
+
+(defun io-action-construct-form-function-form(io-action-construct-form)
+  (getf io-action-construct-form :function))
 
 ;;; IO type constructor.
 (tyclex.newtype:define-newtype io (a)
