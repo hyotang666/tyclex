@@ -1,7 +1,15 @@
 (in-package :cl-user)
 (defpackage :tyclex.dsl.definstance
-  (:use :cl #:tyclex.objects.type-class #:tyclex.objects.interface)
-  (:import-from #:tyclex.objects.instance #:make-type-class-instance)
+  (:use :cl)
+
+  (:import-from :tyclex.objects.type-class
+		#:find-type-class
+		#:type-class-interfaces #:type-class-vars #:type-class-member)
+  (:import-from :tyclex.objects.interface
+		#:interface-default #:interface-lambda-list #:augment-instances)
+  (:import-from :tyclex.objects.instance
+		#:make-type-class-instance)
+
   (:export
     #:definstance
     ))
