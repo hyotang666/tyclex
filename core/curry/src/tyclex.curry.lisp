@@ -75,7 +75,7 @@
 		`(LABELS((,curry(&OPTIONAL ,@list)
 			   (IF ,(caddar list)
 			     ,(rec (cdr list))
-			     (MAKE-INSTANCE 'CURRYi
+			     (MAKE-INSTANCE 'CURRY
 					    :FUNCTION #',curry
 					    :ARITY ,(length list)
 					    :RETURN-TYPE ',return-type
