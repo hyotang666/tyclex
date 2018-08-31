@@ -56,7 +56,7 @@
 	:type (cons (eql io)(cons * null))	:read-only t)
   (body (error 'tyclex.conditions:slot-uninitialized :name 'body)
 	:type cons				:read-only t)
-  (lambda-list (error 'tyclex.conditions:slot-uninitialzied :name 'lambda-list)
+  (lambda-list (error 'tyclex.conditions:slot-uninitialized :name 'lambda-list)
 	       :type list			:read-only t))
 
 (defvar *io-functions* (make-hash-table :test #'eq))
