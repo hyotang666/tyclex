@@ -1,8 +1,20 @@
 (in-package :cl-user)
 (defpackage :tyclex.dsl.defdata
-  (:use :cl #:tyclex.objects.adt #:tyclex.objects.type-class)
-  (:import-from #:tyclex.objects.interface
+  (:use :cl)
+
+  (:import-from :tyclex.objects.type-class
+		#:find-type-class #:type-class-constraints #:type-class-interfaces)
+  (:import-from :tyclex.objects.adt
+		#:add-adt #:get-adt #:adt-lambda-list #:adt-constructors)
+  (:import-from :tyclex.objects.adt-constructor
+		#:add-adt-constructor #:get-adt-constructor #:adt-constructor-arg-types #:adt-constructor-type-of)
+  (:import-from :tyclex.objects.interface
 		#:interface-default)
+  (:import-from :tyclex.objects.io-action
+		#:io-action #:io-type)
+  (:import-from :tyclex.dsl.definstance
+		#:definstance)
+
   (:export
     ;; Main API
     #:defdata
@@ -178,33 +190,28 @@
 
 ;;;; Trivial helpers
 (defun adt-value-p(thing)
-  (labels((adv?(thing)
-	    (typecase thing
-	      (symbol(Find-adt-constructor thing nil))
-	      (list (adv? (car thing))))))
-    (let((adt-constructor(adv? thing)))
-      (when adt-constructor
-	(values (if(symbolp thing) ; nullary constructor.
-		  (tyclex.unifier:make-empty-environment)
-		  (tyclex.unifier:ignore-unification-failure
-		    (tyclex.unifier:unify (adt-constructor-arg-types adt-constructor)
-					  (mapcar #'data-type-of (cdr thing)))))
-		adt-constructor)))))
+  (let((adt-constructor(Get-adt-constructor thing nil)))
+    (when adt-constructor
+      (values (if(symbolp thing) ; nullary constructor.
+		(tyclex.unifier:make-empty-environment)
+		(tyclex.unifier:ignore-unification-failure
+		  (tyclex.unifier:unify (Adt-constructor-arg-types adt-constructor)
+					(mapcar #'data-type-of (cdr thing)))))
+	      adt-constructor))))
 
 (defun data-type-of(thing)
   (multiple-value-bind(env adt-constructor)(adt-value-p thing)
     (if env
-      (with-accessors((arg-types adt-constructor-arg-types)
-		      (type-of adt-constructor-type-of))adt-constructor
-	(if(or (null arg-types)
-	       (eq 'eql (car arg-types)))
+      (with-accessors((arg-types Adt-constructor-arg-types)
+		      (type-of Adt-constructor-type-of))adt-constructor
+	(if(null arg-types)
 	  type-of
 	  (cons (car type-of)
 		(mapcar (lambda(elt)
 			  (tyclex.unifier:find-variable-value elt env))
-			(Adt-lambda-list(Find-adt(alexandria:ensure-car type-of)))))))
+			(Adt-lambda-list(Get-adt(alexandria:ensure-car type-of)))))))
       (typecase thing
-	(tyclex.objects.io-action:io-action (tyclex.objects.io-action:io-type thing))
+	(Io-action (Io-type thing))
 	(function (let((name(millet:function-name thing)))
 		    (if name
 		      (introspect-environment:function-type name)
@@ -242,5 +249,5 @@
 (declaim(ftype(function((satisfies adt-value-p))fixnum)data-order))
 (defun data-order(thing)
   (position (alexandria:ensure-car thing)
-	    (Adt-constructors(Find-adt(alexandria:ensure-car(Adt-constructor-type-of (nth-value 1(adt-value-p thing))))))
+	    (Adt-constructors(Get-adt(Adt-constructor-type-of (nth-value 1(adt-value-p thing)))))
 	    :test #'eq))
