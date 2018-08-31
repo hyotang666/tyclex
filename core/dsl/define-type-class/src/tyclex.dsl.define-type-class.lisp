@@ -14,7 +14,7 @@
 		;; Slot readers.
 		#:action-body #:action-lambda-list
 		;; Helpers.
-		#:find-io #:io-boundp)
+		#:get-io #:io-boundp)
   (:import-from :tyclex.objects.instance
 		;; Slot readers.
 		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types)
@@ -240,7 +240,7 @@
 			env))
       ((and (listp function)
 	    (Io-boundp (car function)))
-       (let((io(Find-io(car function))))
+       (let((io(Get-io(car function))))
 	 (if(null (cdr function))
 	   (pretty-body (expander:expand* (Action-body io)env) the)
 	   `(DESTRUCTURING-BIND,(Action-lambda-list io)(LIST ,@(cdr function))
