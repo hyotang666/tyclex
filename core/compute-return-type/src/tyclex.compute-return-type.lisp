@@ -6,11 +6,11 @@
   (:import-from :tyclex.objects.adt #:adt-type-specifier-p #:adt-constructor-form-p #:find-adt-constructor #:adt-constructor-type-of #:find-adt #:adt-lambda-list #:adt-constructor-arg-types)
   (:import-from :tyclex.objects.interface #:interface-form-p #:interface-return-type #:interface-lambda-list)
   (:import-from :tyclex.objects.io-action #:io-form-p #:find-io #:action-type #:io-action-construct-form-p #:io-action-construct-form-return-type)
-  (:import-from :tyclex.curry #:expanded-curry-form-p #:expanded-curry-form-arity #:expanded-curry-form-return-type #:function-type-of)
+  (:import-from :tyclex.curry #:expanded-curry-form-p #:expanded-curry-form-arity #:expanded-curry-form-return-type #:function-type-of #:canonicalize-return-type)
   (:import-from :tyclex.type-matcher #:great-common-type)
 
   (:export
-    #:compute-return-type #:compute-return-types #:canonicalize-return-type
+    #:compute-return-type #:compute-return-types
     ))
 (in-package :tyclex.compute-return-type)
 
@@ -153,22 +153,6 @@
   (if(symbolp form)
     T
     (canonicalize-return-type(third form))))
-
-;;;; CANONICALIZE-RETURN-TYPE
-(defun canonicalize-return-type(return-type)
-  (flet((ENSURE-T(thing)
-	  (sublis '((* . T)
-		    (simple-vector . vector)
-		    (simple-array . array)
-		    (simple-string . string)
-		    (base-string . string)
-		    )
-		  thing)))
-    (if(typep return-type '(CONS (EQL VALUES)T))
-      (if(typep return-type '(CONS * (CONS (EQL &OPTIONAL) T)))
-	(ENSURE-T (caddr return-type))
-	(ENSURE-T (cadr return-type)))
-      (ENSURE-T return-type))))
 
 ;;; Special operator clause
 (defun special-operator-return-type(form env)
