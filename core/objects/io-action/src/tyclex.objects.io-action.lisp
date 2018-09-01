@@ -87,9 +87,11 @@
   (remhash name *io-functions*))
 
 (defun io-makunbound(symbol)
-  (when(get-io symbol nil)
-    (remove-io symbol)
-    (fmakunbound symbol)))
+  (check-type symbol symbol)
+  (if(get-io symbol nil)
+    (progn (remove-io symbol)
+	   (fmakunbound symbol))
+    symbol))
 
 (defun io-boundp(symbol)
   (check-type symbol symbol)
