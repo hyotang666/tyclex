@@ -53,33 +53,6 @@
 
 ;;;; Exceptional-Situations:
 
-(requirements-about IO)
-
-;;;; Description:
-; Shorthand macro for `CL:THE` form.
-#?(io "dummy")
-:expanded-to
-(THE (IO *) "dummy")
-
-#+syntax
-(IO tyclex.newtype::arg) ; => result
-
-;;;; Arguments and Values:
-
-; arg := S-Expression which generates type of `IO`.
-
-; result := return value for `ARG`.
-
-;;;; Affected By:
-; none
-
-;;;; Side-Effects:
-; none
-
-;;;; Notes:
-
-;;;; Exceptional-Situations:
-
 (requirements-about ACTION)
 ;;;; Description:
 ; Represents action meta infomation.
@@ -100,18 +73,29 @@
 
 ;;;; Description:
 ; Constructor for `ACTION`.
-#?(make-action :type '(io "dummy")) :be-the action
+#?(make-action :type '(io "dummy"):body '("dummy") :lambda-list nil)
+:be-the action
 
 #+syntax
-(MAKE-ACTION &key ((:type #:type) (error "required"))) ; => result
+(MAKE-ACTION &key
+	     ((:type #:type)
+	      (error 'tyclex.conditions:slot-uninitialized :name 'type))
+	     ((:body #:body)
+	      (error 'tyclex.conditions:slot-uninitialized :name 'body))
+	     ((:lambda-list #:lambda-list)
+	      (error 'tyclex.conditions:slot-uninitialized :name 'lambda-list)))
+; => result
 
 ;;;; Arguments and Values:
 
-; type := io type specifier. i.e. (cons (eql io)(cons * null)), otherwise signals condition.
-#?(make-action :type "not io type specifier")
-:signals condition
+; type := io type specifier. i.e. (cons (eql io)(cons * null)), otherwise unspecified.
+#?(make-action :type "not io type specifier") => unspecified
 
-; result := action object.
+; body := (S-Expression+)
+
+; lambda-list := lambda list
+
+; result := an `ACTION` object.
 
 ;;;; Affected By:
 ; none
@@ -127,7 +111,7 @@
 
 ;;;; Description:
 ; Reader for `ACTION`'s `TYPE` slot.
-#?(action-type(make-action :type '(io yes)))
+#?(action-type(make-action :type '(io yes):body '("dummy"):lambda-list nil))
 => (IO YES)
 ,:test equal
 
@@ -152,13 +136,12 @@
 
 ;;;; Exceptional-Situations:
 
-(requirements-about ADD-IO
-		    :around(let((tyclex.objects.io-action::*io-functions*(make-hash-table)))
-			     (call-body)))
+(requirements-about ADD-IO)
 
 ;;;; Description:
 ; Adding name to lisp environemnt as io.
-#?(add-io '#:name :type '(io "dummy")) :be-the action
+#?(add-io 'name :type '(io "dummy"):body '("dummy") :lambda-list nil)
+:be-the action
 
 #+syntax
 (ADD-IO name &rest args) ; => result
@@ -175,55 +158,49 @@
 ; result := action
 
 ;;;; Affected By:
-; TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Side-Effects:
-; Modify state of TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Notes:
 
 ;;;; Exceptional-Situations:
 
-(requirements-about REMOVE-IO
-		    :around(let((tyclex.objects.io-action::*io-functions*(make-hash-table)))
-			     (add-io 'io-name :type '(io "dummy"))
-			     (call-body)))
+(requirements-about REMOVE-IO)
 
 ;;;; Description:
 ; Remove io from lisp environment.
-#?(remove-io 'io-name) => T
+#?(remove-io 'name) => T
 
 #+syntax
 (REMOVE-IO name) ; => result
 
 ;;;; Arguments and Values:
 
-; name := IO name, i.e. (and symbol (not (or keyword boolean))), otherwise error.
-#?(remove-io "not io name") :signals error
+; name := IO name, when `NAME` exists as io, return true, otherwise false.
+#?(remove-io "not io name") => NIL
 
 ; result := BOOLEAN, T when io exists, otherwise nil.
 #?(values (remove-io 'io-name)
-	  (remove-io 'io-name))
-:values (T NIL)
+	  (progn (add-io 'io-name :type '(io "dummy"):body '("dummy"):lambda-list nil)
+		 (remove-io 'io-name)))
+:values (NIL T)
 
 ;;;; Affected By:
-; TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Side-Effects:
-; Modify state of TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Notes:
 
 ;;;; Exceptional-Situations:
 
-(requirements-about IO-BOUNDP
-		    :around(let((tyclex.objects.io-action::*io-functions*(make-hash-table)))
-			     (add-io 'io-name :type '(io "dummy"))
-			     (call-body)))
+(requirements-about IO-BOUNDP)
 
 ;;;; Description:
 ; Return t when arg names io.
-#?(io-boundp 'io-name) :satisfies identity
+#?(progn (add-io 'io-name :type '(io "dummy") :body '("dummy") :lambda-list nil)
+	 (io-boundp 'io-name))
+:satisfies identity
+,:after (remove-io 'io-name)
 #?(io-boundp '#:not-io-name) => NIL
 
 #+syntax
@@ -237,7 +214,6 @@
 ; result := BOOLEAN
 
 ;;;; Affected By:
-; TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Side-Effects:
 ; none
@@ -246,10 +222,7 @@
 
 ;;;; Exceptional-Situations:
 
-(requirements-about IO-MAKUNBOUND
-		    :around(let((tyclex.objects.io-action::*io-functions*(make-hash-table)))
-			     (add-io 'io-name :type '(io "dummy"))
-			     (call-body)))
+(requirements-about IO-MAKUNBOUND)
 
 ;;;; Description:
 ; Unbound io from symbol.
@@ -266,10 +239,8 @@
 ; result := symbol
 
 ;;;; Affected By:
-; TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Side-Effects:
-; Modify state of TYCLEX.OBJECTS.IO-ACTION::*IO-FUNCTIONS*
 
 ;;;; Notes:
 
