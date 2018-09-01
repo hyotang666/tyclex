@@ -5,7 +5,7 @@
     ;; Main API
     #:curry
     ;; Helpers
-    #:function-type-of #:function-type
+    #:function-type-of #:function-type #:canonicalize-return-type
     ;; Decurry
     #:decurry #:recurry #:curry-form-p #:expanded-curry-form-p
     #:expanded-curry-form-arity #:expanded-curry-form-return-type
@@ -141,7 +141,23 @@
 (defun expanded-curry-form-return-type(form)
   (let*((make-instance(fourth form))
 	(return-type(getf make-instance :return-type)))
-    (introspect-environment:constant-form-value return-type)))
+    (canonicalize-return-type(introspect-environment:constant-form-value return-type))))
+
+;;;; CANONICALIZE-RETURN-TYPE
+(defun canonicalize-return-type(return-type)
+  (flet((ENSURE-T(thing)
+	  (sublis '((* . T)
+		    (simple-vector . vector)
+		    (simple-array . array)
+		    (simple-string . string)
+		    (base-string . string)
+		    )
+		  thing)))
+    (if(typep return-type '(CONS (EQL VALUES)T))
+      (if(typep return-type '(CONS * (CONS (EQL &OPTIONAL) T)))
+	(ENSURE-T (caddr return-type))
+	(ENSURE-T (cadr return-type)))
+      (ENSURE-T return-type))))
 
 ;;;; FUNCTION-TYPE
 (defmacro function-type (name args return)
