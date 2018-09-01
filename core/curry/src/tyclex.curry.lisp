@@ -117,14 +117,9 @@
 		    :collect (or (pop gensyms)
 				 elt)
 		    :else :collect elt)))
-	(cond
-	  ((minusp diff)(error "Too much args. ~S ~S"curry-form actual-args))
-	  ((zerop diff)
-	   (UNDERSCORE-TO-ACTUAL-ARG curry-form actual-args))
-	  (t (let((new-whole(UNDERSCORE-TO-ACTUAL-ARG curry-form actual-args)))
-	       (<Section-Form> (cadr curry-form)
-			       (cddr new-whole)
-			       new-whole))))))))
+	(if (minusp diff)
+	  (error "Too much args. ~S ~S"curry-form actual-args)
+	   (UNDERSCORE-TO-ACTUAL-ARG curry-form actual-args))))))
 
 (defun curry-form-p(form)
   (typep form '(cons (eql curry) *)))
