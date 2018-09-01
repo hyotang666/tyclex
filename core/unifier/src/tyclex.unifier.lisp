@@ -7,10 +7,7 @@
       (asdf:load-system :cl-unification :force t))))
 
 (in-package :tyclex.unifier)
-(handler-bind((package-error(lambda(c) ; for ECL.
-			      (declare(ignore c))
-			      (when(find-restart 'continue)
-				(invoke-restart 'continue)))))
+(handler-bind((package-error #'continue)) ; for ECL
   (export '(envar patternize enwild dewild ignore-unification-failure find-value-variable
 		  replace-bind substitute-pattern)))
 
