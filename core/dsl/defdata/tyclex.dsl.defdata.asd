@@ -10,7 +10,6 @@
    "tyclex.type-matcher"        ; Module for type matching.
    "tyclex.dsl.definstance"     ; Module for dsl definstance.
    "millet"                     ; Wrapper for implementation dependent utilities.
-   "introspect-environment"     ; Wrapper for environment introspection.
    "alexandria"                 ; Public domain utilities.
    "trivia"                     ; Pattern matcher.
    )
