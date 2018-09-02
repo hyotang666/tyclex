@@ -2,8 +2,12 @@
 (defpackage :tyclex.compute-return-type
   (:use :cl)
 
-  (:import-from :tyclex.dsl.defdata #:data-type-of #:adt-value-p #:class-name-of)
-  (:import-from :tyclex.objects.adt #:adt-type-specifier-p #:adt-constructor-form-p #:find-adt-constructor #:adt-constructor-type-of #:find-adt #:adt-lambda-list #:adt-constructor-arg-types)
+  (:import-from :tyclex.objects.adt
+		#:get-adt #:adt-lambda-list
+		#:data-type-of #:adt-value-p #:class-name-of #:adt-type-specifier-p)
+  (:import-from :tyclex.objects.adt-constructor
+		#:adt-constructor-form-p #:get-adt-constructor
+		#:adt-constructor-type-of #:adt-constructor-arg-types)
   (:import-from :tyclex.objects.interface #:interface-form-p #:interface-return-type #:interface-lambda-list)
   (:import-from :tyclex.objects.io-action #:io-form-p #:find-io #:action-type #:io-action-construct-form-p #:io-action-construct-form-return-type)
   (:import-from :tyclex.curry #:expanded-curry-form-p #:expanded-curry-form-arity #:expanded-curry-form-return-type #:function-type-of #:canonicalize-return-type)
@@ -99,12 +103,12 @@
 
 ;;; Adt constructor clause
 (defun constructor-form-return-type(var env)
-  (let*((adt-constructor(Find-adt-constructor var))
+  (let*((adt-constructor(Get-adt-constructor var))
 	(type(Adt-constructor-type-of adt-constructor)))
     (if(atom type)
       type
       (cons (car type)
-	    (tyclex.unifier:substitute-pattern (Adt-lambda-list (Find-adt type))
+	    (tyclex.unifier:substitute-pattern (Adt-lambda-list (Get-adt type))
 					       (tyclex.unifier:unify (Adt-constructor-arg-types adt-constructor)
 								     (loop :for v :in (cdr var)
 									   :collect (compute-return-type v env))))))))

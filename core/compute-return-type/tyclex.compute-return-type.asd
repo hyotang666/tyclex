@@ -4,7 +4,6 @@
   :depends-on
   (
    "tyclex.objects.adt"
-   "tyclex.dsl.defdata"
    "tyclex.unifier"
    "tyclex.curry"
    "tyclex.type-matcher"
