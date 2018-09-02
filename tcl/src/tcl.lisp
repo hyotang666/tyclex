@@ -3,11 +3,7 @@
 (in-package :tcl.builder)
 
 (eval-when(:compile-toplevel :load-toplevel :execute)
-  (handler-bind((package-error(lambda(condition)
-				(declare(ignore condition))
-				(let((continue(find-restart 'continue)))
-				  (when continue
-				    (invoke-restart continue))))))
+  (handler-bind((package-error #'continue))
     (make-package "TCL" :use nil)))
 
 (defmacro tcl::defun (name lambda-list &body body &environment env)
