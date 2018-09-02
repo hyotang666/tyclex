@@ -3,12 +3,12 @@
 (defsystem "tyclex.objects"
   :depends-on
   (
+   "tyclex.objects.io-action"
    "tyclex.objects.adt-constructor"
+   "tyclex.objects.adt"
    "tyclex.objects.instance"
    "tyclex.objects.interface"
    "tyclex.objects.type-class"
-   "tyclex.objects.adt"
-   "tyclex.objects.io-action"
    )
   :pathname
   "src/"
@@ -19,12 +19,13 @@
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tyclex.objects"))))
   (append (call-next-method) '(
+                               (test-op "tyclex.objects.io-action.test")
                                (test-op "tyclex.objects.adt-constructor.test")
+                               (test-op "tyclex.objects.adt.test")
                                (test-op "tyclex.objects.instance.test")
                                (test-op "tyclex.objects.interface.test")
                                (test-op "tyclex.objects.type-class.test")
-                               (test-op "tyclex.objects.io-action.test")
-                               (test-op "tyclex.objects.adt.test"))))
+                               )))
 
 (defmethod operate :around
            ((o test-op) (c (eql (find-system "tyclex.objects"))) &rest keys)
