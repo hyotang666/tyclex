@@ -14,7 +14,7 @@
 		;; Slot readers.
 		#:action-body #:action-lambda-list
 		;; Helpers.
-		#:get-io #:io-boundp)
+		#:get-io #:io-form-p)
   (:import-from :tyclex.objects.instance
 		;; Slot readers.
 		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types)
@@ -240,8 +240,7 @@
       ((Expanded-curry-form-p function)
        (expander:expand (Decurry function args)
 			env))
-      ((and (listp function)
-	    (Io-boundp (car function)))
+      ((Io-form-p function)
        (let((io(Get-io(car function))))
 	 (if(null (cdr function))
 	   (pretty-body (expander:expand* (Action-body io)env) the)
