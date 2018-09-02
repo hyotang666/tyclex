@@ -66,12 +66,12 @@
    (mappend(a b)
      `(concatenate 'bit-vector ,a ,b))))
 
-(definstance(monoid product)
+(definstance(monoid (product number))
   ((mempty()`(product 1))
    (mappend(a b)
      `(product (* ,a ,b)))))
 
-(definstance(monoid sum)
+(definstance(monoid (sum number))
   ((mempty()`(sum 0))
    (mappend(a b)
      `(sum (+ ,a ,b)))))
