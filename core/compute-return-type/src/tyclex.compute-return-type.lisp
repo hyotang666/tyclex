@@ -4,6 +4,7 @@
 
   (:import-from :tyclex.objects.adt
 		#:get-adt #:adt-lambda-list
+		#:cons-type-specifier
 		#:data-type-of #:adt-value-p #:class-name-of #:adt-type-specifier-p)
   (:import-from :tyclex.objects.adt-constructor
 		#:adt-constructor-form-p #:get-adt-constructor
@@ -81,10 +82,10 @@
 	      (let((types(handler-case(mapcar #'class-name-of value)
 			   (error() ; dot list comes
 			     (return-from constant-return-type
-					  (tyclex.dsl.defdata::cons-type-specifier(trestrul:mapleaf #'class-name-of value)))))))
+					  (Cons-type-specifier(trestrul:mapleaf #'class-name-of value)))))))
 		(if(null(cdr(remove-duplicates types)))
 		  `(LIST ,(Class-name-of(car value)))
-		  (tyclex.dsl.defdata::cons-type-specifier types))))))))))
+		  (Cons-type-specifier types))))))))))
 
 ;;; Free variable clause.
 (defun free-variable-return-type(var env)

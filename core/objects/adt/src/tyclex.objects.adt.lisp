@@ -15,7 +15,7 @@
     #:adt-constructors #:adt-lambda-list
     ;; helpers
     #:add-adt #:remove-adt #:get-adt #:adt-type-specifier-p
-    #:adt-value-p #:data-type-of #:class-name-of
+    #:adt-value-p #:data-type-of #:class-name-of #:cons-type-specifier
     ;; conditions
     #:missing-adt
     )
@@ -136,3 +136,9 @@
     ;; Return value.
     name))
 
+(defun cons-type-specifier(types)
+  (if(atom types)
+    (if(null types)
+      'null
+      types)
+    `(CONS ,(car types),(cons-type-specifier (cdr types)))))

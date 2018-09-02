@@ -5,7 +5,7 @@
   (:import-from :tyclex.objects.type-class
 		#:find-type-class #:type-class-constraints #:type-class-interfaces)
   (:import-from :tyclex.objects.adt
-		#:adt-value-p
+		#:adt-value-p #:cons-type-specifier
 		#:add-adt #:get-adt #:adt-lambda-list #:adt-constructors)
   (:import-from :tyclex.objects.adt-constructor
 		#:add-adt-constructor #:get-adt-constructor #:adt-constructor-arg-types #:adt-constructor-type-of)
@@ -64,9 +64,9 @@
 	      ((symbolp constructor)`'(eql ,constructor))
 	      (args (comma-type-specifier args constructor))
 	      ((list-constructor-p constructor)
-	       `',(cons-type-specifier `((eql ,(car constructor))
+	       `',(Cons-type-specifier `((eql ,(car constructor))
 					 ,@(cdr constructor))))
-	      (t `',(cons-type-specifier `((eql ,(car constructor))
+	      (t `',(Cons-type-specifier `((eql ,(car constructor))
 					   ,@(loop :for clause :in (cdr constructor)
 						   :collect (typecase clause
 							      (SYMBOL T)
@@ -92,13 +92,6 @@
 
 (defun list-constructor-p(constructor)
   (every #'millet:type-specifier-p (cdr constructor)))
-
-(defun cons-type-specifier(types)
-  (if(atom types)
-    (if(null types)
-      'null
-      types)
-    `(CONS ,(car types),(cons-type-specifier (cdr types)))))
 
 ;;; <add-adt>
 (defun <add-adt> (name lambda-list constructor*)
