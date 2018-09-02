@@ -3,7 +3,7 @@
 (defsystem "tyclex.type-matcher"
   :depends-on
   (
-   "tyclex.newtype"     ; Module for newtype.
+   "tyclex.objects.newtype"     ; Module for newtype.
    "tyclex.unifier"     ; Module for unification.
    "tyclex.objects.adt" ; Module for adt objects.
    "millet"             ; Wrapper for implementation dependent utilities.

@@ -1,7 +1,8 @@
 (in-package :cl-user)
 (defpackage :tyclex.type-matcher
-  (:use :cl :tyclex.newtype :tyclex.unifier)
-  (:shadowing-import-from :tyclex.newtype #:list)
+  (:use :cl :tyclex.unifier)
+  (:shadowing-import-from :tyclex.objects.newtype #:list)
+  (:import-from :tyclex.objects.newtype #:newtype-type-specifier-p)
   (:import-from :tyclex.objects.adt #:adt-type-specifier-p #:lflatten)
   (:export
     #:type-match-p #:great-common-type
