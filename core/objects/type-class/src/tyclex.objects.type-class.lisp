@@ -28,7 +28,7 @@
 		      (:conc-name type-))
   (name 	(error 'tyclex.conditions:slot-uninitialized :name 'name)
 						:type (or symbol list)	:read-only t)
-  (vars		(error 'tyclex.conditions:slot-uninitialzied :name 'vars)
+  (vars		(error 'tyclex.conditions:slot-uninitialized :name 'vars)
 						:type list		:read-only t)
   (interfaces	nil				:type list		:read-only t)
   (member	nil				:type list)
