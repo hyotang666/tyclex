@@ -8,6 +8,7 @@
 				       #:tyclex.objects.io-action
 				       #:tyclex.objects.adt
 				       #:tyclex.objects.adt-constructor
+				       #:tyclex.objects.newtype
 				       ,@(when (eq :use key)
 					   (list :cl))
 				       )))))

@@ -3,6 +3,7 @@
 (defsystem "tyclex.objects"
   :depends-on
   (
+   "tyclex.objects.newtype"
    "tyclex.objects.io-action"
    "tyclex.objects.adt-constructor"
    "tyclex.objects.adt"
@@ -19,6 +20,7 @@
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tyclex.objects"))))
   (append (call-next-method) '(
+                               (test-op "tyclex.objects.newtype.test")
                                (test-op "tyclex.objects.io-action.test")
                                (test-op "tyclex.objects.adt-constructor.test")
                                (test-op "tyclex.objects.adt.test")
