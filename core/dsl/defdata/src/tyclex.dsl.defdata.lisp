@@ -147,7 +147,7 @@
 
 (defun arg-types(constructor args)
   (cond
-    ((symbolp constructor))
+    ((symbolp constructor)nil)
     ((or args (list-constructor-p constructor))
      (sublis (mapcar (lambda(elt)
 		       (cons elt (tyclex.unifier:envar elt)))
