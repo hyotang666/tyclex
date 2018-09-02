@@ -4,7 +4,11 @@
   :depends-on
   (
    "tyclex.conditions"
+   "tyclex.unifier"
    "tyclex.objects.adt-constructor"
+   "tyclex.objects.io-action"
+   "millet"                             ; Wrapper for implementation dependent utilities.
+   "introspect-environment"             ; Wrapper for environment introspection.
    )
   :pathname
   "src/"
