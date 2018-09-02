@@ -3,6 +3,8 @@
 (defsystem "tyclex.newtype"
   :depends-on
   (
+   "tyclex.objects.newtype"
+   "tyclex.compute-return-type"
    )
   :pathname
   "src/"

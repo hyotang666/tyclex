@@ -1,5 +1,4 @@
 (defpackage :tyclex.newtype.spec
-  (:import-from :tyclex.newtype #:enough-type-specifier)
   (:shadowing-import-from :tyclex.newtype #:list)
   (:use :cl :jingoh :tyclex.newtype))
 (in-package :tyclex.newtype.spec)
@@ -53,7 +52,7 @@
 
 ; Such macro expanded to `CL:THE` form.
 #?(zip-list (list 1 2 3))
-:expanded-to (THE (ZIP-LIST *) (LIST 1 2 3))
+:expanded-to (THE (ZIP-LIST LIST) (LIST 1 2 3))
 
 ;;;; Exceptional-Situations:
 
@@ -84,96 +83,6 @@
 
 ;;;; Notes:
 ; In many cases, this is not needed, unless to dispatch underlying type instance.
-
-;;;; Exceptional-Situations:
-
-(requirements-about ENOUGH-TYPE-SPECIFIER)
-
-;;;; Description:
-; Return enough type specifier.
-; Required parameter is treated as `*`.
-
-#+syntax
-(ENOUGH-TYPE-SPECIFIER name lambda-list) ; => result
-
-;;;; Arguments and Values:
-
-; name := (and symbol (not (or keyword boolean))) is expected. (i.e. no checks.)
-
-; lambda-list := a deftype lambda list, see CLHS.
-; When not list, an error is signaled.
-#?(enough-type-specifier '#:dummy '#:not-list)
-:signals error
-
-; result := newtype type specifier is expected. (i.e. not be guaranteed.)
-#?(enough-type-specifier 'zip-list ()) => ZIP-LIST
-
-#?(enough-type-specifier 'zip-list '(a b)) => (ZIP-LIST * *)
-,:test equal
-
-#?(enough-type-specifier 'zip-list '(a &optional b)) => (ZIP-LIST *)
-,:test equal
-
-#?(enough-type-specifier 'zip-list '(&optional a b)) => ZIP-LIST
-
-#?(enough-type-specifier 'zip-list '(&whole whole &environment env a b &key c))
-=> (ZIP-LIST * *)
-,:test equal
-
-;;;; Affected By:
-; none
-
-;;;; Side-Effects:
-; none
-
-;;;; Notes:
-; `ENOUGH-TYPE-SPECIFIER` does not guarantee return value is type-specifier.
-#?(enough-type-specifier :not-type-name ())
-:satisfies
-#`(& (eq :not-type-name $result)
-     (not(millet:type-specifier-p $result)))
-
-;;;; Exceptional-Situations:
-
-(requirements-about NEWTYPE-TYPE-SPECIFIER-P)
-
-;;;; Description:
-; Return T when argument may newtype type specifier.
-#?(newtype-type-specifier-p '(zip-list fixnum))
-=> T
-#?(newtype-type-specifier-p "Not newtype type specifier")
-=> NIL
-
-#+syntax
-(NEWTYPE-TYPE-SPECIFIER-P type-specifier) ; => result
-
-;;;; Arguments and Values:
-
-; type-specifier := T
-
-; result := BOOLEAN
-
-;;;; Affected By:
-; Lisp environment.
-
-;;;; Side-Effects:
-; none
-
-;;;; Notes:
-; Return T even if it is not valid type specifier.
-#?(newtype-type-specifier-p '(zip-list * * *)) ; <--- too much arguments.
-=> T
-#?(newtype-type-specifier-p 'zip-list) ; <--- Lack required argument.
-=> T
-#?(newtype-type-specifier-p '(zip-list :not-valid-type-specifier))
-=> T
-
-; In order to simulate currying, nested type specifier is treated as valid.
-; In such case, return t when first symbol names newtype.
-#?(newtype-type-specifier-p '((zip-list first-arg)second-arg))
-=> T
-#?(newtype-type-specifier-p '((not-newtype *) *))
-=> NIL
 
 ;;;; Exceptional-Situations:
 
