@@ -4,6 +4,7 @@
   (:shadowing-import-from :tyclex.objects.newtype #:list)
   (:import-from :tyclex.objects.newtype #:newtype-type-specifier-p)
   (:import-from :tyclex.objects.adt #:adt-type-specifier-p #:lflatten)
+  (:import-from :tyclex.objects.adt-constructor #:first-atom)
   (:export
     #:type-match-p #:great-common-type
     ))
@@ -245,12 +246,7 @@
 ;;;; TYPE-MATCH-P
 (defun type-match-p(t1 t2 &optional reccursivep)
   (labels((car-eq(t1 t2)
-	    (matrix-case:matrix-typecase(t1 t2)
-	      ((symbol symbol)(eq t1 t2))
-	      ((list list)(car-eq (car t1)(car t2)))
-	      ((symbol list)(car-eq t1 (car t2)))
-	      ((list symbol)(car-eq (car t1)t2))))
-	  )
+	    (eq (First-atom t1)(First-atom t2))))
     (matrix-case:matrix-case((category-of t1)(category-of t2))
       ((:newtype	:newtype)					(car-eq t1 t2))
       ((:newtype	(:adt :list :function))				nil)
