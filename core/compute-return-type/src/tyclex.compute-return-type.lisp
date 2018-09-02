@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage :tyclex.compute-return-type
   (:use :cl)
+  (:shadowing-import-from :tyclex.objects.newtype #:list)
 
   (:import-from :tyclex.objects.adt
 		#:get-adt #:adt-lambda-list

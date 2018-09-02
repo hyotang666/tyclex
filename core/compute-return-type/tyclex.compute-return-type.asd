@@ -3,6 +3,7 @@
 (defsystem "tyclex.compute-return-type"
   :depends-on
   (
+   "tyclex.objects.newtype"
    "tyclex.objects.adt"
    "tyclex.unifier"
    "tyclex.curry"
