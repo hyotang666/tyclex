@@ -9,7 +9,7 @@
 (defmacro tcl::defun (name lambda-list &body body &environment env)
   (if(or (listp name) ; setf form, ignore.
 	 (or (null(tyclex.curry:function-type-of name))
-	     (null(introspect-environment:function-type name))))
+	     (equal '(function * *)(introspect-environment:function-type name))))
     `(cl:defun ,name ,lambda-list ,@body)
     ;; bind
     (let((types(second(or (tyclex.curry:function-type-of name)
