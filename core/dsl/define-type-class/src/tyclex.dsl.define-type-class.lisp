@@ -24,9 +24,10 @@
 		;; Helpers.
 		#:add-interface)
   (:import-from :tyclex.compute-return-type
-		#:compute-return-types #:canonicalize-return-type)
+		#:compute-return-types)
   (:import-from :tyclex.curry
-		#:curry-form-p #:recurry #:expanded-curry-form-p #:decurry)
+		#:curry-form-p #:recurry #:expanded-curry-form-p #:decurry
+		#:canonicalize-return-type)
 
   (:export
     ;; Main API
