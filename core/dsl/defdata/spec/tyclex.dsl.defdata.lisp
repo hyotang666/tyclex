@@ -3,11 +3,7 @@
 (in-package :tyclex.dsl.defdata.spec)
 (setup :tyclex.dsl.defdata)
 
-(requirements-about DEFDATA
-		    :around
-		    (let((tyclex.objects.adt::*adts*(make-hash-table))
-			 (tyclex.objects.adt::*adt-constructors*(make-hash-table)))
-		      (call-body)))
+(requirements-about DEFDATA)
 
 ;;;; Description:
 ; Define new Algebraic Data Types.
@@ -15,8 +11,7 @@
     :nothing
     (just a))
 => MAYBE
-,:before (fmakunbound 'just)
-,:around (call-body)
+,:before (tyclex.objects.adt:remove-adt 'maybe)
 
 #+syntax
 (DEFDATA name&option lambda-list &rest constructor*) ; => result
