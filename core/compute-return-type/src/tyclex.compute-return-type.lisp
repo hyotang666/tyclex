@@ -9,7 +9,7 @@
 		#:adt-constructor-form-p #:get-adt-constructor
 		#:adt-constructor-type-of #:adt-constructor-arg-types)
   (:import-from :tyclex.objects.interface #:interface-form-p #:interface-return-type #:interface-lambda-list)
-  (:import-from :tyclex.objects.io-action #:io-form-p #:find-io #:action-type #:io-action-construct-form-p #:io-action-construct-form-return-type)
+  (:import-from :tyclex.objects.io-action #:io-form-p #:get-io #:action-type #:io-action-construct-form-p #:io-action-construct-form-return-type)
   (:import-from :tyclex.curry #:expanded-curry-form-p #:expanded-curry-form-arity #:expanded-curry-form-return-type #:function-type-of #:canonicalize-return-type)
   (:import-from :tyclex.type-matcher #:great-common-type)
 
@@ -45,7 +45,7 @@
     ((Interface-form-p var)
      (interface-form-return-type var))
     ((Io-form-p var)
-     (Action-type(Find-io (car var))))
+     (Action-type(Get-io (car var))))
     ((Adt-constructor-form-p var) ; constructor call.
      (constructor-form-return-type var env))
     ((Io-action-construct-form-p var)
