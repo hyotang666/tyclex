@@ -43,7 +43,7 @@
        (every #'equal thing '(make-instance 'io-action))))
 
 (defun io-action-construct-form-return-type(io-action-construct-form)
-  (getf io-action-construct-form :type))
+  (introspect-environment:constant-form-value(getf io-action-construct-form :type)))
 
 (defun io-action-construct-form-function-form(io-action-construct-form)
   (getf io-action-construct-form :function))
