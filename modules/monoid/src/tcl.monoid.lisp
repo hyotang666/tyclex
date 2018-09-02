@@ -43,7 +43,8 @@
 (define-newtype all() 'boolean)
 
 (define-newtype 1st(&optional a)
-  `(maybe ,a))
+  (declare(ignore a))
+  '(maybe *))
 
 ;;;; Instances
 (definstance(monoid list)
