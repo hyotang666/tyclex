@@ -63,7 +63,5 @@
     (typecase type-spec
       ((cons (eql function)(cons * null))
        `(FUNCTION * ,(cadr type-spec)))
-      ((cons (eql list)(cons * null))
-       'list)
       (otherwise type-spec))))
 
