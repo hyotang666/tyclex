@@ -46,7 +46,7 @@
   (introspect-environment:constant-form-value(getf io-action-construct-form :type)))
 
 (defun io-action-construct-form-function-form(io-action-construct-form)
-  (getf io-action-construct-form :function))
+  (getf io-action-construct-form :instance))
 
 ;;; IO type constructor.
 (tyclex.newtype:define-newtype io (a)
