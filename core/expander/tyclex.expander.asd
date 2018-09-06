@@ -2,7 +2,11 @@
 (in-package :asdf)
 (defsystem "tyclex.expander"
   :depends-on
-  nil
+  (
+   "tyclex.curry"
+   "tyclex.objects.io-action"
+   "expander"
+   )
   :pathname
   "src/"
   :components
