@@ -101,8 +101,17 @@
 
 ;;;; DECURRY
 (defun decurry (form actual-args)
-  (recurry (introspect-environment:constant-form-value(third form))
-	   actual-args))
+  (labels((rec(if count)
+	    (if(zerop count)
+	      (if(eq 'if (car if))
+		(fourth if)
+		if)
+	      (rec(third if)(1- count)))))
+    (expander:walk-sublis (loop :for var :in (cdr (second(first(second form))))
+				:for arg :in actual-args
+				:collect `(,(car var),arg))
+			  (rec (third(first(second form)))
+			       (length actual-args)))))
 
 (defun recurry(curry-form actual-args)
   (if(null actual-args)
