@@ -5,6 +5,7 @@
   (
    "tyclex.objects.newtype"
    "tyclex.objects.adt"
+   "tyclex.objects.interface"
    "tyclex.unifier"
    "tyclex.curry"
    "tyclex.type-matcher"
