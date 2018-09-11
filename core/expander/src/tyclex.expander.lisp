@@ -1,7 +1,7 @@
 (in-package :cl-user)
 (defpackage :tyclex.expander
   (:import-from :tyclex.curry
-		#:expanded-curry-form-p #:decurry)
+		#:expanded-curry-form-p #:decurry #:curry-form-p #:recurry)
   (:import-from :tyclex.objects.io-action
 		#:action-body #:action-lambda-list
 		#:get-io #:io-form-p
@@ -21,66 +21,67 @@
 		   ,(cons-type-specifier (cdr list)))))))
 
 (defun |funcall-expander|(form env)
-  (let*((function (second form))
-	(args (cddr form))
-	(the (when (and (listp function)
-			(eq 'the (car function)))
-	       (setf function (third function)) ; as canonicalize.
-	       (second function)))
-	(expanded-function (expander:expand function env)))
-    (cond
-      ((Expanded-curry-form-p expanded-function)
-       (expander:expand (Decurry expanded-function args) env))
-      ((Io-form-p expanded-function)
-       (let((io(Get-io(car expanded-function))))
-	 (if(null (cdr expanded-function))
-	   (pretty-body (expander:expand* (Action-body io)env) the)
-	   (expander:expand `(DESTRUCTURING-BIND,(Action-lambda-list io)(LIST ,@(cdr expanded-function))
-			       ,@(Action-body io))
-			    env))))
-      ((Io-action-construct-form-p expanded-function)
-       (|funcall-expander| `(,(car form) ,(Io-action-construct-form-function-form expanded-function),@args)
-			   env))
-      ((or (typep expanded-function '(cons (eql quote)(cons symbol null)))
-	   (typep expanded-function '(cons (eql function)(cons symbol null))))
-       `(,(cadr expanded-function),@(expander:expand* args env)))
-      ((typep expanded-function '#.(cons-type-specifier '#'(lambda())))
-       ;; To avoid to generate rebinding form, i.e. (let((a a)) ...)
-       (let((binds(loop :for var :in (second(second expanded-function))
-			:for arg :in args
-			:unless (eq var arg)
-			:collect `(,var ,(expander:expand arg env)))))
-	 (if binds
-	   (expander:expand `(LET,binds ,@(cddadr expanded-function)) env)
-	   (if(cdr(cddadr expanded-function)) ; some forms
-	     `(progn ,@(cddadr expanded-function))
-	     (car (cddadr expanded-function))))))
-      ((typep expanded-function '#.(cons-type-specifier '(let())))
-       (destructuring-bind(op binds body)expanded-function
-	 (multiple-value-bind(body decls)(alexandria:parse-body body)
-	   `(,op ,binds ,@decls ,(|funcall-expander| `(funcall ,body ,@args)env)))))
-      ((typep expanded-function '#.(cons-type-specifier '(constantly *)))
-       (cadr expanded-function))
-      ((typep expanded-function '#.(cons-type-specifier '((lambda * *))))
-       (destructuring-bind((op lambda-list . body) . lambda-args)expanded-function
-	 (declare(ignore op))
-	 ;; To avoid to generate rebinding form i.e. (let((a a))...)
-	 (let((binds(loop :for var :in lambda-list
-			  :for arg :in lambda-args
-			  :unless (eq var arg)
-			  :collect `(,var ,arg))))
-	   (if binds
-	     (|funcall-expander| (list* (car form)`(let,binds ,@body)args)
-				 env)
-	     (if(cdr body) ; some forms
-	       (|funcall-expander| (list* (car form)`(progn ,@body)args)
-				   env)
-	       (|funcall-expander| (list* (car form) (car body)args) env))))))
-      (t (let((expanded(expander:expand* (cddr form) env)))
-	   (if(and (every #'equalp expanded (cddr form))
-		   (equal expanded-function function))
-	     form
-	     (|funcall-expander| (list* (car form) expanded-function expanded)env)))))))
+  (destructuring-bind(op function . args)form
+    (let((the (when (and (listp function)
+			 (eq 'the (car function)))
+		(setf function (third function)) ; as canonicalize.
+		(second function))))
+      (when(Curry-form-p function)
+	(return-from |funcall-expander| (expander:expand (Recurry function args) env)))
+      (setf function (expander:expand function env))
+      (when(and (listp function)
+		(eq 'the (car function)))
+	(setf the (second function)
+	      function(third function)))
+      (cond
+	((Expanded-curry-form-p function)
+	 (expander:expand (Decurry function args) env))
+	((Io-form-p function)
+	 (let((io(Get-io(car function))))
+	   (if(null (cdr function))
+	     (pretty-body (expander:expand* (Action-body io)env) the)
+	     (expander:expand `(DESTRUCTURING-BIND,(Action-lambda-list io)(LIST ,@(cdr function))
+				 ,@(Action-body io))
+			      env))))
+	((Io-action-construct-form-p function)
+	 (|funcall-expander| `(,(car form) ,(Io-action-construct-form-function-form function),@args)
+			     env))
+	((typep function'(cons (eql function)(cons symbol null)))
+	 `(,(cadr function),@(expander:expand* args env)))
+	((typep function '#.(cons-type-specifier '#'(lambda())))
+	 (destructuring-bind(function(lambda lambda-list . body))function
+	   (declare(ignore function lambda))
+	   (if(expander::intersectionp lambda-list lambda-list-keywords :test #'eq)
+	     `(,op #'(lambda ,lambda-list ,@body) ,@(expander:expand* args env))
+	     (let((binds(mapcar #'list lambda-list args)))
+	       (if binds
+		 (expander:expand `(let,binds,@body) env)
+		 (if(cdr body)
+		   `(locally ,@body)
+		   (car body)))))))
+	((typep function '#.(cons-type-specifier '((lambda()))))
+	 (destructuring-bind((lambda lambda-list . body) . actual-args) function
+	   (declare(ignore lambda))
+	   (if(expander::intersectionp lambda-list lambda-list-keywords :test #'eq)
+	     `((lambda,(expander::expand-params lambda-list env),@(expander:expand* body env))
+	       ,@(expander:expand* actual-args env))
+	     (let((binds(mapcar #'list lambda-list actual-args)))
+	       (if binds
+		 (multiple-value-bind(binds decls prebody main)(parse-bubble-let `(let,binds,@body))
+		   (expander:expand `(let,binds,@decls,@prebody(,op ,main ,@args))env))
+		 (if(cdr body)
+		   (expander:expand `(,op (locally ,@body),@args) env)
+		   (expander:expand `(,op ,(car body) ,@args))))))))
+	((typep function '#.(cons-type-specifier '(constantly *)))
+	 (let((arg-forms(remove-if (lambda(x)(constantp x env))
+				   (expander:expand* args env))))
+	   (if arg-forms
+	     `(progn ,@arg-forms ,(cadr function))
+	     (cadr function))))
+	((typep function '#.(cons-type-specifier '(let())))
+	 (multiple-value-bind(binds decls prebody main)(expander::parse-bubble-let function)
+	   (expander:expand `(let ,binds ,@decls ,@prebody(,op ,main ,@args))env)))
+	(t `(,op ,function ,@(expander:expand* args env)))))))
 
 (defun pretty-body(form the)
   (let((return-type (when the
@@ -90,14 +91,14 @@
     (if(cdr form)
       (if return-type
 	`(the ,return-type (progn ,@form))
-	`(PROGN ,@form))
+	`(locally ,@form))
       (if return-type
 	`(the ,return-type ,(car form))
 	(car form)))))
 
 (handler-bind((expander:expander-conflict #'expander:use-next))
   (expander:defexpandtable :tyclex
-    (:use standard)
+    (:use optimize)
     (:add |funcall-expander| funcall)
     ))
 
