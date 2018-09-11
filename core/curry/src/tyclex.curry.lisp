@@ -9,6 +9,7 @@
     ;; Decurry
     #:decurry #:recurry #:curry-form-p #:expanded-curry-form-p
     #:expanded-curry-form-arity #:expanded-curry-form-return-type
+    #:first-promised-curry
     ))
 (in-package :tyclex.curry)
 
@@ -151,6 +152,13 @@
   (let*((make-instance(fourth form))
 	(return-type(getf make-instance :return-type)))
     (canonicalize-return-type(introspect-environment:constant-form-value return-type))))
+
+(defun first-promised-curry(expanded)
+  (destructuring-bind(op ((name (key first . rest)body)) origin main)expanded
+    `(,op ((,name(,(car first),key ,@rest)
+	     ,(third body)))
+	  ,origin
+	  ,(getf main :function))))
 
 ;;;; CANONICALIZE-RETURN-TYPE
 (defun canonicalize-return-type(return-type)
