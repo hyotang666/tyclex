@@ -26,5 +26,8 @@
 		 ``(THE ,',name ,,arg)
 		 ``(THE (,',name ,(Compute-return-type ,arg)) ,,arg))))))
 
-(setf (symbol-function 'denew)#'third)
+(defun denew(thing)
+  (if(typep thing '(cons (eql the)*))
+    (third thing)
+    thing))
 
