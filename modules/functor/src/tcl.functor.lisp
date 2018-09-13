@@ -42,7 +42,9 @@
 
 (definstance(functor function)
   ((fmap(f g)
-     `(alexandria:compose ,f ,g))))
+     (alexandria:with-gensyms(x)
+       `(lambda(,x)
+	  (funcall ,f (funcall ,g ,x)))))))
 
 (definstance(functor maybe)
   ((fmap(f m)
