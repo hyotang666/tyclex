@@ -67,7 +67,7 @@
 	       ,@(expander:expand* actual-args env))
 	     (let((binds(mapcar #'list lambda-list actual-args)))
 	       (if binds
-		 (multiple-value-bind(binds decls prebody main)(parse-bubble-let `(let,binds,@body))
+		 (multiple-value-bind(binds decls prebody main)(expander:parse-bubble-let `(let,binds,@body))
 		   (expander:expand `(let,binds,@decls,@prebody(,op ,main ,@args))env))
 		 (if(cdr body)
 		   (expander:expand `(,op (locally ,@body),@args) env)
