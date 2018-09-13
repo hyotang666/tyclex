@@ -1,7 +1,8 @@
 (in-package :cl-user)
 (defpackage :tyclex.expander
   (:import-from :tyclex.curry
-		#:expanded-curry-form-p #:decurry #:curry-form-p #:recurry)
+		#:expanded-curry-form-p #:decurry #:curry-form-p #:recurry
+		#:first-promised-curry)
   (:import-from :tyclex.objects.io-action
 		#:action-body #:action-lambda-list
 		#:get-io #:io-form-p
@@ -96,9 +97,32 @@
 	`(the ,return-type ,(car form))
 	(car form)))))
 
+(defun |mapcar-expander|(form env)
+  (destructuring-bind(op fun . args)form
+    (setf fun (expander:expand fun env))
+    (setf args (expander:expand* args env))
+    (cond
+      ((Expanded-curry-form-p fun)
+       `(,op ,(First-promised-curry fun)
+	     ,@(expander:expand* args env)))
+      ((loop :for form :in args
+	     :thereis (and (constantp form env)
+			   (null(introspect-environment:constant-form-value form env))))
+       (let((args(remove-if (lambda(x)(constantp x env))
+			    args)))
+	 (if args
+	   (if(expander:pure-fun-form-p fun env)
+	     `(progn ,@args nil)
+	     `(progn ,fun ,@args nil))
+	   (if(expander:pure-fun-form-p fun env)
+	     nil
+	     `(progn ,fun nil)))))
+      (t `(,op ,fun ,@args)))))
+
 (handler-bind((expander:expander-conflict #'expander:use-next))
   (expander:defexpandtable :tyclex
     (:use optimize)
     (:add |funcall-expander| funcall)
+    (:add |mapcar-expander| mapcar mapcan maplist mapcon)
     ))
 
