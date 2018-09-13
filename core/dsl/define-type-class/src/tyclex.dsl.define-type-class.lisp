@@ -10,11 +10,6 @@
 		#:type-class-constraints #:type-class-interfaces #:type-class-member
 		;; Helpers.
 		#:find-type-class #:add-type-class)
-  (:import-from :tyclex.objects.io-action
-		;; Slot readers.
-		#:action-body #:action-lambda-list
-		;; Helpers.
-		#:get-io #:io-form-p)
   (:import-from :tyclex.objects.instance
 		;; Slot readers.
 		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types)
@@ -26,7 +21,6 @@
   (:import-from :tyclex.compute-return-type
 		#:compute-return-types)
   (:import-from :tyclex.curry
-		#:curry-form-p #:recurry #:expanded-curry-form-p #:decurry
 		#:canonicalize-return-type)
 
   (:export
@@ -225,49 +219,3 @@
     (if(y-or-n-p "~%TYCLEX try to replace *MACROEXPAND-HOOK*, but already set. ~S~%Really replace it?"*macroexpand-hook*)
       (setq *macroexpand-hook* 'infinite-expansion-detecter)
       (warn "TYCLEX could not detect infinite macro expansion."))))
-
-;;;; EXPANDTABLE
-(defun |funcall-expander|(form env)
-  (let*((function (second form))
-	(args (cddr form))
-	(the (when (and (listp function)
-			(eq 'the (car function)))
-	       (setf function (third function)) ; as canonicalize.
-	       (second function))))
-    (cond
-      ((Curry-form-p function)
-       (expander:expand (Recurry function args)
-			env))
-      ((Expanded-curry-form-p function)
-       (expander:expand (Decurry function args)
-			env))
-      ((Io-form-p function)
-       (let((io(Get-io(car function))))
-	 (if(null (cdr function))
-	   (pretty-body (expander:expand* (Action-body io)env) the)
-	   `(DESTRUCTURING-BIND,(Action-lambda-list io)(LIST ,@(cdr function))
-	      ,@(expander:expand* (Action-body io) env)))))
-      ((and (listp function)
-	    (every #'equal function '(make-instance 'io-action)))
-       (pretty-body (cddadr (getf function :instance)) the))
-      (t (let((expanded(expander:expand* (cdr form) env)))
-	   (if(every #'equalp expanded (cdr form))
-	     form
-	     (|funcall-expander| (cons (car form)expanded)env)))))))
-
-(defun pretty-body(form the)
-  (let((return-type (when the
-		      (typecase the
-			((cons (eql io)*)(second the))
-			((cons (eql function)*) (third the))))))
-    (if(cdr form)
-      (if return-type
-	`(the ,return-type (progn ,@form))
-	`(PROGN ,@form))
-      (if return-type
-	`(the ,return-type ,(car form))
-	(car form)))))
-
-(expander:defexpandtable :tyclex
-  (:use standard)
-  (:add |funcall-expander| funcall))
