@@ -63,7 +63,7 @@
 	 (destructuring-bind((lambda lambda-list . body) . actual-args) function
 	   (declare(ignore lambda))
 	   (if(expander::intersectionp lambda-list lambda-list-keywords :test #'eq)
-	     `((lambda,(expander::expand-params lambda-list env),@(expander:expand* body env))
+	     `((lambda,(expander:expand-params lambda-list env),@(expander:expand* body env))
 	       ,@(expander:expand* actual-args env))
 	     (let((binds(mapcar #'list lambda-list actual-args)))
 	       (if binds
@@ -79,7 +79,7 @@
 	     `(progn ,@arg-forms ,(cadr function))
 	     (cadr function))))
 	((typep function '#.(cons-type-specifier '(let())))
-	 (multiple-value-bind(binds decls prebody main)(expander::parse-bubble-let function)
+	 (multiple-value-bind(binds decls prebody main)(expander:parse-bubble-let function)
 	   (expander:expand `(let ,binds ,@decls ,@prebody(,op ,main ,@args))env)))
 	(t `(,op ,function ,@(expander:expand* args env)))))))
 
