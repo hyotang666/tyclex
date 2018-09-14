@@ -49,9 +49,12 @@
 (definstance(functor maybe)
   ((fmap(f m)
      (alexandria:with-gensyms(x)
-       `(trivia:ematch,m
-	  ((just ,x)(just(funcall ,f ,x)))
-	  (nothing nothing))))))
+       (trivia:match m
+         (nothing nothing)
+	 ((just y)`(just (funcall ,f ,y)))
+	 (_ `(trivia:ematch,m
+	       ((just ,x)(just(funcall ,f ,x)))
+	       (nothing nothing))))))))
 
 (definstance(functor io)
   ((fmap(f io)
