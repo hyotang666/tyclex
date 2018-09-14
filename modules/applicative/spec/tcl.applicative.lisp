@@ -117,6 +117,16 @@
 => (16 20 22 40 50 55 80 100 110)
 ,:test equal
 
+#?(<$> (curry * _ _)
+       '(2 5 10)
+       '(8 10 11))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (<$> (curry * _ _)
+       '(2 5 10)
+       '(8 10 11)))
+,:test equal
+
 #?(remove-if-not (curry > _ 50)
 		 (<$> (curry * _ _)
 		      '(2 5 10)
@@ -131,12 +141,37 @@
 	   5)
 => 508
 
+#?(funcall (<$> (curry + _ _)
+		(curry + _ 3)
+		(curry * _ 100))
+	   5)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (<$> (curry + _ _)
+		(curry + _ 3)
+		(curry * _ 100))
+	   5))
+
 #?(funcall (<$> (curry list _ _ _)
 		(curry + _ 3)
 		(curry * _ 2)
 		(curry / _ 2))
 	   5)
 => (8 10 5/2)
+,:test equal
+
+#?(funcall (<$> (curry list _ _ _)
+		(curry + _ 3)
+		(curry * _ 2)
+		(curry / _ 2))
+	   5)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (<$> (curry list _ _ _)
+		(curry + _ 3)
+		(curry * _ 2)
+		(curry / _ 2))
+	   5))
 ,:test equal
 
 ;; io
@@ -147,6 +182,24 @@
 	       (& (functionp $result)
 		  (equal "onetwo"
 			 (funcall $result))))
+
+#?(<$> (curry concatenate 'string _ _)
+       (get-line)
+       (get-line))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (<$> (curry concatenate 'string _ _)
+       (get-line)
+       (get-line)))
+,:test #`(& (with-input-from-string(*standard-input* (format nil "one~%two"))
+	      (& (functionp $result)
+		 (equal "onetwo"
+			(funcall $result))))
+	    (with-input-from-string(*standard-input* (format nil "one~%two"))
+	      (& (functionp $result2)
+		 (equal "onetwo"
+			(funcall $result2)))))
+
 
 #?(lambda()
     (let((a (funcall (<$> (curry concatenate 'string _ _)
@@ -165,6 +218,11 @@
 ;; maybe
 #?(<*> (just (curry + 3 _)) (just 9))
 :satisfies #`(equal $result (just 12))
+#?(<*> (just (curry + 3 _)) (just 9))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (<*> (just (curry + 3 _)) (just 9)))
+,:test equal
 
 #?(<*> (just (curry + 3 _)) nothing)
 => NOTHING
@@ -177,6 +235,11 @@
 
 #?(<*> (pure (curry + 3 _)) (just 9))
 :satisfies #`(equal $result (just 12))
+#?(<*> (pure (curry + 3 _)) (just 9))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (<*> (pure (curry + 3 _)) (just 9)))
+,:test equal
 
 #?(<*> (<*> (pure (curry + _ _))
 	    (just 3))

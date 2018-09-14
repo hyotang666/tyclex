@@ -14,38 +14,122 @@
 #?(mappend (mempty) '(1 2 3))
 => (1 2 3)
 ,:test equal
+
+#?(mappend (mempty) '(1 2 3))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mempty) '(1 2 3)))
+,:test equal
+
 #?(mappend '(1 2 3)(mempty))
 => (1 2 3)
 ,:test equal
+
+#?(mappend '(1 2 3)(mempty))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend '(1 2 3)(mempty)))
+,:test equal
+
 #?(mappend (mappend '(1 2) '(3 4))
 	   '(5 6))
 :equivalents (mappend '(1 2)
 		      (mappend '(3 4)'(5 6)))
 ,:test equal
 
+#?(mappend '(1 2) (mappend '(3 4)'(5 6)))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend '(1 2) (mappend '(3 4)'(5 6))))
+,:test equal
+
+#?(mappend (mappend '(1 2) '(3 4))
+	   '(5 6))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend '(1 2) '(3 4))
+	   '(5 6)))
+,:test equal
+
 ;; Vector
 #?(mappend (mempty) #(1 2 3))
 => #(1 2 3)
 ,:test equalp
+
+#?(mappend (mempty) #(1 2 3))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mempty) #(1 2 3)))
+,:test equalp
+
 #?(mappend #(1 2 3)(mempty))
 => #(1 2 3)
 ,:test equalp
+
+#?(mappend #(1 2 3)(mempty))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend #(1 2 3)(mempty)))
+,:test equalp
+
 #?(mappend (mappend #(1 2) #(3 4))
 	   #(5 6))
 :equivalents (mappend #(1 2)
 		      (mappend #(3 4)#(5 6)))
 ,:test equalp
 
+#?(mappend (mappend #(1 2) #(3 4))
+	   #(5 6))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend #(1 2) #(3 4))
+	   #(5 6)))
+,:test equalp
+
+#?(mappend #(1 2) (mappend #(3 4)#(5 6)))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend #(1 2) (mappend #(3 4)#(5 6))))
+,:test equalp
+
 ;; String
 #?(mappend (mempty) "abc")
 => "abc"
 ,:test equal
+
+#?(mappend (mempty) "abc")
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mempty) "abc"))
+,:test equal
+
 #?(mappend "abc" (mempty))
 => "abc"
 ,:test equal
+
+#?(mappend "abc" (mempty))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend "abc" (mempty)))
+,:test equal
+
 #?(mappend (mappend "ab" "cd")
 	   "ef")
 :equivalents (mappend "ab" (mappend "cd" "ef"))
+,:test equal
+
+#?(mappend "ab" (mappend "cd" "ef"))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend "ab" (mappend "cd" "ef")))
+,:test equal
+
+#?(mappend (mappend "ab" "cd")
+	   "ef")
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend "ab" "cd")
+	   "ef"))
 ,:test equal
 
 ;; Bit-vector
@@ -67,31 +151,105 @@
 #?(mappend (mappend (product 2) (product 3)) (product 4))
 :equivalents (mappend (product 2) (mappend (product 3) 4))
 
+#?(mappend (product 2) (mappend (product 3) 4))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (product 2) (mappend (product 3) 4)))
+
+#?(mappend (mappend (product 2) (product 3)) (product 4))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend (product 2) (product 3)) (product 4)))
+
 ;; Sum
 #?(mappend (mempty)(sum 2)) => 2
 #?(mappend (sum 2) (mempty)) => 2
 #?(mappend (mappend (sum 2) 3)(sum 4))
 :equivalents (mappend (sum 2)(mappend (sum 3) 4))
 
+#?(mappend (sum 2)(mappend (sum 3) 4))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (sum 2)(mappend (sum 3) 4)))
+
+#?(mappend (mappend (sum 2) 3)(sum 4))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend (sum 2) 3)(sum 4)))
+
 ;; Any
 #?(mappend (mempty) (any t)) => T
+
+#?(mappend (mempty) (any t))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mempty) (any t)))
+
 #?(mappend (any t) (mempty)) => T
+
+#?(mappend (any t) (mempty))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (any t) (mempty)))
+
 #?(mappend (mappend (any nil)(any nil))(any t))
 :equivalents (mappend (any nil)
 		      (mappend (any nil)(any t)))
 
+#?(mappend (any nil) (mappend (any nil)(any t)))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (any nil) (mappend (any nil)(any t))))
+
+#?(mappend (mappend (any nil)(any nil))(any t))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend (any nil)(any nil))(any t)))
+
 ;; ALL
 #?(mappend (mempty)(all t)) => T
+
+#?(mappend (mempty)(all t))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mempty)(all t)))
+
 #?(mappend (all t)(mempty)) => T
+
+#?(mappend (all t)(mempty))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (all t)(mempty)))
+
 #?(mappend (mappend (all t)(all t)) (all t))
 :equivalents (mappend (all t)
 		      (mappend (all t)(all t)))
+
+#?(mappend (all t) (mappend (all t)(all t)))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (all t) (mappend (all t)(all t))))
+
+#?(mappend (mappend (all t)(all t)) (all t))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend (all t)(all t)) (all t)))
 
 ;; Ordering
 #?(mappend (mempty):lt) => :LT
 #?(mappend :lt (mempty)) => :LT
 #?(mappend (mappend :lt :gt) :eq)
 :equivalents (mappend :lt (mappend :gt :eq))
+
+#?(mappend (mappend :lt :gt) :eq)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend (mappend :lt :gt) :eq))
+
+#?(mappend :lt (mappend :gt :eq))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (mappend :lt (mappend :gt :eq)))
 
 ;; Maybe
 #?(mappend (mempty) (just 3)) => (just 3)

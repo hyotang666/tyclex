@@ -50,6 +50,19 @@
 	   :hoge)
 => 1
 
+#?(funcall (>>= (return 1) (lambda(x)
+			     (lambda(y)
+			       (declare(ignore y))
+			       x)))
+	   :hoge)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (>>= (return 1) (lambda(x)
+			     (lambda(y)
+			       (declare(ignore y))
+			       x)))
+	   :hoge))
+
 #?(funcall ((lambda(x)
 	      (lambda(y)
 		(declare(ignore y))
@@ -64,12 +77,36 @@
 => ((1 :hoge) :hoge)
 ,:test equal
 
+#?(funcall (>>= (>>= (constantly 1) (lambda(x)(lambda(y)(list x y))))
+		(lambda(x)(lambda(y)(list x y))))
+	   :hoge)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (>>= (>>= (constantly 1) (lambda(x)(lambda(y)(list x y))))
+		(lambda(x)(lambda(y)(list x y))))
+	   :hoge))
+,:test equal
+
 #?(funcall (>>= (constantly 1)
 		(lambda(x)
 		  (>>= ((lambda(x)(lambda(y)(list x y)))x)
 		       (lambda(x)(lambda(y)(list x y))))))
 	   :hoge)
 => ((1 :hoge) :hoge)
+,:test equal
+
+#?(funcall (>>= (constantly 1)
+		(lambda(x)
+		  (>>= ((lambda(x)(lambda(y)(list x y)))x)
+		       (lambda(x)(lambda(y)(list x y))))))
+	   :hoge)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (>>= (constantly 1)
+		(lambda(x)
+		  (>>= ((lambda(x)(lambda(y)(list x y)))x)
+		       (lambda(x)(lambda(y)(list x y))))))
+	   :hoge))
 ,:test equal
 
 ;; Io
@@ -79,6 +116,20 @@
 					    :type '(io *))))
 	   :hoge)
 => (1 :hoge)
+,:test equal
+
+#?(funcall (>>= (return 1) (lambda(x)
+			     (make-instance 'io-action
+					    :instance (lambda(y)(list x y))
+					    :type '(io *))))
+	   :hoge)
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (>>= (return 1) (lambda(x)
+			     (make-instance 'io-action
+					    :instance (lambda(y)(list x y))
+					    :type '(io *))))
+	   :hoge))
 ,:test equal
 
 #?(funcall ((lambda(x)
@@ -102,6 +153,32 @@
 				 :instance (lambda()(concatenate 'string x "three"))
 				 :type '(io string)))))
 => "onetwothree"
+,:test equal
+
+#?(funcall (>>= (>>= (make-instance 'io-action
+				    :instance (lambda() "one")
+				    :type '(io string))
+		     (lambda(x)
+		       (make-instance 'io-action
+				      :instance (lambda()(concatenate 'string x "two"))
+				      :type '(io string))))
+		(lambda(x)
+		  (make-instance 'io-action
+				 :instance (lambda()(concatenate 'string x "three"))
+				 :type '(io string)))))
+:equivalents
+(let((expander:*expandtable*(expander:find-expandtable :tyclex)))
+  (funcall (>>= (>>= (make-instance 'io-action
+				    :instance (lambda() "one")
+				    :type '(io string))
+		     (lambda(x)
+		       (make-instance 'io-action
+				      :instance (lambda()(concatenate 'string x "two"))
+				      :type '(io string))))
+		(lambda(x)
+		  (make-instance 'io-action
+				 :instance (lambda()(concatenate 'string x "three"))
+				 :type '(io string))))))
 ,:test equal
 
 #?(funcall (>>= (make-instance 'io-action
