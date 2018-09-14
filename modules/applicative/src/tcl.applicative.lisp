@@ -83,9 +83,12 @@
 
 (definstance(applicative maybe)
   ((<*>(functor arg)
-     (alexandria:with-gensyms(f)
-       `(trivia:ematch ,functor
-          (nothing nothing)
-	  ((just ,f)(fmap ,f ,arg)))))
+     (trivia:match functor
+       (nothing nothing)
+       ((just x)`(fmap ,x ,arg))
+       (_ (alexandria:with-gensyms(f)
+	    `(trivia:ematch ,functor
+	       (nothing nothing)
+	       ((just ,f)(fmap ,f ,arg)))))))
    (pure(x)
      `(just ,x))))
