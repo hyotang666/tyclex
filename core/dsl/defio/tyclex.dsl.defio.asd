@@ -4,6 +4,7 @@
   :depends-on
   (
    "tyclex.objects.io-action"   ; Module for io-action object.
+   "tyclex.newtype"
    )
   :pathname
   "src/"

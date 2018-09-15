@@ -1,10 +1,18 @@
 (in-package :cl-user)
 (defpackage :tyclex.dsl.defio
-  (:use :cl #:tyclex.objects.io-action)
+  (:use :cl)
+  (:import-from :tyclex.newtype #:define-newtype)
+  (:import-from :tyclex.objects.io-action
+		#:io #:io-action #:add-io
+		)
   (:export
     #:defio
     ))
 (in-package :tyclex.dsl.defio)
+
+(define-newtype io (a)
+  (declare(ignore a))
+  'io-action)
 
 ;;;; DEFIO
 (defmacro defio ((name signature return) &body body)
