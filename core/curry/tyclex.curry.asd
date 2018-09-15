@@ -6,6 +6,7 @@
    "closer-mop"                 ; Wrapper for meta object protocols.
    "introspect-environment"     ; Wrapper for environment introspection.
    "alexandria"                 ; Public domain utilities.
+   "expander"                   ; Code walker.
    )
   :pathname
   "src/"
