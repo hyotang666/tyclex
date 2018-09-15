@@ -14,9 +14,6 @@
   ;; trivial-syntax-check.
   (assert(typep name '(and symbol (not (or keyword boolean)))))
   (assert(listp lambda-list))
-  (assert(typep lambda-list '(or null
-				 (cons * null)
-				 (cons (eql &optional)(cons * null)))))
   ;; body
   (let((arg(gensym "ARG")))
     `(PROGN (ADD-NEWTYPE ',name)
