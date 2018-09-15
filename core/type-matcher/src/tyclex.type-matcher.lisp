@@ -227,7 +227,9 @@
 	(if(Find-variable-value (car b) env)
 	  env
 	  (Extend-environment (car b) a env))
-	(call-next-method))
+	(if(type-match-p a b)
+	  env
+	  (call-next-method)))
       (if(Newtype-type-specifier-p b)
 	(unify a (millet:type-expand b)env)
 	(call-next-method)))))
