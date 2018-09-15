@@ -48,10 +48,6 @@
 (defun io-action-construct-form-function-form(io-action-construct-form)
   (getf io-action-construct-form :instance))
 
-;;; IO type constructor.
-(tyclex.newtype:define-newtype io (a)
-  (declare(ignore a))
-  'io-action)
 
 ;;;; ACTION data structure.
 (defstruct(action (:copier nil)(:predicate nil))

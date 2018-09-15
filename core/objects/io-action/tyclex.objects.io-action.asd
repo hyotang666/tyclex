@@ -4,7 +4,6 @@
   :depends-on
   (
    "closer-mop"         ; Wrapper for meta object protocols.
-   "tyclex.newtype"     ; Tyclex module for newtype.
    "introspect-environment"     ; Wrapper for environment introspection.
    "tyclex.conditions"
    )
