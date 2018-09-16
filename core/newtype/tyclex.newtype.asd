@@ -5,6 +5,8 @@
   (
    "tyclex.objects.newtype"
    "tyclex.compute-return-type"
+   "alexandria"
+   "millet"
    )
   :pathname
   "src/"

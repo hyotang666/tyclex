@@ -21,7 +21,15 @@
 	    (DEFMACRO,name(,arg)
 	      ,(if(null lambda-list)
 		 ``(THE ,',name ,,arg)
-		 ``(THE (,',name ,(Compute-return-type ,arg)) ,,arg))))))
+		 `(LET((WILD-CARDS(enough-wildcard ',lambda-list)))
+		    (IF(EQ 'CONS (ALEXANDRIA:ENSURE-CAR(MILLET:TYPE-EXPAND `(,',name ,@wild-cards))))
+		      `(THE (,',name ,@wild-cards),,arg)
+		      `(THE (,',name ,(Compute-return-type ,arg)) ,,arg))))))))
+
+(defun enough-wildcard(lambda-list)
+  (loop :repeat (length (remove-if (lambda(x)(find x lambda-list-keywords :test #'eq))
+				   lambda-list))
+	:collect '*))
 
 (defun denew(thing)
   (if(typep thing '(cons (eql the)*))
