@@ -71,13 +71,15 @@
 	    (lambda-list(adt-lambda-list adt)))
 	(<= (length form)(length lambda-list))))))
 
-(defun lflatten(list)
+(defun lflatten(thing)
   (labels((rec(list &optional acc)
 	    (typecase(car list)
-	      (null (apply #'append acc))
+	      (null (apply #'append (cdr list)acc))
 	      (atom (apply #'append (cons list acc)))
 	      (t (rec (car list)(cons (cdr list)acc))))))
-    (rec list)))
+    (if(atom thing)
+      thing
+      (rec thing))))
 
 (defun adt-value-p(thing)
   (let((adt-constructor(Get-adt-constructor thing nil)))

@@ -1,4 +1,5 @@
 (defpackage :tyclex.objects.adt.spec
+  (:import-from :tyclex.objects.adt #:lflatten)
   (:use :cl :jingoh :tyclex.objects.adt))
 (in-package :tyclex.objects.adt.spec)
 (setup :tyclex.objects.adt)
@@ -365,3 +366,14 @@
 #?(class-name-of #'car) => FUNCTION
 #?(class-name-of #'documentation) => STANDARD-GENERIC-FUNCTION
 
+(requirements-about lflatten :test equal)
+
+#?(lflatten '(a b c)) => (A B C)
+#?(lflatten '(nil a b c)) => (A B C)
+#?(lflatten '((a b) c)) => (A B C)
+#?(lflatten '((((a)b)c)d)) => (A B C D)
+#?(lflatten '((((a)b)c))) => (A B C)
+#?(lflatten nil) => nil
+#?(lflatten :a) => :A
+#?(lflatten '((a . b) c)) => unspecified
+#?(lflatten '((a) . b)) => unspecified
