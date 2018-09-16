@@ -25,16 +25,17 @@
 ;; These two methods below are added by JINGOH.GENERATOR.
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tcl-user"))))
-  (append (call-next-method) '((test-op "tcl.applicative.test")
-                               (test-op "tcl.compare.test")
+  (append (call-next-method) '(
                                (test-op "tcl.eq.test")
                                (test-op "tcl.io.test")
-                               (test-op "tcl.monad-plus.test")
                                (test-op "tcl.ord.test")
                                (test-op "tcl.bounded.test")
                                (test-op "tcl.enum.test")
+                               (test-op "tcl.compare.test")
                                (test-op "tcl.functor.test")
+                               (test-op "tcl.applicative.test")
                                (test-op "tcl.monad.test")
+                               (test-op "tcl.monad-plus.test")
                                (test-op "tcl.monoid.test")
                                (test-op "tcl.zip-list.test")
                                )))
