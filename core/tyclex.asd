@@ -10,6 +10,7 @@
    "tyclex.objects"             ; Objects for tyclex modules.
 
    "tyclex.type-matcher"        ; Type matching system as tyclex module.
+   "tyclex.expander"            ; Tyclex own expander.
 
    "tyclex.compute-return-type" ; Module for computing S-Expression return type.
    "tyclex.dsl"                 ; DSL for tyclex.
