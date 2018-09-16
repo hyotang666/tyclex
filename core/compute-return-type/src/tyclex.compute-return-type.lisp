@@ -141,6 +141,8 @@
      (compute-return-type (fourth form)env))
     ((find (car form) '(remove remove-if remove-if-not delete delete-if delete-if-not):test #'eq)
      (compute-return-type (third form)env))
+    ((eq 'cons (car form))
+     `(cons ,@(compute-return-types (cdr form)env)))
     (t
       (multiple-value-bind(type localp declaration)(introspect-environment:function-information (car form)env)
 	(declare(ignore localp))
