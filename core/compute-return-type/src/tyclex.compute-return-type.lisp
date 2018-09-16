@@ -135,7 +135,7 @@
     ((and (find (car form)'(map concatenate make-sequence merge):test #'eq)
 	  (constantp (second form)))
      (introspect-environment:constant-form-value(second form)))
-    ((find (car form) '(reverse nreverse subseq copy-seq fill map-into sort stable-sort replace remove-duplicates delete-duplicates):test #'eq)
+    ((find (car form) '(reverse nreverse subseq copy-seq fill map-into sort stable-sort replace remove-duplicates delete-duplicates print princ prin1 write):test #'eq)
      (compute-return-type (cadr form) env))
     ((find (car form) '(substitute substitute-if substitute-if-not nsubstitute nsubstitute-if nsubstitute-if-not):test #'eq)
      (compute-return-type (fourth form)env))
