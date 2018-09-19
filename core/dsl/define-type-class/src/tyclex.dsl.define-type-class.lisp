@@ -2,6 +2,7 @@
 (defpackage :tyclex.dsl.define-type-class
   (:use :cl)
 
+  (:import-from :tyclex.objects.adt #:lflatten)
   (:import-from :tyclex.type-matcher
 		#:type-match-p)
   ;; Objects
@@ -121,8 +122,21 @@
 					  (when constructor
 					    (list constructor))))
 				      types)))
-	      (when constructors
-		(constraints-definitions constraints (mapcar #'second constructors))))))
+	      (if constructors
+		(constraints-definitions constraints (mapcar #'second constructors))
+		(loop :for constraint :in constraints :append
+		      (loop :for instance-type :in types
+			    :when (and (listp instance-type)
+				       (typep (cadr instance-type)
+					      `(cons (eql satisfies)
+						     (cons (eql ,(find-symbol (format nil "~A-P"(car constraint))(symbol-package(car constraint))))
+							   null))))
+			    :append (let*((position(position instance-type (instance-signature instance)
+							      :test #'type-match-p
+							      :key #'lflatten))
+					   (return-type(nth position return-types))
+					   (arg-type(find-arg-type return-type instance-type)))
+				       (constraints-definitions constraints (list arg-type)))))))))
 	(macros(loop :for (name . rest) :in definitions
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
@@ -138,6 +152,17 @@
       (values expanded return-types infos instance (append macros
 							   type-class-constraints-definitions
 							   instance-constraints-definitions)))))
+
+(defun find-arg-type(return-type instance-type)
+  (let*((expanded(millet:type-expand instance-type))
+	(path(trestrul:path-to (cadr instance-type) expanded :test #'equal)))
+    (if path
+      (if(typep return-type '(cons (eql cons) *))
+	(reduce (lambda(return path)
+		  (funcall path return))
+		path
+		:initial-value return-type)
+	))))
 
 (defun constraints-definitions(constraints types)
   (loop :for constraint :in constraints
@@ -169,7 +194,9 @@
 ;;;; COLLECT-INSTANCE
 (defun collect-instance(type* interface)
   (remove-if-not (lambda(signature)
-		   (every #'Type-match-p (Canonicalize-return-type type*)
+		   (every (lambda(x y)
+			    (Type-match-p (Lflatten x)(Lflatten y)))
+			  (Canonicalize-return-type type*)
 			  (Canonicalize-return-type signature)))
 		 (Interface-instances interface)
 		 :key #'Instance-signature))

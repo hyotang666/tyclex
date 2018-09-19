@@ -6,6 +6,7 @@
    "tyclex.objects.type-class"
    "tyclex.objects.interface"
    "tyclex.objects.instance"
+   "tyclex.objects.adt"         ; For LFLATTEN.
    "tyclex.unifier"             ; Module for unification.
    "tyclex.type-matcher"        ; Module for type matching.
    "tyclex.curry"               ; Module for currying.

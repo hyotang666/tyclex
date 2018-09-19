@@ -284,7 +284,14 @@
        (matrix-case:matrix-etypecase(t1 t2)
 	 ((list list)(every #'type-match-p (cdr t1)(cdr t2)))
 	 (otherwise t)))
-      ((:list		(:newtype :adt :function))			nil)
+      ((:list		(:adt :function))				nil)
+      ((:list		:newtype)
+       (if(eq 'cons (First-atom t1))
+	 (multiple-value-bind(ts expanded?)(millet:type-expand t2)
+	   (if expanded?
+	     (type-match-p t1 ts)
+	     nil))
+	 nil))
       ((:list		:type-specifier)				(eq 'null t2))
       ((t :satisfier)							(typep t1 t2))
       (otherwise (if reccursivep
