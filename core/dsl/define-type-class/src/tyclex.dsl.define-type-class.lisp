@@ -114,14 +114,7 @@
 			 (remove type-class (Instance-constraints instance):key #'car)))
 	(instance-constraints-definitions
 	  (when constraints
-	    (let((constructors(mapcan (lambda(type)
-					(let((constructor (trestrul:find-node-if
-							    (lambda(x)
-							      (eq (car x) (alexandria:ensure-car type)))
-							    return-types)))
-					  (when constructor
-					    (list constructor))))
-				      types)))
+	    (let((constructors(constraints-constructors types return-types)))
 	      (if constructors
 		(constraints-definitions constraints (mapcar #'second constructors))
 		(loop :for constraint :in constraints :append
@@ -152,6 +145,15 @@
       (values expanded return-types infos instance (append macros
 							   type-class-constraints-definitions
 							   instance-constraints-definitions)))))
+
+(defun constraints-constructors(types return-types)
+  (loop :for type :in types
+	:for type-tag = (alexandria:ensure-car type)
+	:for constructor = (trestrul:find-node-if (lambda(x)
+						    (eq (car x) type-tag))
+						  return-types)
+	:when constructor
+	:collect constructor))
 
 (defun find-arg-type(return-type instance-type)
   (let*((expanded(millet:type-expand instance-type))
