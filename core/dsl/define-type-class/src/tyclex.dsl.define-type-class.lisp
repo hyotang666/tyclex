@@ -107,7 +107,6 @@
 	(infos(check-signature (Interface-lambda-list (car form))
 			       return-types))
 	(instance(get-instance (car form) infos))
-	(definitions(and instance (Instance-definitions instance)))
 	(types(and instance (Instance-types instance)))
 	(type-class(Interface-type-class (car form)))
 	(constraints(and instance
@@ -117,20 +116,8 @@
 	    (let((constructors(constraints-constructors types return-types)))
 	      (if constructors
 		(constraints-definitions constraints (mapcar #'second constructors))
-		(loop :for constraint :in constraints :append
-		      (loop :for instance-type :in types
-			    :when (and (listp instance-type)
-				       (typep (cadr instance-type)
-					      `(cons (eql satisfies)
-						     (cons (eql ,(find-symbol (format nil "~A-P"(car constraint))(symbol-package(car constraint))))
-							   null))))
-			    :append (let*((position(position instance-type (instance-signature instance)
-							      :test #'type-match-p
-							      :key #'lflatten))
-					   (return-type(nth position return-types))
-					   (arg-type(find-arg-type return-type instance-type)))
-				       (constraints-definitions constraints (list arg-type)))))))))
-	(macros(loop :for (name . rest) :in definitions
+		(constraints-definitions2 constraints types instance return-types)))))
+	(macros(loop :for (name . rest) :in (and instance (Instance-definitions instance))
 		     :when (eq name (car form))
 		     :collect (cons sub-name rest)
 		     :else :collect (cons name rest)))
@@ -145,6 +132,24 @@
       (values expanded return-types infos instance (append macros
 							   type-class-constraints-definitions
 							   instance-constraints-definitions)))))
+
+(defun constraints-definitions2(constraints types instance return-types)
+  (loop :for constraint :in constraints
+	:for predicate = (find-symbol (format nil "~A-P"(car constraint))
+				      (symbol-package(car constraint)))
+	:append (loop :for instance-type :in types
+		      :when (and (listp instance-type)
+				 (typep (cadr instance-type)
+					`(cons (eql satisfies)
+					       (cons (eql ,predicate)
+						     null))))
+		      :append (let*((position(position instance-type
+						       (instance-signature instance)
+						       :test #'type-match-p
+						       :key #'lflatten))
+				    (return-type(nth position return-types))
+				    (arg-type(find-arg-type return-type instance-type)))
+				(constraints-definitions constraints (list arg-type))))))
 
 (defun constraints-constructors(types return-types)
   (loop :for type :in types
