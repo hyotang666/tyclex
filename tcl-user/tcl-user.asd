@@ -17,6 +17,7 @@
    "tcl.monoid"
    "tcl.zip-list"
    "tcl.writer"
+   "tcl.diff-list"
    )
   :pathname
   "src/"
@@ -40,6 +41,7 @@
                                (test-op "tcl.monoid.test")
                                (test-op "tcl.zip-list.test")
                                (test-op "tcl.writer.test")
+                               (test-op "tcl.diff-list.test")
                                )))
 (defmethod operate :around
            ((o test-op) (c (eql (find-system "tcl-user"))) &rest keys)
