@@ -16,6 +16,7 @@
    "tcl.monad"
    "tcl.monoid"
    "tcl.zip-list"
+   "tcl.writer"
    )
   :pathname
   "src/"
@@ -38,6 +39,7 @@
                                (test-op "tcl.monad-plus.test")
                                (test-op "tcl.monoid.test")
                                (test-op "tcl.zip-list.test")
+                               (test-op "tcl.writer.test")
                                )))
 (defmethod operate :around
            ((o test-op) (c (eql (find-system "tcl-user"))) &rest keys)
