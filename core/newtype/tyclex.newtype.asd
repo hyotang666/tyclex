@@ -7,6 +7,9 @@
    "tyclex.compute-return-type"
    "alexandria"
    "millet"
+   "trestrul"
+   "lambda-fiddle"
+   "expander"
    )
   :pathname
   "src/"
