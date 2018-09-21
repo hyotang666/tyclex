@@ -109,6 +109,14 @@
 	   :hoge))
 ,:test equal
 
+#?(setf (symbol-function 'add-stuf)
+	(do a <- (curry * 2 _)
+	  b <- (curry + 10 _)
+	  (return (+ a b))))
+:be-the function
+
+#?(add-stuf 3) => 19
+
 ;; Io
 #?(funcall (>>= (return 1) (lambda(x)
 			     (make-instance 'io-action
