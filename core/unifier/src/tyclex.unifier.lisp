@@ -9,7 +9,7 @@
 (in-package :tyclex.unifier)
 (handler-bind((package-error #'continue)) ; for ECL
   (export '(envar patternize enwild dewild ignore-unification-failure find-value-variable
-		  replace-bind substitute-pattern)))
+		  replace-bind substitute-pattern make-variable-list)))
 
 (defun envar(thing)
   (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
@@ -65,3 +65,6 @@
        `(FUNCTION * ,(cadr type-spec)))
       (otherwise type-spec))))
 
+(defun make-variable-list(fixnum)
+  (loop :repeat fixnum
+	:collect (intern (format nil "?~A" (gensym)))))

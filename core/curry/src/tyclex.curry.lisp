@@ -183,8 +183,7 @@
   (check-type args (or (eql *)list))
   (check-type return (or symbol list))
   ;; body
-  `(PROGN (DECLAIM(FTYPE(FUNCTION,args,return),name))
-	  (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
+  `(PROGN (SETF (GET ',name 'FTYPE)'(FUNCTION ,args ,return))
 	  ',name))
 
 (defun function-type-of(name)

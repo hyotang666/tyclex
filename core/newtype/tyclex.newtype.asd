@@ -5,9 +5,9 @@
   (
    "tyclex.objects.newtype"
    "tyclex.compute-return-type"
+   "tyclex.type-matcher"
    "alexandria"
    "millet"
-   "trestrul"
    "lambda-fiddle"
    "expander"
    )
