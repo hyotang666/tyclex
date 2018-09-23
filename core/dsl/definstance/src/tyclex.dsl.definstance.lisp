@@ -31,7 +31,8 @@
   ;; Binds
   (multiple-value-bind(types constraints)(parse-args args type-class)
     (let*((all-interfaces(Type-class-interfaces type-class))
-	  (defs(loop :for interface :in (set-difference all-interfaces (mapcar #'car definition+))
+	  (unimplemented-interfaces(set-difference all-interfaces (mapcar #'car definition+)))
+	  (defs(loop :for interface :in unimplemented-interfaces
 		     :collect (or (Interface-default interface)
 				  (if(find interface all-interfaces)
 				    (error 'missing-default-instance :name interface)
