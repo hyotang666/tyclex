@@ -29,18 +29,7 @@
   ;; trivial syntax checks.
   (assert(Find-type-class type-class))
   ;; Binds
-  (destructuring-bind(types . constraints)(split-sequence:split-sequence :constraints args)
-    ;; canonicalize
-    (setf constraints (car constraints))
-    ;; trivial syntax checks.
-    (assert (every (lambda(x)
-		     (typep x '(or symbol list)))
-		   types))
-    (loop :for (type var) :in constraints :do
-	  (assert (or (eq type type-class)
-		      (Find-type-class type nil)))
-	  (assert (trestrul:find-leaf var types)))
-    ;; Binds
+  (multiple-value-bind(types constraints)(parse-args args type-class)
     (let*((interfaces(Type-class-interfaces type-class))
 	  (defs(loop :for interface :in (set-difference interfaces (mapcar #'car definition+))
 		     :collect (or (Interface-default interface)
@@ -51,19 +40,6 @@
 					   :format-arguments (list interface type-class interfaces))))
 		     :into defaults
 		     :finally (return (append definition+ defaults)))))
-      (when constraints
-	(setf types ; as canonicalize.
-	      (trestrul:asubst-if
-		(lambda(var)
-		  `(satisfies ,(intern(format nil "~A-P"
-					      (some (lambda(constraint)
-						      (when(eq var (second constraint))
-							(first constraint)))
-						    constraints)))))
-		(lambda(elt)
-		  (find elt constraints
-			:key #'second :test #'eq))
-		types)))
       ;; Body
       `(PROGN ,@(loop :for (name) :in defs
 		      :for signature = (sublis (mapcan (lambda(var)
@@ -84,3 +60,29 @@
 					 :TEST #'EQUAL))
 	      ',type-class))))
 
+(defun parse-args(args type-class)
+  (destructuring-bind(types . constraints)(split-sequence:split-sequence :constraints args)
+    ;; canonicalize
+    (setf constraints (car constraints))
+    ;; trivial syntax checks.
+    (assert (every (lambda(x)
+		     (typep x '(or symbol list)))
+		   types))
+    (loop :for (type var) :in constraints :do
+	  (assert (or (eq type type-class)
+		      (Find-type-class type nil)))
+	  (assert (trestrul:find-leaf var types)))
+    (when constraints
+      (setf types ; as canonicalize.
+	    (trestrul:asubst-if
+	      (lambda(var)
+		`(satisfies ,(intern(format nil "~A-P"
+					    (some (lambda(constraint)
+						    (when(eq var (second constraint))
+						      (first constraint)))
+						  constraints)))))
+	      (lambda(elt)
+		(find elt constraints
+		      :key #'second :test #'eq))
+	      types)))
+    (values types constraints)))
