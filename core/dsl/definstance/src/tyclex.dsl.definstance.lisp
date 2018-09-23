@@ -33,12 +33,7 @@
     (let*((all-interfaces(Type-class-interfaces type-class))
 	  (unimplemented-interfaces(set-difference all-interfaces (mapcar #'car definition+)))
 	  (defs(loop :for interface :in unimplemented-interfaces
-		     :collect (or (Interface-default interface)
-				  (if(find interface all-interfaces)
-				    (error 'missing-default-instance :name interface)
-				    (error 'unknown-interface
-					   :format-control "Unknown interface. ~S~%~S supports only ~S"
-					   :format-arguments (list interface type-class all-interfaces))))
+		     :collect (default-instance interface all-interfaces)
 		     :into defaults
 		     :finally (return (append definition+ defaults)))))
       ;; Body
@@ -87,3 +82,12 @@
 		      :key #'second :test #'eq))
 	      types)))
     (values types constraints)))
+
+(defun default-instance(interface all-interfaces)
+  (or (Interface-default interface)
+      (if(find interface all-interfaces)
+	(error 'missing-default-instance :name interface)
+	(error 'unknown-interface
+	       :format-control "Unknown interface. ~S~%Supported are ~S"
+	       :format-arguments (list interface all-interfaces)))))
+
