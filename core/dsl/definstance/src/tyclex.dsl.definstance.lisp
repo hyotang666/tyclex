@@ -30,14 +30,14 @@
   (assert(Find-type-class type-class))
   ;; Binds
   (multiple-value-bind(types constraints)(parse-args args type-class)
-    (let*((interfaces(Type-class-interfaces type-class))
-	  (defs(loop :for interface :in (set-difference interfaces (mapcar #'car definition+))
+    (let*((all-interfaces(Type-class-interfaces type-class))
+	  (defs(loop :for interface :in (set-difference all-interfaces (mapcar #'car definition+))
 		     :collect (or (Interface-default interface)
-				  (if(find interface interfaces)
+				  (if(find interface all-interfaces)
 				    (error 'missing-default-instance :name interface)
 				    (error 'unknown-interface
 					   :format-control "Unknown interface. ~S~%~S supports only ~S"
-					   :format-arguments (list interface type-class interfaces))))
+					   :format-arguments (list interface type-class all-interfaces))))
 		     :into defaults
 		     :finally (return (append definition+ defaults)))))
       ;; Body
