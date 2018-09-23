@@ -35,15 +35,11 @@
 	  (defs(loop :for interface :in unimplemented-interfaces
 		     :collect (default-instance interface all-interfaces)
 		     :into defaults
-		     :finally (return (append definition+ defaults)))))
+		     :finally (return (append definition+ defaults))))
+	  (type-class-vars(Type-class-vars type-class)))
       ;; Body
       `(PROGN ,@(loop :for (name) :in defs
-		      :for signature = (sublis (mapcan (lambda(var)
-							 (mapcar (lambda(type)
-								   (cons var type))
-								 types))
-						       (Type-class-vars type-class))
-					       (Interface-lambda-list name))
+		      :for signature = (make-signature name type-class-vars types)
 		      :when (trestrul:find-leaf-if (complement #'tyclex.unifier:variablep)
 						   signature)
 		      :collect `(AUGMENT-INSTANCES ',name (MAKE-TYPE-CLASS-INSTANCE
@@ -91,3 +87,10 @@
 	       :format-control "Unknown interface. ~S~%Supported are ~S"
 	       :format-arguments (list interface all-interfaces)))))
 
+(defun make-signature(name type-class-vars types)
+  (sublis (mapcan (lambda(var)
+		    (mapcar (lambda(type)
+			      (cons var type))
+			    types))
+		  type-class-vars)
+	  (Interface-lambda-list name)))
