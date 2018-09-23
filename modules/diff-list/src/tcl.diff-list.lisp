@@ -1,5 +1,5 @@
 (in-package :cl-user)
-(common-lisp:defpackage :tcl.diff-list
+(tcl:defpackage :tcl.diff-list
   (:use :tcl #:tcl.monoid)
   (:export
     #:diff-list
