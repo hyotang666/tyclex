@@ -13,7 +13,7 @@
 		#:find-type-class #:add-type-class)
   (:import-from :tyclex.objects.instance
 		;; Slot readers.
-		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types)
+		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types #:instance=)
   (:import-from :tyclex.objects.interface
 		;; SLot readers.
 		#:interface-instances #:interface-lambda-list #:interface-type-class
@@ -212,12 +212,21 @@
 (defun compute-applicable-instance(list)
   (if(null(cdr list))
     (car list) ; only one element, does not need to sort.
-    (let((sorted(sort-instance list)))
-      (if(find (Instance-signature(car sorted))
-	       (cdr sorted)
-	       :key #'Instance-signature :test #'equal)
-	nil ; duplicate signature, give up.
+    (let*((sorted(sort-instance list))
+	  (duplicated(find (car sorted) (cdr sorted)
+			   :test #'instance=)))
+      (if duplicated
+	(error 'signature-duplicated :subject (car sorted) :other duplicated)
 	(car sorted)))))
+
+(define-condition signature-duplicated(tyclex.conditions:tyclex-error)
+  ((subject :initarg :subject :reader duplicated-subject)
+   (other :initarg :other :reader duplicated-other))
+  (:report (lambda(condition stream)
+	     (format stream "INTERNAL-IMPL-BUG: ~A:~%~S ~S"
+		     (type-of condition)
+		     (duplicated-subject condition)
+		     (duplicated-other condition)))))
 
 (defun sort-instance(list)
   (flet((type<(ts1 ts2)

@@ -8,7 +8,7 @@
   (:import-from :tyclex.objects.interface
 		#:interface-default #:interface-lambda-list #:augment-instances)
   (:import-from :tyclex.objects.instance
-		#:make-type-class-instance)
+		#:make-type-class-instance #:instance=)
 
   (:export
     #:definstance
@@ -48,7 +48,8 @@
 							    :SIGNATURE ',signature
 							    :DEFINITIONS ',defs
 							    :TYPES ',types
-							    :CONSTRAINTS ',constraints)))
+							    :CONSTRAINTS ',constraints)
+						   :TEST #'INSTANCE=))
 	      ,@(loop :for type :in types
 		      :collect `(PUSHNEW ',type (TYPE-CLASS-MEMBER  ',type-class)
 					 :TEST #'EQUAL))

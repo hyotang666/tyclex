@@ -8,6 +8,8 @@
     #:make-type-class-instance
     ;; Readers
     #:instance-signature #:instance-definitions #:instance-types #:instance-constraints
+    ;; Predicate
+    #:instance=
     ))
 (in-package :tyclex.objects.instance)
 
@@ -25,3 +27,6 @@
   (constraints	(error 'tyclex.conditions:slot-uninitialized :name 'constraints)
 		:type list :read-only t))
 
+(defun instance=(x y)
+  (equal (instance-signature x)
+	 (instance-signature y)))

@@ -21,6 +21,14 @@
 
 ;;;; Condition
 (define-condition missing-interface(tyclex.conditions:missing)())
+(define-condition signature-conflicted(style-warning tyclex.conditions:tyclex-condition)
+  ((cell :initarg :cell :reader conflicted-cell)
+   (old :initarg :old :reader conflicted-old))
+  (:report (lambda(condition stream)
+	     (format stream "~:(~A~): ~S ~S"
+		     (type-of condition)
+		     (conflicted-cell condition)
+		     (conflicted-old condition)))))
 
 ;;;; INTERFACE OBJECT
 (defstruct(interface (:copier nil)
@@ -52,8 +60,15 @@
 (defun remove-interface(interface)
   (remhash interface *interfaces*))
 
-(defun augment-instances(interface cell)
-  (push cell (interface-instances interface)))
+(defun augment-instances(interface cell &key(test #'eql))
+  (let((exists?(find cell (interface-instances interface) :test test)))
+    (if(not exists?)
+      (push cell (interface-instances interface))
+      (progn (warn 'signature-conflicted :cell cell :old exists?)
+	     (setf (interface-instances interface)
+		   (cons cell (delete cell (interface-instances interface)
+				      :test test
+				      :count 1)))))))
 
 (defun interface-boundp(symbol)
   (check-type symbol (and symbol (not (or keyword boolean))))
