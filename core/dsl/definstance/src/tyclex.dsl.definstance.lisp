@@ -39,9 +39,11 @@
 	  (type-class-vars(Type-class-vars type-class)))
       ;; Body
       `(PROGN ,@(loop :for (name) :in defs
+		      :for lambda-list = (Interface-lambda-list name)
 		      :for signature = (make-signature name type-class-vars types)
-		      :when (trestrul:find-leaf-if (complement #'tyclex.unifier:variablep)
-						   signature)
+		      :when (trestrul:find-leaf-if (lambda(leaf)
+						     (find leaf type-class-vars :test #'eq))
+						   lambda-list)
 		      :collect `(AUGMENT-INSTANCES ',name (MAKE-TYPE-CLASS-INSTANCE
 							    :SIGNATURE ',signature
 							    :DEFINITIONS ',defs
