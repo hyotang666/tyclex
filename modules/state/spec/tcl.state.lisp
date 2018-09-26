@@ -1,6 +1,6 @@
 (in-package :cl-user)
 (tcl:defpackage :tcl.state.spec
-  (:shadow #:pop #:push #:get)
+  (:shadow #:pop #:push #:get #:random #:random-state)
   (:use :tcl :jingoh :tcl.state))
 (in-package :tcl.state.spec)
 (setup :tcl.state)
@@ -10,9 +10,6 @@
 #?(deftype stack()'(list integer))
 => STACK
 
-#?(declaim(ftype(function()(state stack integer))pop))
-=> implementation-dependent
-
 #?(defun pop()
     (state(lambda(cons)
 	    (destructuring-bind(x . xs)cons
@@ -20,17 +17,11 @@
 => POP
 ,:before (fmakunbound 'pop)
 
-#?(declaim(ftype(function(integer)(state stack null))push))
-=> implementation-dependent
-
 #?(defun push(a)
     (state(lambda(xs)
 	    (cons nil (cons a xs)))))
 => PUSH
-:before (fmakunbound 'push)
-
-#?(declaim(ftype(function()(state stack integer))stack-manip))
-=> implementation-dependent
+,:before (fmakunbound 'push)
 
 #?(defun stack-manip()
     (tcl.monad:do (push 3)
@@ -59,9 +50,6 @@
 => (NIL 8 3 0 2 1 0)
 ,:test equal
 
-#?(declaim(ftype(function()state)get))
-=> implementation-dependent
-
 #?(defun get()
     (state (lambda(s)
 	     (cons s s))))
@@ -82,3 +70,28 @@
 :satisfies #`(& (functionp $result)
 		(equal '(nil 9 2 1)(funcall $result '(1 2)))
 		(equal '(nil 8 3 1)(funcall $result '(1 2 3))))
+
+#?(defun random(random-state)
+    (let((*random-state*(make-random-state random-state)))
+      (cons (cl:random most-positive-fixnum) *random-state*)))
+=> RANDOM
+,:before (fmakunbound 'random)
+
+#?(defun random-state()
+    (state #'random))
+=> RANDOM-STATE
+,:before (fmakunbound 'random-state)
+
+#?(setf (symbol-function 'three-coins)
+	(tcl.monad:do a <- (random-state)
+		      b <- (random-state)
+		      c <- (random-state)
+		      (tcl.monad:return (list a b c))))
+:be-the function
+
+#?(three-coins *random-state*)
+:satisfies #`(& (consp $result)
+		(listp (car $result))
+		(= 3 (length (car $result)))
+		(every #'integerp (car $result))
+		(random-state-p (cdr $result)))
