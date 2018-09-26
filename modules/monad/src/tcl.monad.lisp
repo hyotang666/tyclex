@@ -92,24 +92,3 @@
    (fail(a)
      (declare(ignore a))
      'nothing)))
-
-#++
-(definstance(monad (writer w) :constraints (monoid w))
-  ((return(x)
-     `(writer (cons ,x (mempty))))
-   (>>=(writer f)
-     `(destructuring-bind(#0=#:x . #1=#:v),writer
-        (destructuring-bind(#2=#:y . #3=#:v%)(funcall ,f #0#)
-          (writer(cons #2# (mappend #1# #3#))))))))
-
-#++
-(definstance(monad state)
-  ((return(x)
-     `(state(lambda(#0=#:s)
-      	(cons ,x #0#))))
-   (>>=(h f)
-     `(state(lambda(#0#)
-      	(destructuring-bind(#1=#:a . #2=#:new-state)(funcall ,h #0#)
-      	  (let((#3=#:g(funcall ,f #1#)))
-      	    (funcall #3# #2#))))))))
-
