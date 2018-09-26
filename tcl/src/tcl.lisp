@@ -10,7 +10,9 @@
   (if(or (listp name) ; setf form, ignore.
 	 (or (null(tyclex.curry:function-type-of name))
 	     (equal '(function * *)(introspect-environment:function-type name))))
-    `(cl:defun ,name ,lambda-list ,@body)
+    `(progn (tcl::declaim(ftype (function * ,(tyclex.compute-return-type:Compute-return-type (car(last body))env))
+			       ,name))
+	    (cl:defun ,name ,lambda-list ,@body))
     ;; bind
     (let((types(second(or (tyclex.curry:function-type-of name)
 			  (introspect-environment:function-type name)))))
