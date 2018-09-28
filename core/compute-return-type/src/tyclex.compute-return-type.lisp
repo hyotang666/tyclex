@@ -183,48 +183,135 @@
     (canonicalize-return-type(third form))))
 
 ;;; Special operator clause
+(defvar *special-operator-return-type-computers*(make-hash-table :test #'eq))
+;; setup.
+(macrolet((def(name &body body)
+	    (if (symbolp name)
+	      `(setf (gethash ',name *special-operator-return-type-computers*)
+		     (lambda ,@body))
+	      `(setf ,@(loop :for name :in name
+			     :collect `(gethash ',name *special-operator-return-type-computers*)
+			     :collect `(lambda ,@body))))))
+  (def (let let*) (form env)
+       (multiple-value-bind(body decls)(alexandria:parse-body (cddr form))
+	 (compute-return-type (car(last body))
+			      (sb-cltl2:augment-environment
+				env
+				:variable (mapcar #'alexandria:ensure-car (second form))
+				:declare (alexandria:mappend #'cdr decls)))))
+
+  (def (flet labels) (form env)
+       (multiple-value-bind(body decls)(alexandria:parse-body (cddr form))
+	 (compute-return-type (car(last body))
+			      (sb-cltl2:augment-environment
+				env
+				:function (mapcar #'car (second form))
+				:declare (alexandria:mappend #'cdr decls)))))
+
+  (def symbol-macrolet (form env)
+       (multiple-value-bind(body decls)(alexandria:parse-body(cddr form))
+	 (compute-return-type (car(last body))
+			      (sb-cltl2:augment-environment
+				env
+				:symbol-macro (second form)
+				:declare (alexandria:mappend #'cdr decls)))))
+
+  (def macrolet (form env)
+       (multiple-value-bind(body decls)(alexandria:parse-body(cddr form))
+	 (compute-return-type (car(last body))
+			      (sb-cltl2:augment-environment
+				env
+				:macro
+				(loop :for definition :in (second form)
+				      :collect (sb-cltl2:enclose
+						 (multiple-value-call #'sb-cltl2:parse-macro
+						   (values-list definition)
+						   env)
+						 env))
+				:declare (alexandria:mappend #'cdr decls)))))
+
+  (def locally (form env)
+       (multiple-value-bind(body decls)(alexandria:parse-body (cdr form))
+	 (compute-return-type (car(last body))
+			      (sb-cltl2:augment-environment
+				env
+				:declare (alexandria:mappend #'cdr decls)))))
+
+  (def lambda(form env)
+       (destructuring-bind(lambda-list . body)(cdr form)
+	 (multiple-value-bind(body decls)(alexandria:parse-body body)
+	   `(function * ,(compute-return-type (car(last body))
+					      (sb-cltl2:augment-environment
+						env
+						:variable (lambda-fiddle:extract-all-lambda-vars lambda-list)
+						:declare (alexandria:mappend #'cdr decls)))))))
+
+  (def (progn progv setq eval-when) (form env)
+       (compute-return-type(car(last form))env))
+
+  (def the (form env)
+       (declare(ignore env))
+       (canonicalize-return-type(second form)))
+
+  (def (unwind-protect multiple-value-prog1 load-time-value)
+       (form env)
+       (compute-return-type (second form)env))
+
+  (def multiple-value-call(form env)
+       (compute-function-form-return-type(second form)env))
+
+  (def tagbody (form env)
+       (declare(ignore form env))
+       'null)
+
+  (def function(form env)
+       (if(typep (second form)'(cons (eql lambda)(cons * *)))
+	 (special-operator-return-type (second form)env)
+	 (canonicalize-ftype(introspect-environment:function-type(second form)env))))
+
+  (def if (form env)
+       (let((then(compute-return-type(third form)env))
+	    (else(compute-return-type(fourth form)env)))
+	 (if then
+	   (if else
+	     (Great-common-type then else)
+	     then)
+	   else)))
+
+  (def quote (form env)
+       (declare(ignore form env))
+       'list)
+
+  (def (go throw catch)(form env)
+       (declare(ignore form env))
+       t)
+
+  (def return-from (form env)
+       (compute-return-type (third form)env))
+
+  (def block (form env)
+       (let((return-types(delete-if (lambda(x)
+				      (member x '(t nil null)))
+				    (uiop:while-collecting(acc)
+				      (acc(compute-return-type(car(last form))env))
+				      (trestrul:traverse
+					(lambda(node)
+					  (when(typep node `(CONS (EQL RETURN-FROM)(CONS (EQL,(second form)) T)))
+					    (acc (compute-return-type(third node)env))))
+					form)))))
+	 (if return-types
+	   (if(cdr return-types)
+	     (reduce #'Great-common-type return-types)
+	     (car return-types))
+	   T))) ; give up.
+  )
+
 (defun special-operator-return-type(form env)
-  (case (car form)
-    ((progn progv let let* flet labels lambda setq locally eval-when)
-     (compute-return-type(car(last form))env))
-    ((the)(canonicalize-return-type(second form)))
-    ((unwind-protect multiple-value-prog1 multiple-value-call load-time-value)
-     (compute-return-type(second form)env))
-    ((tagbody)'null)
-    ((function)
-     (if(listp (second form))
-       `(function * ,(compute-return-type(car(last(cddr(second form))))env))
-       (canonicalize-ftype(introspect-environment:function-type(second form)env))))
-    ((if)
-     (let((then(compute-return-type(third form)env))
-	  (else(compute-return-type(fourth form)env)))
-       (if then
-	 (if else
-	   (Great-common-type then else)
-	   then)
-	 else)))
-    ((quote)
-     (error 'unexpected-quote :datum form :name 'special-operator-return-type))
-    ((macrolet symbol-macrolet)
-     (compute-return-type (expander:expand (copy-tree form)env)env))
-    ((go throw catch) t) ; give up.
-    ((return-from)(compute-return-type (third form)))
-    ((block)
-     (let((return-types(delete-if (lambda(x)
-				    (member x '(t nil null)))
-				  (uiop:while-collecting(acc)
-				    (acc(compute-return-type(car(last form))env))
-				    (trestrul:traverse
-				      (lambda(node)
-					(when(typep node `(CONS (EQL RETURN-FROM)(CONS (EQL,(second form)) T)))
-					  (acc (compute-return-type(third node)env))))
-				      form)))))
-       (if return-types
-	 (if(cdr return-types)
-	   (reduce #'Great-common-type return-types)
-	   (car return-types))
-	 T))) ; give up.
-    (otherwise (error 'unknown-special-operator :datum form :name 'special-operator-return-type))))
+  (funcall (gethash (car form)*special-operator-return-type-computers*
+		    (lambda(&rest args)
+		      (declare(ignore args))
+		      (error 'unknown-special-operator :datum form :name 'special-operator-return-type)))
+	   form env))
 
 (defun canonicalize-ftype(ftype)
   (list (first ftype)
