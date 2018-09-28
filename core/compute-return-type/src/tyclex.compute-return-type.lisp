@@ -231,3 +231,14 @@
 	(second ftype)
 	(canonicalize-return-type (third ftype))))
 
+(defun compute-function-form-return-type(form env)
+  (cond
+    ((symbolp form)
+     (let((decls(nth-value 2 (introspect-environment:variable-information form env))))
+       (if decls
+	 (canonicalize-return-type (third (cdr (assoc :type decls))))
+	 T)))
+    ((typep form '(cons (or (eql quote)(eql function))
+			(cons symbol null)))
+     (canonicalize-return-type(third(introspect-environment:function-type (cadr form)env))))
+    (t (third(compute-return-type form env)))))
