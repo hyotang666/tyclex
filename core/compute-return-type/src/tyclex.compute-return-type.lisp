@@ -203,10 +203,11 @@
   (def (flet labels) (form env)
        (multiple-value-bind(body decls)(alexandria:parse-body (cddr form))
 	 (compute-return-type (car(last body))
-			      (sb-cltl2:augment-environment
-				env
-				:function (mapcar #'car (second form))
-				:declare (alexandria:mappend #'cdr decls)))))
+			      (handler-bind((style-warning #'muffle-warning))
+				(sb-cltl2:augment-environment
+				  env
+				  :function (mapcar #'car (second form))
+				  :declare (alexandria:mappend #'cdr decls))))))
 
   (def symbol-macrolet (form env)
        (multiple-value-bind(body decls)(alexandria:parse-body(cddr form))
