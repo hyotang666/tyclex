@@ -236,6 +236,7 @@
 	 (compute-return-type (car(last body))
 			      (sb-cltl2:augment-environment
 				env
+				:variable (decls-variables decls)
 				:declare (alexandria:mappend #'cdr decls)))))
 
   (def lambda(form env)
@@ -306,6 +307,13 @@
 	     (car return-types))
 	   T))) ; give up.
   )
+
+(defun decls-variables(decls)
+  (loop :for decl :in decls
+	:nconc (loop :for option :in (cdr decl)
+		     :append (case(car option)
+			       ((type)(cddr option))
+			       ((ignore ignorable)(cdr option))))))
 
 (defun special-operator-return-type(form env)
   (funcall (gethash (car form)*special-operator-return-type-computers*
