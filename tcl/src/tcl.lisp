@@ -10,10 +10,17 @@
   (if(or (listp name) ; setf form, ignore.
 	 (or (null(tyclex.curry:function-type-of name))
 	     (equal '(function * *)(introspect-environment:function-type name))))
-    `(progn (tcl::declaim(ftype (function * ,(tyclex.compute-return-type:Compute-return-type (car(last body))env))
-			       ,name))
-	    (cl:defun ,name ,lambda-list ,@body))
-    ;; bind
+    (multiple-value-bind(body decls doc)(alexandria:parse-body body :documentation t)
+      (let((return-type(tyclex.compute-return-type:Compute-return-type
+			 (car(last body))
+			 (if decls
+			   (sb-cltl2:augment-environment
+			     env
+			     :variable (lambda-fiddle:extract-all-lambda-vars lambda-list)
+			     :declare (alexandria:mappend #'cdr decls))
+			   env))))
+	`(progn (tcl::declaim(ftype (function * ,return-type) ,name))
+		(cl:defun ,name ,lambda-list ,@doc ,@decls ,@body))))
     (let((types(second(or (tyclex.curry:function-type-of name)
 			  (introspect-environment:function-type name)))))
       (multiple-value-bind(body decls doc)(alexandria:parse-body body :documentation t)
