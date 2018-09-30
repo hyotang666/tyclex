@@ -400,3 +400,7 @@
     (return (+ a b)))
 :satisfies #`(& (functionp $result)
 		(= 19 (funcall $result 3)))
+
+#?(lift-m (tyclex:curry * 3 _)(just 8))
+=> (JUST 24)
+,:test equal

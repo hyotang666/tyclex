@@ -9,7 +9,7 @@
     ;; predicate
     #:monad-p
     ;; helpers
-    #:>>=* #:do
+    #:>>=* #:do #:lift-m
     ))
 (in-package :tcl.monad)
 
@@ -53,6 +53,10 @@
 		       ,(rec (cdr list)))
 		  (car list))))))
     (rec expression*)))
+
+(defmacro lift-m(f m)
+  (alexandria:with-gensyms(x)
+    `(>>= ,m (lambda(,x)(return(funcall ,f ,x))))))
 
 ;;;; Instances
 (definstance(monad list)

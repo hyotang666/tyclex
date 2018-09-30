@@ -62,3 +62,7 @@
 	#'add-drink)
 => ("beer" . 65)
 ,:test equal
+
+#?(lift-m #'not (writer (cons t "chickpeas")))
+=> (NIL . "chickpeas")
+,:test equal

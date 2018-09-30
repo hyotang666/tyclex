@@ -95,3 +95,8 @@
 		(= 3 (length (car $result)))
 		(every #'integerp (car $result))
 		(random-state-p (cdr $result)))
+
+#?(funcall (tcl.monad:lift-m (tyclex:curry + 100 _)(pop))
+	   '(1 2 3 4))
+=> (101 2 3 4)
+,:test equal
