@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem :tcl.state.test
   :depends-on
-  (:jingoh "tcl.state")
+  (:jingoh "tcl.state" "tcl.monad" "tcl")
   :components
   ((:file "tcl.state"))
   :perform
