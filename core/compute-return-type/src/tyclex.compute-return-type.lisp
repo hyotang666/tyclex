@@ -153,7 +153,11 @@
   (def (remove remove-if remove-if-not delete delete-if delete-if-not)(form env)
        (compute-return-type (third form)env))
   (def (funcall apply)(form env)
-       (compute-function-form-return-type (second form)env))
+       (if(and (Expanded-curry-form-p (second form))
+	       (= (length (cddr form))
+		  (Expanded-curry-form-arity (second form))))
+	 (Canonicalize-return-type(Expanded-curry-form-return-type (second form)))
+	 (compute-function-form-return-type (second form)env)))
   (def cons (form env)
        `(cons ,@(compute-return-types (cdr form)env))))
 
