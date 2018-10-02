@@ -404,3 +404,7 @@
 #?(lift-m (tyclex:curry * 3 _)(just 8))
 => (JUST 24)
 ,:test equal
+
+#?(lift-m (tyclex:curry + _ _)(just 3)(just 7))
+=> (JUST 10)
+,:test equal

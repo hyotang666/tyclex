@@ -54,9 +54,14 @@
 		  (car list))))))
     (rec expression*)))
 
-(defmacro lift-m(f m)
-  (alexandria:with-gensyms(x)
-    `(>>= ,m (lambda(,x)(return(funcall ,f ,x))))))
+(defmacro lift-m(function &rest monad*)
+  (let((gensyms(alexandria:make-gensym-list (length monad*))))
+    `(do ,@(loop :for monad :in monad*
+		 :for gensym :in gensyms
+		 :collect gensym
+		 :collect '<-
+		 :collect monad)
+       (return (funcall ,function ,@gensyms)))))
 
 ;;;; Instances
 (definstance(monad list)
