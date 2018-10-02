@@ -408,3 +408,15 @@
 #?(lift-m (tyclex:curry + _ _)(just 3)(just 7))
 => (JUST 10)
 ,:test equal
+
+#?(ap (just (tyclex:curry + 3 _))
+      (just 4))
+=> (JUST 7)
+,:test equal
+
+#?(ap (list #'1+
+	    (tyclex:curry + 2 _)
+	    (tyclex:curry + 3 _))
+      '(10 11))
+=> (11 12 12 13 13 14)
+,:test equal

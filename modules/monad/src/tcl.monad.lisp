@@ -9,7 +9,7 @@
     ;; predicate
     #:monad-p
     ;; helpers
-    #:>>=* #:do #:lift-m
+    #:>>=* #:do #:lift-m #:ap
     ))
 (in-package :tcl.monad)
 
@@ -62,6 +62,17 @@
 		 :collect '<-
 		 :collect monad)
        (return (funcall ,function ,@gensyms)))))
+
+(defmacro ap(mf &rest monad*)
+  (let((gensyms(alexandria:make-gensym-list(length monad*)))
+       (function(gensym "FUNCTION")))
+    `(do ,function <- ,mf
+       ,@(loop :for monad :in monad*
+	       :for gensym :in gensyms
+	       :collect gensym
+	       :collect '<-
+	       :collect monad)
+       (return(funcall ,function ,@gensyms)))))
 
 ;;;; Instances
 (definstance(monad list)
