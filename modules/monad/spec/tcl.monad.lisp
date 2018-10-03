@@ -420,3 +420,7 @@
       '(10 11))
 => (11 12 12 13 13 14)
 ,:test equal
+
+#?(join (just (just 9)))
+=> (JUST 9)
+,:test equal

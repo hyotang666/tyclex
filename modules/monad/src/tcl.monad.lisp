@@ -9,7 +9,7 @@
     ;; predicate
     #:monad-p
     ;; helpers
-    #:>>=* #:do #:lift-m #:ap
+    #:>>=* #:do #:lift-m #:ap #:join
     ))
 (in-package :tcl.monad)
 
@@ -73,6 +73,11 @@
 	       :collect '<-
 	       :collect monad)
        (return(funcall ,function ,@gensyms)))))
+
+(defmacro join(mm)
+  (let((monad(gensym"MONAD")))
+    `(do ,monad <- ,mm
+       ,monad)))
 
 ;;;; Instances
 (definstance(monad list)
