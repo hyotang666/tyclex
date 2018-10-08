@@ -2,6 +2,13 @@
 (eval-when(:compile-toplevel :load-toplevel :execute)
   (unless(find-package :tyclex.unifier)
     (rename-package :unify :tyclex.unifier)
+    (let((method(find-method #'print-object
+			     nil
+			     (list (find-class 'tyclex.unifier:environment)
+				   t)
+			     nil)))
+      (when method
+	(remove-method #'print-object method)))
     (let((asdf::*asdf-session* nil))
       (declare(ignorable asdf::*asdf-session*)) ; for CCL.
       (asdf:load-system :cl-unification :force t))))
