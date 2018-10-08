@@ -160,7 +160,7 @@
        ,@body)))
 
 (defmacro tcl::declaim(&rest decls)
-  `(progn 
+  `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
      ,@(loop :for decl :in decls
 	     :when (ftype-function-formp decl)
 	     :collect (destructuring-bind(ftype (function arg return)name)decl
