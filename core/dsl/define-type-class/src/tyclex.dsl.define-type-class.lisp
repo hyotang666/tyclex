@@ -115,7 +115,7 @@
 	  (when constraints
 	    (let((constructors(constraints-constructors types infos)))
 	      (if constructors
-		(constraints-definitions constraints (mapcar #'second constructors))
+		(constraints-definitions constraints constructors)
 		(constraints-definitions2 constraints types instance return-types)))))
 	(macros(loop :for (name . rest) :in (and instance (Instance-definitions instance))
 		     :when (eq name (car form))
@@ -153,12 +153,16 @@
 
 (defun constraints-constructors(types return-types)
   (loop :for type :in types
-	:for type-tag = (alexandria:ensure-car type)
-	:for constructor = (trestrul:find-node-if (lambda(x)
-						    (eq (car x) type-tag))
-						  return-types)
-	:when constructor
+	:for construct-form = (find type return-types :test #'Type-match-p)
+	:for constructor = (second (Lflatten construct-form))
+	:when (and constructor
+		   (not (wildcard-type-specifier-p constructor)))
 	:collect constructor))
+
+(defun wildcard-type-specifier-p(type-specifier)
+  (or (eq t type-specifier)
+      (eq '* type-specifier)
+      (tyclex.unifier:variablep type-specifier)))
 
 (defun find-arg-type(return-type instance-type)
   (let*((expanded(millet:type-expand instance-type))
