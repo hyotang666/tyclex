@@ -16,7 +16,8 @@
 (in-package :tyclex.unifier)
 (handler-bind((package-error #'continue)) ; for ECL
   (export '(envar patternize enwild dewild ignore-unification-failure find-value-variable
-		  replace-bind substitute-pattern make-variable-list)))
+		  replace-bind substitute-pattern make-variable-list
+		  subst-wildcard-to-var subst-var-to-wildcard gensymed-var-p)))
 
 (defun envar(thing)
   (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
@@ -75,3 +76,20 @@
 (defun make-variable-list(fixnum)
   (loop :repeat fixnum
 	:collect (intern (format nil "?~A" (gensym)))))
+
+(defun subst-wildcard-to-var(thing)
+  (trestrul:asubst-if (lambda(x)
+			(declare(ignore x))
+			(envar(gensym)))
+		      #'Variable-any-p
+		      thing))
+
+(defun subst-var-to-wildcard(thing)
+  (subst-if '_ #'gensymed-var-p thing))
+
+(defun gensymed-var-p(x)
+  (and (symbolp x)
+       (let((name(symbol-name x)))
+	 (and (string= "?G" name :end2 2)
+	      (loop :for i :upfrom 2 :below (length name)
+		    :always (digit-char-p (char name i)))))))
