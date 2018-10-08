@@ -139,7 +139,7 @@
 			   (len-b (length b)))
 			(cond
 			  ((= len-a len-b)(call-next-method))
-			  ((< len-a len-b)(call-next-method a (curry-simulate b a)))
+			  ((< len-a len-b)(call-next-method a (curry-simulate b a)env))
 			  (t (call-next-method)))))
 		     ((t (satisfies Variablep))
 		      (let((len-a (length a))
@@ -147,7 +147,7 @@
 			(cond
 			  ((= len-a len-b)(call-next-method))
 			  ((< len-a len-b)(call-next-method))
-			  (t (call-next-method (curry-simulate a b) b)))))
+			  (t (call-next-method (curry-simulate a b) b env)))))
 		     (otherwise (call-next-method)))))
 
 (defun curry-simulate(long short)
