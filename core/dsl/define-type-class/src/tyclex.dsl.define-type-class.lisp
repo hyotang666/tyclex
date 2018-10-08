@@ -113,7 +113,7 @@
 			 (remove type-class (Instance-constraints instance):key #'car)))
 	(instance-constraints-definitions
 	  (when constraints
-	    (let((constructors(constraints-constructors types return-types)))
+	    (let((constructors(constraints-constructors types infos)))
 	      (if constructors
 		(constraints-definitions constraints (mapcar #'second constructors))
 		(constraints-definitions2 constraints types instance return-types)))))
