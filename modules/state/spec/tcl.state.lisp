@@ -100,3 +100,9 @@
 	   '(1 2 3 4))
 => (101 2 3 4)
 ,:test equal
+
+#?(funcall (tcl.monad:join (state (lambda(s)
+				    (cons (push 10) (list* 1 2 s)))))
+	   '(0 0 0))
+=> (NIL 10 1 2 0 0 0)
+,:test equal

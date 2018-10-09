@@ -427,3 +427,7 @@
 #?(join (just (just 9)))
 => (JUST 9)
 ,:test equal
+
+#?(join '((1 2 3)(4 5 6)))
+=> (1 2 3 4 5 6)
+,:test equal

@@ -66,3 +66,7 @@
 #?(lift-m #'not (writer (cons t "chickpeas")))
 => (NIL . "chickpeas")
 ,:test equal
+
+#?(join (writer (cons (writer (cons 1 "a")) "b")))
+=> (1 . "ba")
+,:test equal
