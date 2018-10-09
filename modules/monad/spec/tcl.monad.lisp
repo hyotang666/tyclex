@@ -345,6 +345,9 @@
 	      (lambda(y)
 		(just (format nil "~A~A" x y))))))
 => NOTHING
+,:lazy t
+,:ignore-signals warning
+,:stream nil
 
 #?(>>= (just 3)
        (lambda(x)
