@@ -64,12 +64,11 @@
 
 (defunify((a (eql 'null))(b cl:list))
   (if(not(Variablep(car b)))
-    (if(or (eq 'cl:list (car b))
-	   (eq 'list (car b)))
+    (if(find (car b) '(cl:list list cons) :test #'eq)
       (let((variable(find-value-variable a env)))
 	(if variable
 	  (replace-bind variable b env)
-	  (call-next-method)))
+	  env))
       (call-next-method))
     (if(cddr b)
       (call-next-method)
