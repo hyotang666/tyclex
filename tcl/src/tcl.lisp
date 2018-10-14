@@ -8,8 +8,8 @@
 
 (defmacro tcl::defun (name lambda-list &body body &environment env)
   (if(or (listp name) ; setf form, ignore.
-	 (or (null(tyclex.curry:function-type-of name))
-	     (equal '(function * *)(introspect-environment:function-type name))))
+	 (and (null(tyclex.curry:function-type-of name))
+	      (equal '(function * *)(introspect-environment:function-type name))))
     (multiple-value-bind(body decls doc)(alexandria:parse-body body :documentation t)
       (let((return-type(tyclex.compute-return-type:Compute-return-type
 			 (car(last body))
