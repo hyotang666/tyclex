@@ -428,6 +428,9 @@
 => (JUST 9)
 ,:test equal
 
+#?(join (just nothing)) => NOTHING
+#?(join nothing) => NOTHING
+
 #?(join '((1 2 3)(4 5 6)))
 => (1 2 3 4 5 6)
 ,:test equal
