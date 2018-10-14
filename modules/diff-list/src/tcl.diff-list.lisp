@@ -23,4 +23,4 @@
        `(diff-list (lambda(,xs)(append nil ,xs)))))
    (mappend(f g)
      (alexandria:with-gensyms(xs)
-       `(diff-list (lambda(,xs)(function ,f (funcall ,g ,xs))))))))
+       `(diff-list (lambda(,xs)(funcall ,f (funcall ,g ,xs))))))))
