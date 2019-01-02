@@ -4,7 +4,7 @@
     (rename-package :unify :tyclex.unifier)
     (let((method(find-method #'print-object
 			     nil
-			     (list (find-class 'tyclex.unifier:environment)
+			     (list (find-class (find-symbol "ENVIRONMENT" "TYCLEX.UNIFIER"))
 				   t)
 			     nil)))
       (when method
