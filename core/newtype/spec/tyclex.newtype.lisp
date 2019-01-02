@@ -12,7 +12,7 @@
     (declare(ignore a))
     'cl:list)
 => ZIP-LIST
-,:before (fmakunbound 'zip-list)
+,:before (mapc #'fmakunbound '(zip-list rewind-zip-list))
 
 #+syntax
 (DEFINE-NEWTYPE name lambda-list &body body) ; => result
