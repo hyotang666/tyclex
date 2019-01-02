@@ -95,8 +95,7 @@
 ;;;; Description:
 ; Alter DECLAIM FTYPE.
 #?(function-type dummy (fixnum) float)
-:expanded-to (progn (declaim(ftype(function(fixnum)float)dummy))
-		    (setf (get 'dummy 'ftype)'(function(fixnum)float))
+:expanded-to (progn (setf (get 'dummy 'ftype)'(function(fixnum)float))
 		    'dummy)
 
 #+syntax
