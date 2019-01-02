@@ -132,11 +132,20 @@
 ;;;; Description:
 ; Make efficient curry form.
 #?(decurry (macroexpand-1 '(curry + _ _)) '(1 2))
-=> (curry + 1 2)
+=> (+ 1 2)
 ,:test equal
 #?(decurry (macroexpand-1 '(curry + _ _ _)) '(1 2))
-=> (curry + 1 2 _)
-,:test equal
+=> (labels((curry(&optional (var nil var-p))
+	     (if var-p
+	       (+ 1 2 var)
+	       (make-instance 'curry :function #'curry
+			      :arity 1
+			      :return-type '(values number &optional)))))
+     '(curry + _ _ _)
+     (make-instance 'curry :function #'curry
+		    :arity 1
+		    :return-type '(values number &optional)))
+,:test jingoh::sexp=
 
 #+syntax
 (DECURRY form actual-args) ; => result
