@@ -36,7 +36,7 @@
 	      acc
 	      (body (car lambda-list)(cdr lambda-list)types acc)))
 	  (body(elt rest types acc)
-	    (if(lambda-list:lambda-list-keyword-p elt)
+	    (if(lambda-fiddle:lambda-keyword-p elt)
 	      (diverge elt rest types acc)
 	      (entry-point rest (cdr types)(acc-declare elt(car types) acc))))
 	  (diverge(key rest types acc)
@@ -58,7 +58,7 @@
 	  (optional-body(rest types acc)
 	    (if(endp rest)
 	      acc
-	      (if(lambda-list:lambda-list-keyword-p(car rest))
+	      (if(lambda-fiddle:lambda-keyword-p(car rest))
 		(diverge (car rest)(cdr rest)types acc)
 		(optional-body (cdr rest)
 			       (cdr types)
@@ -72,7 +72,7 @@
 	  (key(rest types acc)
 	    (if(endp rest)
 	      acc
-	      (if(lambda-list:lambda-list-keyword-p(car rest))
+	      (if(lambda-fiddle:lambda-keyword-p(car rest))
 		(diverge(car rest)(cdr rest)types acc)
 		(key (cdr rest)types
 		     (multiple-value-bind(var key)(ensure-var (car rest))
@@ -85,7 +85,7 @@
 	       (values(cadar thing)(caar thing)))))
 	  (compare(key)
 	    (lambda(type)
-	      (and (not(lambda-list:lambda-list-keyword-p type))
+	      (and (not(lambda-fiddle:lambda-keyword-p type))
 		   (listp type)
 		   (string= key (car type))
 		   (cadr type))))

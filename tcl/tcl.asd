@@ -4,7 +4,7 @@
   :depends-on
   (
    "tyclex"
-   "lambda-list"                ; Utilities for lambda-list parsing.
+   "lambda-fiddle"              ; Utilities for lambda-list parsing.
    "introspect-environment"     ; Wrapper for environment introspection.
    "alexandria"                 ; Public domain utilities.
    )
