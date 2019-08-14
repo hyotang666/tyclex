@@ -172,9 +172,10 @@
 	  (add-adt 'name :constructors nil :lambda-list nil)
 	  (get-adt 'name))
 :multiple-value-satisfies
-#`(& (null $first)
+(lambda($first $second $third)
+  (& (null $first)
      (typep $second 'adt)
-     (typep $third 'adt))
+     (typep $third 'adt)))
 ,:before (remove-adt 'name)
 
 #+syntax
