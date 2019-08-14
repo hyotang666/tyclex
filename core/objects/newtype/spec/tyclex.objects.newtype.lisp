@@ -1,4 +1,5 @@
 (defpackage :tyclex.objects.newtype.spec
+  (:shadowing-import-from :tyclex.objects.newtype #:list)
   (:use :cl :jingoh :tyclex.objects.newtype))
 (in-package :tyclex.objects.newtype.spec)
 (setup :tyclex.objects.newtype)
