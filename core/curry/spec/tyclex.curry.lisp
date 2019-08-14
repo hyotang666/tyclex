@@ -24,7 +24,8 @@
 ;;;; Description:
 ; Currying function and apply argment patially.
 #?(curry + _ _)
-:satisfies #`(& ; result is curried function.
+:satisfies (lambda($result)
+	     (& ; result is curried function.
 	       (typep $result 'curry)
 	       ; When one argument applied, curried function returned.
 	       (typep (funcall $result 1) 'curry)
@@ -33,7 +34,7 @@
 			     2))
 	       ; We can apply arguments at once.
 	       (= 3 (funcall $result 1 2))
-	       )
+	       ))
 
 #+syntax
 (CURRY op &rest args) ; => result
@@ -47,8 +48,9 @@
 
 ; args := Arguments for `OP`, when there is `_`, result `CURRY`ied function awaits it.
 #?(curry + 1 2 _)
-:satisfies #`(& (typep $result 'curry)
-		(= 6 (funcall $result 3)))
+:satisfies (lambda($result)
+	     (& (typep $result 'curry)
+		(= 6 (funcall $result 3))))
 
 ; result := `CURRY`ied function.
 
