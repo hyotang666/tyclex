@@ -313,9 +313,10 @@
 	  (add-type-class 'type-class-name :vars nil)
 	  (find-type-class 'type-class-name))
 :multiple-value-satisfies
-#`(& (null $first)
+(lambda($first $second $third)
+  (& (null $first)
      (type-class-p $second)
-     (type-class-p $third))
+     (type-class-p $third)))
 
 #+syntax
 (ADD-TYPE-CLASS name &rest args) ; => result
@@ -352,9 +353,10 @@
 	  (remove-type-class 'type-class-name)
 	  (find-type-class 'type-class-name nil))
 :multiple-value-satisfies
-#`(& (type-class-p $first)
+(lambda($first $second $third)
+  (& (type-class-p $first)
      (eq t $second)
-     (null $third))
+     (null $third)))
 
 #+syntax
 (REMOVE-TYPE-CLASS name) ; => result
