@@ -292,8 +292,9 @@
 ; In such cases, argument itself is returned.
 #?(find-interface(make-interface :type-class 'dummy))
 :satisfies
-#`(& (interfacep $result)
-     (eq 'dummy (interface-type-class $result)))
+(lambda($result)
+  (& (interfacep $result)
+     (eq 'dummy (interface-type-class $result))))
 
 ; errorp := BOOLEAN, which specifies signals error or not, when interface is not found.
 ; The default is T.
@@ -324,10 +325,11 @@
     (push (find-interface 'interface-name) result)
     result)
 :satisfies
-#`(& (listp $result)
+(lambda($result)
+  (& (listp $result)
      (= 2 (length $result))
      (interfacep (first $result))
-     (null (second $result)))
+     (null (second $result))))
 
 #+syntax
 (ADD-INTERFACE interface &rest args) ; => result
@@ -366,9 +368,10 @@
 	  (remove-interface 'interface-name)
 	  (find-interface 'interface-name nil))
 :multiple-value-satisfies
-#`(& (interfacep $first)
+(lambda($first $second $third)
+  (& (interfacep $first)
      (eq t $second)
-     (null $third))
+     (null $third)))
 
 #+syntax
 (REMOVE-INTERFACE interface) ; => result
@@ -425,9 +428,10 @@
 	  (augment-instances 'interface-name 0)
 	  (interface-instances 'interface-name))
 :multiple-value-satisfies
-#`(& (null $first)
+(lambda($first $second $third)
+  (& (null $first)
      (equal '(0) $second)
-     (equal '(0) $third))
+     (equal '(0) $third)))
 
 ;;;; Notes:
 
