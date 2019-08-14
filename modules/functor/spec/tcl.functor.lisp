@@ -56,27 +56,31 @@
 ;; hash-table
 #?(let((ht(the hash-table(alexandria:plist-hash-table '(:a 1 :b 2)))))
     (fmap #'1+ ht))
-:satisfies #`(& (hash-table-p $result)
+:satisfies (lambda($result)
+	     (& (hash-table-p $result)
 		(eql 2 (gethash :a $result))
-		(eql 3 (gethash :b $result)))
+		(eql 3 (gethash :b $result))))
 
 #?(fmap #'1+ (make-hash-table))
-:satisfies #`(& (hash-table-p $result)
-		(eql 0 (hash-table-count $result)))
+:satisfies (lambda($result)
+	     (& (hash-table-p $result)
+		(eql 0 (hash-table-count $result))))
 
 ;; function
 #?(fmap #'1+ #'1+)
-:satisfies #`(& (functionp $result)
-		(eql 3 (funcall $result 1)))
+:satisfies (lambda($result)
+	     (& (functionp $result)
+		(eql 3 (funcall $result 1))))
 
 #?(fmap #'1+ #'1+)
 :equivalents
 (let((expander:*expandtable*(expander:find-expandtable :tyclex)))
   (fmap #'1+ #'1+))
-,:test #`(& (functionp $result)
+,:test (lambda($result $result2)
+	 (& (functionp $result)
 	    (eql 3 (funcall $result 1))
 	    (functionp $result2)
-	    (eql 3 (funcall $result2 1)))
+	    (eql 3 (funcall $result2 1))))
 
 ;; maybe
 #?(fmap #'1+ (just 0)) => (just 1)
@@ -90,23 +94,25 @@
 
 ;; io
 #?(fmap #'reverse (get-line))
-:satisfies #`(with-input-from-string(*standard-input* "hoge")
+:satisfies (lambda($result)
+	     (with-input-from-string(*standard-input* "hoge")
 	       (& (functionp $result)
 		  (typep $result 'io-action)
-		  (equal "egoh" (funcall $result))))
+		  (equal "egoh" (funcall $result)))))
 
 #?(fmap #'reverse (get-line))
 :equivalents
 (let((expander:*expandtable*(expander:find-expandtable :tyclex)))
   (fmap #'reverse (get-line)))
-,:test #`(& (with-input-from-string(*standard-input* "hoge")
+,:test (lambda($result $result2)
+	 (& (with-input-from-string(*standard-input* "hoge")
 	      (& (functionp $result)
 		 (typep $result 'io-action)
 		 (equal "egoh" (funcall $result))))
 	    (with-input-from-string(*standard-input* "hoge")
 	      (& (functionp $result2)
 		 (typep $result2 'io-action)
-		 (equal "egoh" (funcall $result)))))
+		 (equal "egoh" (funcall $result))))))
 
 (requirements-about FUNCTOR-P)
 

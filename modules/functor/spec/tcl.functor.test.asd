@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :tcl.functor.test
+  :version "0.0.0"
   :depends-on
   (:jingoh "tcl.functor" "tcl" "tcl.data" "tcl.io")
   :components
