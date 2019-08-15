@@ -26,9 +26,10 @@
        (DEFMACRO,name(,arg &environment ,env)
 	 ,@(if(null lambda-list)
 	     `((declare(ignore ,env))`(THE ,',name ,,arg))
-	     `((LET*((expanded(expander:expand ,arg ,env))
-		     (return-type(Compute-return-type expanded ,env)))
-		 `(THE ,(,(intern (format nil "REWIND-~A" name))return-type),,arg))))))))
+	     `( `(THE ,(,(intern (format nil "REWIND-~A" name))
+			 (Compute-return-type (expander:expand ,arg ,env)
+					      ,env))
+		      ,,arg)))))))
 
 (defun denew(thing)
   (if(typep thing '(cons (eql the)*))
