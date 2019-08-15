@@ -22,7 +22,7 @@
     `(EVAL-WHEN(:COMPILE-TOPLEVEL :LOAD-TOPLEVEL :EXECUTE)
        (ADD-NEWTYPE ',name)
        (DEFTYPE ,name ,lambda-list ,@body)
-       ,(<rewinder> name lambda-list body)
+       ,(<rewinder> name lambda-list)
        (DEFMACRO,name(,arg &environment ,env)
 	 ,@(if(null lambda-list)
 	     `((declare(ignore ,env))`(THE ,',name ,,arg))
@@ -35,14 +35,12 @@
     (third thing)
     thing))
 
-(defun <rewinder>(name lambda-list body)
+(defun <rewinder>(name lambda-list)
   (alexandria:with-gensyms(type-specifier)
     `(DEFUN ,(intern (format nil "REWIND-~A" name))(,type-specifier)
        ,@(if(null lambda-list)
 	   `((DECLARE(IGNORE ,type-specifier)) ',name)
-	   (let*((decls(nth-value 1(alexandria:parse-body body)))
-		 (required(remove-if (lambda(x)(ignorep x decls))
-				     (lambda-fiddle:extract-lambda-vars lambda-list))))
+	   (let((required(lambda-fiddle:required-lambda-vars lambda-list)))
 	     (if(null required)
 	       `((DECLARE(IGNORE ,type-specifier))',name)
 	       (let*((variables(Make-variable-list(length required)))
@@ -54,10 +52,3 @@
 						    '*)
 				       :into args
 				       :finally (return(Dewild args)))))))))))))
-
-(defun ignorep(symbol decls)
-  (loop :for (nil . options) :in decls
-	:do (loop :for (name . rest) :in options
-		  :when (and (find name '(ignore) :test #'eq)
-			     (find symbol rest :test #'eq))
-		  :do (return-from ignorep T))))
