@@ -43,7 +43,7 @@
 
 ;;;; Side-Effects:
 ; Modify lisp environment.
-; Modify state of `TYCLEX::*NEWTYPES*`.
+; Modify state of `TYCLEX.OBJECTS.NEWTYPE::*NEWTYPES*`.
 
 ;;;; Notes:
 ; Macro which has same name with `NAME` is also defined.
