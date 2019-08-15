@@ -46,10 +46,11 @@
 	       `((DECLARE(IGNORE ,type-specifier))',name)
 	       (let*((variables(Make-variable-list(length required)))
 		     (expanded(millet:type-expand`(,name ,@variables))))
-		 `((let((env(Unify ',(Enwild expanded)
-				   (Enwild ,type-specifier))))
-		     `(,',name ,@(loop :for variable :in ',variables
-				       :collect (or (Find-variable-value variable env)
-						    '*)
-				       :into args
-				       :finally (return(Dewild args)))))))))))))
+		 `(`(,',name ,@(loop :for variable :in ',variables
+				     :collect (or (Find-variable-value
+						    variable
+						    (Unify ',(Enwild expanded)
+							   (Enwild ,type-specifier)))
+						  '*)
+				     :into args
+				     :finally (return(Dewild args))))))))))))
