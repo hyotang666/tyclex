@@ -121,7 +121,7 @@
     (if(null arity)
       (error "Arity did not exist ~S" var)
       (if(= 1 arity)
-	`(function * ,(canonicalize-return-type (Expanded-curry-form-return-type var)))
+	`(function * ,(Canonicalize-return-type (Expanded-curry-form-return-type var)))
 	`(function * function)))))
 
 ;;; Standard form
@@ -184,7 +184,7 @@
 (defun ftype-return-type(form)
   (if(symbolp form)
     T
-    (canonicalize-return-type(third form))))
+    (Canonicalize-return-type(third form))))
 
 ;;; Special operator clause
 (defvar *special-operator-return-type-computers*(make-hash-table :test #'eq))
@@ -257,7 +257,7 @@
 
   (def the (form env)
        (declare(ignore env))
-       (canonicalize-return-type(second form)))
+       (Canonicalize-return-type(second form)))
 
   (def (unwind-protect multiple-value-prog1 load-time-value)
        (form env)
@@ -329,16 +329,16 @@
 (defun canonicalize-ftype(ftype)
   (list (first ftype)
 	(second ftype)
-	(canonicalize-return-type (third ftype))))
+	(Canonicalize-return-type (third ftype))))
 
 (defun compute-function-form-return-type(form env)
   (cond
     ((symbolp form)
      (let((decls(nth-value 2 (introspect-environment:variable-information form env))))
        (if decls
-	 (canonicalize-return-type (third (cdr (assoc :type decls))))
+	 (Canonicalize-return-type (third (cdr (assoc :type decls))))
 	 T)))
     ((typep form '(cons (or (eql quote)(eql function))
 			(cons symbol null)))
-     (canonicalize-return-type(third(introspect-environment:function-type (cadr form)env))))
+     (Canonicalize-return-type(third(introspect-environment:function-type (cadr form)env))))
     (t (third(compute-return-type form env)))))
