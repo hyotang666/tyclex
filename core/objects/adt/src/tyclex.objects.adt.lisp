@@ -119,7 +119,9 @@
       ((subtypep name 'stream)
        (setf name 'stream))
       ((subtypep name 'vector)
-       (setf name 'vector))
+       (if(subtypep name 'bit-vector)
+	 (setf name 'bit-vector)
+	 (setf name 'vector)))
       ((subtypep name 'array)
        (setf name 'array))
       ((subtypep name 'character) ; especially ccl needs.
