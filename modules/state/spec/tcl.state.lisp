@@ -67,9 +67,10 @@
 		(if (equal '(1 2 3) stack-now)
 		  (put '(8 3 1))
 		  (put '(9 2 1))))
-:satisfies #`(& (functionp $result)
+:satisfies (lambda($result)
+	     (& (functionp $result)
 		(equal '(nil 9 2 1)(funcall $result '(1 2)))
-		(equal '(nil 8 3 1)(funcall $result '(1 2 3))))
+		(equal '(nil 8 3 1)(funcall $result '(1 2 3)))))
 
 #?(defun random(random-state)
     (let((*random-state*(make-random-state random-state)))
@@ -90,11 +91,12 @@
 :be-the function
 
 #?(three-coins *random-state*)
-:satisfies #`(& (consp $result)
+:satisfies (lambda($result)
+	     (& (consp $result)
 		(listp (car $result))
 		(= 3 (length (car $result)))
 		(every #'integerp (car $result))
-		(random-state-p (cdr $result)))
+		(random-state-p (cdr $result))))
 
 #?(funcall (tcl.monad:lift-m (tyclex:curry + 100 _)(pop))
 	   '(1 2 3 4))
