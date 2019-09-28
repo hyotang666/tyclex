@@ -178,10 +178,11 @@
 #?(<$> (curry concatenate 'string _ _)
        (get-line)
        (get-line))
-:satisfies #`(with-input-from-string(*standard-input* (format nil "one~%two"))
+:satisfies (lambda($result)
+	     (with-input-from-string(*standard-input* (format nil "one~%two"))
 	       (& (functionp $result)
 		  (equal "onetwo"
-			 (funcall $result))))
+			 (funcall $result)))))
 
 #?(<$> (curry concatenate 'string _ _)
        (get-line)
@@ -191,14 +192,15 @@
   (<$> (curry concatenate 'string _ _)
        (get-line)
        (get-line)))
-,:test #`(& (with-input-from-string(*standard-input* (format nil "one~%two"))
+,:test (lambda($result $result2)
+	 (& (with-input-from-string(*standard-input* (format nil "one~%two"))
 	      (& (functionp $result)
 		 (equal "onetwo"
 			(funcall $result))))
 	    (with-input-from-string(*standard-input* (format nil "one~%two"))
 	      (& (functionp $result2)
 		 (equal "onetwo"
-			(funcall $result2)))))
+			(funcall $result2))))))
 
 
 #?(lambda()
@@ -209,15 +211,17 @@
 				    "The two lines concatenated turn out to be: "
 				    a))))
 :satisfies
-#`(with-input-from-string(*standard-input*(format nil "one~%two"))
+(lambda($result)
+  (with-input-from-string(*standard-input*(format nil "one~%two"))
     (& (functionp $result)
        (equal #.(format nil "The two lines concatenated turn out to be: onetwo~%")
 	      (with-output-to-string(*standard-output*)
-		(funcall(funcall $result))))))
+		(funcall(funcall $result)))))))
 
 ;; maybe
 #?(<*> (just (curry + 3 _)) (just 9))
-:satisfies #`(equal $result (just 12))
+:satisfies (lambda($result)
+	     (equal $result (just 12)))
 #?(<*> (just (curry + 3 _)) (just 9))
 :equivalents
 (let((expander:*expandtable*(expander:find-expandtable :tyclex)))
@@ -234,7 +238,8 @@
 => NOTHING
 
 #?(<*> (pure (curry + 3 _)) (just 9))
-:satisfies #`(equal $result (just 12))
+:satisfies (lambda($result)
+	     (equal $result (just 12)))
 #?(<*> (pure (curry + 3 _)) (just 9))
 :equivalents
 (let((expander:*expandtable*(expander:find-expandtable :tyclex)))
