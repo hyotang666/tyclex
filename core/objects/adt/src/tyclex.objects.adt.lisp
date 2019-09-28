@@ -112,29 +112,22 @@
 
 (defun class-name-of(thing)
   (let((name(class-name(class-of thing))))
-    ;; Implementation dependent canonlicalize forms.
-    #+sbcl(cond
-	    ((eq 'sb-kernel:simple-character-string name) (setf name 'string))
-	    ((eq 'sb-impl::string-output-stream name) (setf name 'stream))
-	    ((eq 'simple-vector name) (setf name 'vector))
-	    ((eq 'simple-array name) (setf name 'array))
-	    ((eq 'synonym-stream name)(setf name 'stream))
-	    )
-    #+ccl(cond
-	   ((eq 'standard-char name) (setf name 'character))
-	   ((eq 'simple-base-string name) (setf name 'string))
-	   ((eq 'ccl:string-output-stream name)(setf name 'stream))
-	   ((eq 'keyword name)(setf name 'symbol))
-	   ((eq 'simple-vector name) (setf name 'vector))
-	   ((eq 'simple-array name) (setf name 'array))
-	   ((eq 'synonym-stream name)(setf name 'stream))
-	   )
-    #+ecl(cond
-	   ((eq 'string-stream name) (setf name 'stream))
-	   ((eq 'file-stream name) (setf name 'stream))
-	   ((eq 'synonym-stream name)(setf name 'stream))
-	   ((eq 'keyword name)(setf name 'symbol))
-	   )
+    ;; Canonicalize.
+    (cond
+      ((subtypep name 'string)
+       (setf name 'string))
+      ((subtypep name 'stream)
+       (setf name 'stream))
+      ((subtypep name 'vector)
+       (setf name 'vector))
+      ((subtypep name 'array)
+       (setf name 'array))
+      ((subtypep name 'character) ; especially ccl needs.
+       (setf name 'character))
+      ((subtypep name 'symbol) ; especially ccl needs.
+       (unless(eq 'null name)
+	 (setf name 'symbol)))
+      )
     ;; Return value.
     name))
 
