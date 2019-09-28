@@ -13,7 +13,9 @@
 (deftype list(&optional a)
   (declare(ignore a))
   'cl:list)
-(declaim(ftype(function(&rest t)list)list))
+(declaim(ftype (function (&rest t)
+			 (values list &optional))
+	       list))
 
 (defvar *newtypes* (make-hash-table :test #'eq))
 
