@@ -55,6 +55,8 @@
   (setf (get-adt name)
 	(apply #'make-adt args)))
 
+(push 'tyclex.conditions:redefinition-warning uiop:*uninteresting-conditions*)
+
 (defun remove-adt(name)
   (check-type name symbol)
   (let((adt(get-adt name nil)))
