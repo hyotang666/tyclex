@@ -94,6 +94,6 @@
   (get-io symbol nil))
 
 (defun io-form-p(thing)
-  (and (listp thing)
+  (and (consp thing)
        (symbolp (car thing))
        (io-boundp (car thing))))
