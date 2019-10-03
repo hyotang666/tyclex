@@ -3,19 +3,25 @@
 (in-package :tyclex.objects.type-class.spec)
 (setup :tyclex.objects.type-class)
 
-(requirements-about TYPE-CLASS)
+(requirements-about TYPE-CLASS :doc-type STRUCTURE)
+
 ;;;; Description:
-;;;; Compound Type Specifier Kind:
-; none
+;;;; Class Precedence List: (case in SBCL)
+; type-class structure-object slot-object t
 
-;;;; Compound Type Specifier Syntax:
-; none
+;;;; Effective Slots:
 
-;;;; Compound Type Specifier Arguments:
-; none
+; NAME [Type] (OR SYMBOL LIST)
 
-;;;; Compound Type Specifier Description:
-; none
+; VARS [Type] LIST
+
+; INTERFACES [Type] LIST
+
+; MEMBER [Type] LIST
+
+; CONSTRAINTS [Type] LIST
+
+;;;; Notes:
 
 (requirements-about MAKE-TYPE-CLASS)
 
