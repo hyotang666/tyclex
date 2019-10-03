@@ -3,21 +3,26 @@
 (in-package :tyclex.objects.interface.spec)
 (setup :tyclex.objects.interface)
 
-(requirements-about INTERFACE)
+(requirements-about INTERFACE :doc-type STRUCTURE)
+
 ;;;; Description:
 ; Represents type class interface
+;;;; Class Precedence List: (case in SBCL)
+; interface structure-object slot-object t
 
-;;;; Compound Type Specifier Kind:
-; none
+;;;; Effective Slots:
 
-;;;; Compound Type Specifier Syntax:
-; none
+; LAMBDA-LIST [Type] LIST
 
-;;;; Compound Type Specifier Arguments:
-; none
+; RETURN-TYPE [Type] (OR LIST SYMBOL)
 
-;;;; Compound Type Specifier Description:
-; none
+; TYPE-CLASS [Type] SYMBOL
+
+; INSTANCES [Type] LIST
+
+; DEFAULT [Type] LIST
+
+;;;; Notes:
 
 (requirements-about MAKE-INTERFACE)
 
