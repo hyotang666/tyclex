@@ -3,21 +3,24 @@
 (in-package :tyclex.objects.instance.spec)
 (setup :tyclex.objects.instance)
 
-(requirements-about INSTANCE)
+(requirements-about INSTANCE :doc-type STRUCTURE)
 
 ;;;; Description:
-; Represents interface instances.
+; Represents interface instance.
+;;;; Class Precedence List: (case in SBCL)
+; instance structure-object slot-object t
 
-;;;; Compound Type Specifier Kind:
-; none
+;;;; Effective Slots:
 
-;;;; Compound Type Specifier Syntax:
-; none
+; SIGNATURE [Type] LIST
 
-;;;; Compound Type Specifier Arguments:
-; none
+; DEFINITIONS [Type] LIST
 
-;;;; Compound Type Specifier Description:
+; TYPES [Type] LIST
+
+; CONSTRAINTS [Type] LIST
+
+;;;; Notes:
 
 (requirements-about MAKE-TYPE-CLASS-INSTANCE)
 
