@@ -3,16 +3,19 @@
 (in-package :tyclex.objects.adt-constructor.spec)
 (setup :tyclex.objects.adt-constructor)
 
-(requirements-about ADT-CONSTRUCTOR)
+(requirements-about ADT-CONSTRUCTOR :doc-type STRUCTURE)
+
 ;;;; Description:
-; Represents adt-constructor object.
-;;;; Compound Type Specifier Kind:
+;;;; Class Precedence List: (case in SBCL)
+; adt-constructor structure-object slot-object t
 
-;;;; Compound Type Specifier Syntax:
+;;;; Effective Slots:
 
-;;;; Compound Type Specifier Arguments:
+; TYPE-OF [Type] (OR SYMBOL LIST)
 
-;;;; Compound Type Specifier Description:
+; ARG-TYPES [Type] LIST
+
+;;;; Notes:
 
 (requirements-about MAKE-ADT-CONSTRUCTOR)
 
