@@ -4,21 +4,19 @@
 (in-package :tyclex.objects.adt.spec)
 (setup :tyclex.objects.adt)
 
-(requirements-about ADT)
+(requirements-about ADT :doc-type STRUCTURE)
+
 ;;;; Description:
-; Represents `ADT`.
+;;;; Class Precedence List: (case in SBCL)
+; adt structure-object slot-object t
 
-;;;; Compound Type Specifier Kind:
-; none
+;;;; Effective Slots:
 
-;;;; Compound Type Specifier Syntax:
-; none
+; CONSTRUCTORS [Type] LIST
 
-;;;; Compound Type Specifier Arguments:
-; none
+; LAMBDA-LIST [Type] LIST
 
-;;;; Compound Type Specifier Description:
-; none
+;;;; Notes:
 
 (requirements-about MAKE-ADT)
 
