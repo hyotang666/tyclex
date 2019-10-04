@@ -23,8 +23,6 @@
 		(cl:defun ,name ,lambda-list ,@doc ,@decls ,@body))))
     (let((types(second(or (tyclex.curry:function-type-of name)
 			  (introspect-environment:function-type name)))))
-      (when (eq '* types)
-	(setf types nil))
       (multiple-value-bind(body decls doc)(alexandria:parse-body body :documentation t)
 	(setf doc (alexandria:ensure-list doc)) ; as canonicalize.
 	`(cl:defun ,name ,lambda-list
@@ -118,7 +116,8 @@
 		  :when (eq '&rest key)
 		  :return `(list ,(car value))))
 	  )
-    (entry-point lambda-list types)))
+    (unless(eql '* types)
+      (entry-point lambda-list types))))
 
 (defmacro tcl::let((&rest bind*)&body body &environment env)
   (multiple-value-bind(body decls)(alexandria:parse-body body)
