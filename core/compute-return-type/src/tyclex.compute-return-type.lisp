@@ -10,10 +10,17 @@
   (:import-from :tyclex.objects.adt-constructor
 		#:adt-constructor-form-p #:get-adt-constructor
 		#:adt-constructor-type-of #:adt-constructor-arg-types)
-  (:import-from :tyclex.objects.interface #:interface-form-p #:interface-return-type #:interface-lambda-list)
-  (:import-from :tyclex.objects.io-action #:io-form-p #:get-io #:action-type #:io-action-construct-form-p #:io-action-construct-form-return-type)
-  (:import-from :tyclex.curry #:expanded-curry-form-p #:expanded-curry-form-arity #:expanded-curry-form-return-type #:function-type-of #:canonicalize-return-type)
-  (:import-from :tyclex.type-matcher #:great-common-type)
+  (:import-from :tyclex.objects.interface
+		#:interface-form-p #:interface-return-type #:interface-lambda-list)
+  (:import-from :tyclex.objects.io-action
+		#:io-form-p #:get-io #:action-type #:io-action-construct-form-p
+		#:io-action-construct-form-return-type)
+  (:import-from :tyclex.curry
+		#:expanded-curry-form-p #:expanded-curry-form-arity
+		#:expanded-curry-form-return-type #:function-type-of
+		#:canonicalize-return-type)
+  (:import-from :tyclex.type-matcher
+		#:great-common-type)
 
   (:export
     #:compute-return-type #:compute-return-types
@@ -62,35 +69,43 @@
 ;;; Constant value clause
 (defun safe-constantp(form env)
   ;; constantp may do macroexpand.
-  (let((*macroexpand-hook*(lambda(fn form env)
-			    (let((expanded(funcall fn form env)))
-			      (if (eq form expanded)
-				(return-from safe-constantp nil)
-				expanded)))))
+  (let((*macroexpand-hook*
+	 (lambda(fn form env)
+	   (let((expanded
+		  (funcall fn form env)))
+	     (if (eq form expanded)
+	       (return-from safe-constantp nil)
+	       expanded)))))
     (constantp form env)))
 
 (defun constant-return-type(var &optional env)
   (if(typep var '(CONS (EQL THE)T))
     (second var)
-    (let((value(introspect-environment:constant-form-value var env)))
+    (let((value
+	   (introspect-environment:constant-form-value var env)))
       (if(Adt-value-p value) ; literal adt.
 	(Data-type-of value)
 	(if(Adt-type-specifier-p value)
 	  value
-	  (let((type (Class-name-of value)))
+	  (let((type
+		 (Class-name-of value)))
 	    (if(not(eq 'cons type))
 	      type
-	      (let((types(handler-case(mapcar #'class-name-of value)
-			   (error() ; dot list comes
-			     (return-from constant-return-type
-					  (Cons-type-specifier(trestrul:mapleaf #'class-name-of value)))))))
+	      (let((types
+		     (handler-case(mapcar #'class-name-of value)
+		       (error() ; dot list comes
+			 (return-from constant-return-type
+				      (Cons-type-specifier
+					(trestrul:mapleaf #'class-name-of
+							  value)))))))
 		(if(null(cdr(remove-duplicates types)))
 		  `(LIST ,(Class-name-of(car value)))
 		  (Cons-type-specifier types))))))))))
 
 ;;; Free variable clause.
 (defun free-variable-return-type(var env)
-  (let((type (introspect-environment:variable-type var env)))
+  (let((type
+	 (introspect-environment:variable-type var env)))
     (if(not(eql t type))
       type
       (if(boundp var)
@@ -98,26 +113,36 @@
 	T))))
 
 (defun interface-form-return-type(call-form)
-  (let((pattern(Interface-return-type(car call-form)))
-       (environment(tyclex.unifier:unify (Interface-lambda-list(car call-form))
-					 (tyclex.unifier:enwild (compute-return-types(cdr call-form))))))
+  (let((pattern
+	 (Interface-return-type(car call-form)))
+       (environment
+	 (tyclex.unifier:unify (Interface-lambda-list
+				 (car call-form))
+			       (tyclex.unifier:enwild
+				 (compute-return-types
+				   (cdr call-form))))))
     (tyclex.unifier:substitute-pattern pattern environment)))
 
 ;;; Adt constructor clause
 (defun constructor-form-return-type(var env)
-  (let*((adt-constructor(Get-adt-constructor var))
-	(type(Adt-constructor-type-of adt-constructor)))
+  (let*((adt-constructor
+	  (Get-adt-constructor var))
+	(type
+	  (Adt-constructor-type-of adt-constructor)))
     (if(atom type)
       type
       (cons (car type)
-	    (tyclex.unifier:substitute-pattern (Adt-lambda-list (Get-adt type))
-					       (tyclex.unifier:unify (Adt-constructor-arg-types adt-constructor)
-								     (loop :for v :in (cdr var)
-									   :collect (compute-return-type v env))))))))
+	    (tyclex.unifier:substitute-pattern
+	      (Adt-lambda-list (Get-adt type))
+	      (tyclex.unifier:unify
+		(Adt-constructor-arg-types adt-constructor)
+		(loop :for v :in (cdr var)
+		      :collect (compute-return-type v env))))))))
 
 ;;; Curry form clause
 (defun curry-form-return-type(var)
-  (let((arity(Expanded-curry-form-arity var)))
+  (let((arity
+	 (Expanded-curry-form-arity var)))
     (if(null arity)
       (error "Arity did not exist ~S" var)
       (if(= 1 arity)
@@ -129,7 +154,8 @@
 ;; setup.
 (macrolet((def(name &body body)
 	    (if(symbolp name)
-	      (let((n(make-symbol(symbol-name name))))
+	      (let((n
+		     (make-symbol(symbol-name name))))
 		`(setf (gethash ',name *cl-strict-return-type-computers*)
 		       (flet((,n ,@body))
 			 #',n)))
@@ -144,7 +170,8 @@
   (def (map concatenate make-sequence merge)(form env)
        (when (constantp (second form)env)
 	 (introspect-environment:constant-form-value(second form)env)))
-  (def (reverse nreverse subseq copy-seq fill map-into sort stable-sort replace remove-duplicates delete-duplicates print princ prin1 write)
+  (def (reverse nreverse subseq copy-seq fill map-into sort stable-sort replace
+		remove-duplicates delete-duplicates print princ prin1 write)
        (form env)
        (compute-return-type (cadr form)env))
   (def (substitute substitute-if substitute-if-not nsubstitute nsubstitute-if nsubstitute-if-not)
@@ -176,7 +203,8 @@
 	  (:macro (compute-return-type (expander:expand (copy-tree form)env)
 				       env))
 	  (:function
-	    (let((ftype(assoc 'ftype declaration)))
+	    (let((ftype
+		   (assoc 'ftype declaration)))
 	      (if ftype
 		(ftype-return-type (cdr ftype))
 		T))))))))
@@ -246,11 +274,12 @@
   (def lambda(form env)
        (destructuring-bind(lambda-list . body)(cdr form)
 	 (multiple-value-bind(body decls)(alexandria:parse-body body)
-	   `(function * ,(compute-return-type (car(last body))
-					      (sb-cltl2:augment-environment
-						env
-						:variable (lambda-fiddle:extract-all-lambda-vars lambda-list)
-						:declare (alexandria:mappend #'cdr decls)))))))
+	   `(function * ,(compute-return-type
+			   (car(last body))
+			   (sb-cltl2:augment-environment
+			     env
+			     :variable (lambda-fiddle:extract-all-lambda-vars lambda-list)
+			     :declare (alexandria:mappend #'cdr decls)))))))
 
   (def (progn progv setq eval-when) (form env)
        (compute-return-type(car(last form))env))
@@ -276,8 +305,10 @@
 	 (canonicalize-ftype(introspect-environment:function-type(second form)env))))
 
   (def if (form env)
-       (let((then(compute-return-type(third form)env))
-	    (else(compute-return-type(fourth form)env)))
+       (let((then
+	      (compute-return-type(third form)env))
+	    (else
+	      (compute-return-type(fourth form)env)))
 	 (if then
 	   (if else
 	     (Great-common-type then else)
@@ -296,15 +327,20 @@
        (compute-return-type (third form)env))
 
   (def block (form env)
-       (let((return-types(delete-if (lambda(x)
-				      (member x '(t nil null)))
-				    (uiop:while-collecting(acc)
-				      (acc(compute-return-type(car(last form))env))
-				      (trestrul:traverse
-					(lambda(node)
-					  (when(typep node `(CONS (EQL RETURN-FROM)(CONS (EQL,(second form)) T)))
-					    (acc (compute-return-type(third node)env))))
-					form)))))
+       (let((return-types
+	      (delete-if
+		(lambda(x)
+		  (member x '(t nil null)))
+		(uiop:while-collecting(acc)
+		  (acc(compute-return-type(car(last form))env))
+		  (trestrul:traverse
+		    (lambda(node)
+		      (when(typep node
+				  `(CONS (EQL RETURN-FROM)
+					 (CONS (EQL,(second form))
+					       T)))
+			(acc (compute-return-type(third node)env))))
+		    form)))))
 	 (if return-types
 	   (if(cdr return-types)
 	     (reduce #'Great-common-type return-types)
@@ -320,10 +356,13 @@
 			       ((ignore ignorable)(cdr option))))))
 
 (defun special-operator-return-type(form env)
-  (funcall (gethash (car form)*special-operator-return-type-computers*
+  (funcall (gethash (car form)
+		    *special-operator-return-type-computers*
 		    (lambda(&rest args)
 		      (declare(ignore args))
-		      (error 'unknown-special-operator :datum form :name 'special-operator-return-type)))
+		      (error 'unknown-special-operator
+			     :datum form
+			     :name 'special-operator-return-type)))
 	   form env))
 
 (defun canonicalize-ftype(ftype)
@@ -334,7 +373,8 @@
 (defun compute-function-form-return-type(form env)
   (cond
     ((symbolp form)
-     (let((decls(nth-value 2 (introspect-environment:variable-information form env))))
+     (let((decls
+	    (nth-value 2 (introspect-environment:variable-information form env))))
        (if decls
 	 (Canonicalize-return-type (third (cdr (assoc :type decls))))
 	 T)))
