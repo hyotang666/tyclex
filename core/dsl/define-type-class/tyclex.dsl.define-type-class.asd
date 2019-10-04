@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.dsl.define-type-class"
-  :version "0.0.0"
+  :version "0.1.0"
   :depends-on
   (
    "tyclex.objects.type-class"

@@ -16,9 +16,9 @@
 		#:instance-constraints #:instance-definitions #:instance-signature #:instance-types #:instance=)
   (:import-from :tyclex.objects.interface
 		;; SLot readers.
-		#:interface-instances #:interface-lambda-list #:interface-type-class
+		#:interface-instances #:interface-lambda-list #:interface-type-class #:interface-return-type
 		;; Helpers.
-		#:add-interface)
+		#:add-interface #:find-interface)
   (:import-from :tyclex.compute-return-type
 		#:compute-return-types)
   (:import-from :tyclex.curry
@@ -31,6 +31,17 @@
     #:infinite-expansion-detecter
     ))
 (in-package :tyclex.dsl.define-type-class)
+
+;;;; INTERFACE-MACRO-FORM
+;;; For debug use.
+(defun interface-macro-definition(symbol)
+  (let*((interface
+	  (Find-interface symbol))
+	(lambda-list
+	  (Interface-lambda-list interface))
+	(gensyms
+	 (alexandria:make-gensym-list (length lambda-list))))
+    (<defmacro> symbol gensyms lambda-list (Interface-return-type interface))))
 
 ;;;; DEFINE-TYPE-CLASS
 (defmacro define-type-class((name &rest type-var+)(&rest var-constraint*) signature+ &rest rest)
