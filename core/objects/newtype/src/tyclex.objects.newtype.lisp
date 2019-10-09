@@ -24,11 +24,18 @@
 (defvar *newtypes* (make-hash-table :test #'eq))
 
 ;;;; ADD-NEWTYPE
+(declaim (ftype (function ((and symbol (not (or keyword boolean))))
+			  (values (eql t) &optional))
+		add-newtype))
+
 (defun add-newtype(name)
-  (check-type name (and symbol (not (or keyword boolean))))
   (setf (gethash name *newtypes*)t))
 
 ;;;; NEWTYPE-TYPE-SPECIFIER-P
+(declaim (ftype (function (*)
+			  (values boolean &optional))
+		newtype-type-specifier-p))
+
 (defun newtype-type-specifier-p(type-specifier)
   (labels((ensure-symbol(thing)
 	    (if(atom thing)

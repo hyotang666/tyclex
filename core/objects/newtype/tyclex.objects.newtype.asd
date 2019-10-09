@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.objects.newtype"
-  :version "0.0.2"
+  :version "0.0.3"
   :depends-on
   nil
   :pathname
