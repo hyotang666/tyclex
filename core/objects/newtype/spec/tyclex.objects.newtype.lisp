@@ -30,3 +30,31 @@
 
 ;;;; Exceptional-Situations:
 
+(requirements-about ADD-NEWTYPE :doc-type function)
+
+;;;; Description:
+
+#+syntax
+(ADD-NEWTYPE name) ; => result
+
+;;;; Arguments and Values:
+
+; name := (and symbol (not (or keyword boolean))), otherwise error.
+#?(add-newtype "not symbol") :signals error
+
+; result := (EQL T)
+#?(add-newtype 'newtype) => T
+,:around
+(let((tyclex.objects.newtype::*newtypes*(make-hash-table)))
+  (call-body))
+
+;;;; Affected By:
+; none
+
+;;;; Side-Effects:
+; Modify lisp environment.
+
+;;;; Notes:
+
+;;;; Exceptional-Situations:
+
