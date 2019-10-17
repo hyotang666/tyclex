@@ -40,7 +40,7 @@
 ;;;; Arguments and Values:
 
 ; name := (and symbol (not (or keyword boolean))), otherwise error.
-#?(add-newtype "not symbol") :signals error
+#?(add-newtype "not symbol") :signals condition
 
 ; result := (EQL T)
 #?(add-newtype 'newtype) => T
