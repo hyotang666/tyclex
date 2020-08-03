@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.objects.type-class"
-  :version "0.0.0"
+  :version "0.0.1"
   :depends-on
   (
    "tyclex.conditions"
@@ -12,11 +12,14 @@
   :components
   ((:file "tyclex.objects.type-class")))
 
-;; These forms below are added by JINGOH.GENERATOR.
+;;; These forms below are added by JINGOH.GENERATOR.
+;; Ensure in ASDF for pretty printings.
 (in-package :asdf)
+;; Enable testing via (asdf:test-system "tyclex.objects.type-class").
 (defmethod component-depends-on
            ((o test-op) (c (eql (find-system "tyclex.objects.type-class"))))
   (append (call-next-method) '((test-op "tyclex.objects.type-class.test"))))
+;; Enable passing parameter for JINGOH:EXAMINER via ASDF:TEST-SYSTEM.
 (defmethod operate :around
            ((o test-op) (c (eql (find-system "tyclex.objects.type-class")))
             &rest keys
@@ -35,26 +38,16 @@
     (let ((args (jingoh.args keys)))
       (declare (special args))
       (call-next-method))))
+;; Enable importing spec documentations.
 (let ((system (find-system "jingoh.documentizer" nil)))
   (when (and system (not (featurep :clisp)))
     (load-system system)
-    (defmethod operate :around
-               ((o load-op) (c (eql (find-system "tyclex.objects.type-class")))
-                &key)
-      (let* ((seen nil)
-             (*default-pathname-defaults*
-              (merge-pathnames "spec/" (system-source-directory c)))
-             (*macroexpand-hook*
-              (let ((outer-hook *macroexpand-hook*))
-                (lambda (expander form env)
-                  (if (not (typep form '(cons (eql defpackage) *)))
-                      (funcall outer-hook expander form env)
-                      (if (find (cadr form) seen :test #'string=)
-                          (funcall outer-hook expander form env)
-                          (progn
-                           (push (cadr form) seen)
-                           `(progn
-                             ,form
-                             ,@(symbol-call :jingoh.documentizer :importer
-                                            form)))))))))
-        (call-next-method)))))
+    (defmethod perform :after
+               ((o load-op)
+                (c (eql (find-system "tyclex.objects.type-class"))))
+      (with-muffled-conditions (*uninteresting-conditions*)
+        (handler-case (symbol-call :jingoh.documentizer :import c)
+                      (error (condition)
+                             (warn "Fails to import documentation of ~S.~%~A"
+                                   (coerce-name c)
+                                   (princ-to-string condition))))))))
