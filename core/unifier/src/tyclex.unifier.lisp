@@ -1,95 +1,98 @@
 (in-package :cl-user)
-(eval-when(:compile-toplevel :load-toplevel :execute)
-  (unless(find-package :tyclex.unifier)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (find-package :tyclex.unifier)
     (rename-package :unify :tyclex.unifier)
-    (let((method(find-method #'print-object
-			     nil
-			     (list (find-class (find-symbol "ENVIRONMENT" "TYCLEX.UNIFIER"))
-				   t)
-			     nil)))
+    (let ((method
+           (find-method #'print-object nil
+                        (list
+                          (find-class
+                            (find-symbol "ENVIRONMENT" "TYCLEX.UNIFIER"))
+                          t)
+                        nil)))
       (when method
-	(remove-method #'print-object method)))
-    (let((asdf::*asdf-session* nil))
-      (declare(ignorable asdf::*asdf-session*)) ; for CCL.
+        (remove-method #'print-object method)))
+    (let ((asdf::*asdf-session* nil))
+      (declare (ignorable asdf::*asdf-session*)) ; for CCL.
       (asdf:load-system :cl-unification :force t))))
 
 (in-package :tyclex.unifier)
-(handler-bind((package-error #'continue)) ; for ECL
-  (export '(envar patternize enwild dewild ignore-unification-failure find-value-variable
-		  replace-bind substitute-pattern make-variable-list
-		  subst-wildcard-to-var subst-var-to-wildcard gensymed-var-p)))
 
-(defun envar(thing)
-  (trestrul:asubst-if (lambda(x)(intern(format nil "?~A"x)))
-		      (lambda(x)(and (typep x '(and symbol (not (or keyword boolean))))
-				     (not (char= #\? (char (string x)
-							   0)))))
-		      thing))
+(handler-bind ((package-error #'continue)) ; for ECL
+  (export
+    '(envar patternize enwild dewild ignore-unification-failure
+            find-value-variable replace-bind substitute-pattern
+            make-variable-list subst-wildcard-to-var subst-var-to-wildcard
+            gensymed-var-p)))
 
-(defun patternize(thing)
-  (if(millet:type-specifier-p thing)
-    thing
-    (if(listp thing)
-      (trestrul:mapleaf #'patternize thing)
-      (envar thing))))
+(defun envar (thing)
+  (trestrul:asubst-if (lambda (x) (intern (format nil "?~A" x)))
+                      (lambda (x)
+                        (and (typep x '(and symbol (not (or keyword boolean))))
+                             (not (char= #\? (char (string x) 0)))))
+                      thing))
 
-(defun enwild (type-spec)
-  (sublis'((* . _)(T . _))type-spec))
+(defun patternize (thing)
+  (if (millet:type-specifier-p thing)
+      thing
+      (if (listp thing)
+          (trestrul:mapleaf #'patternize thing)
+          (envar thing))))
 
-(defun dewild (pattern)
-  (subst T '_ pattern))
+(defun enwild (type-spec) (sublis '((* . _) (t . _)) type-spec))
 
-(defmacro ignore-unification-failure(form)
-  `(handler-case,form
-     (unification-failure()NIL)))
+(defun dewild (pattern) (subst t '_ pattern))
 
-(defun find-value-variable(value env &key (test #'eql))
+(defmacro ignore-unification-failure (form)
+  `(handler-case ,form
+     (unification-failure ()
+       nil)))
+
+(defun find-value-variable (value env &key (test #'eql))
   (declare (type environment env))
-  (labels ((find-value-var(frames)
-	     (unless(endp frames)
-	       (or (let((binding(find value (frame-bindings (car frames)) :test test :key #'binding-value)))
-		     (when binding
-		       (binding-variable binding)))
-		   (find-value-var (cdr frames))))))
+  (labels ((find-value-var (frames)
+             (unless (endp frames)
+               (or (let ((binding
+                          (find value (frame-bindings (car frames))
+                                :test test
+                                :key #'binding-value)))
+                     (when binding
+                       (binding-variable binding)))
+                   (find-value-var (cdr frames))))))
     (find-value-var (environment-frames env))))
 
-(defun replace-bind(variable value env)
-  (setf (binding-value (find-variable-binding variable env))
-	value)
+(defun replace-bind (variable value env)
+  (setf (binding-value (find-variable-binding variable env)) value)
   env)
 
-(defun substitute-pattern(pattern environment)
-  (let((type-spec (dewild (trestrul:asubst-if
-			    (lambda(var)
-			      (let((return-type (find-variable-value var environment)))
-				(typecase return-type
-				  ((cons (eql values)t) (cadr return-type))
-				  (null var)
-				  (t return-type))))
-			    #'variablep
-			    pattern))))
+(defun substitute-pattern (pattern environment)
+  (let ((type-spec
+         (dewild
+           (trestrul:asubst-if
+             (lambda (var)
+               (let ((return-type (find-variable-value var environment)))
+                 (typecase return-type
+                   ((cons (eql values) t) (cadr return-type))
+                   (null var)
+                   (t return-type))))
+             #'variablep pattern))))
     (typecase type-spec
-      ((cons (eql function)(cons * null))
-       `(FUNCTION * ,(cadr type-spec)))
+      ((cons (eql function) (cons * null)) `(function * ,(cadr type-spec)))
       (otherwise type-spec))))
 
-(defun make-variable-list(fixnum)
+(defun make-variable-list (fixnum)
   (loop :repeat fixnum
-	:collect (intern (format nil "?~A" (gensym)))))
+        :collect (intern (format nil "?~A" (gensym)))))
 
-(defun subst-wildcard-to-var(thing)
-  (trestrul:asubst-if (lambda(x)
-			(declare(ignore x))
-			(envar(gensym)))
-		      #'Variable-any-p
-		      thing))
+(defun subst-wildcard-to-var (thing)
+  (trestrul:asubst-if (lambda (x) (declare (ignore x)) (envar (gensym)))
+                      #'variable-any-p thing))
 
-(defun subst-var-to-wildcard(thing)
-  (subst-if '_ #'gensymed-var-p thing))
+(defun subst-var-to-wildcard (thing) (subst-if '_ #'gensymed-var-p thing))
 
-(defun gensymed-var-p(x)
+(defun gensymed-var-p (x)
   (and (symbolp x)
-       (let((name(symbol-name x)))
-	 (and (string= "?G" name :end2 2)
-	      (loop :for i :upfrom 2 :below (length name)
-		    :always (digit-char-p (char name i)))))))
+       (let ((name (symbol-name x)))
+         (and (string= "?G" name :end2 2)
+              (loop :for i :upfrom 2 :below (length name)
+                    :always (digit-char-p (char name i)))))))
