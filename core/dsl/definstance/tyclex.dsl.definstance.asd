@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.dsl.definstance"
-  :version "0.0.1"
+  :version "0.0.2"
   :depends-on
   (
    "tyclex.unifier"             ; Module for Unification.
