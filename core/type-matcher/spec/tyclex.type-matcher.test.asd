@@ -1,8 +1,9 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :tyclex.type-matcher.test
+  :version "0.0.0"
   :depends-on
-  (:jingoh "tyclex.type-matcher" "millet")
+  (:jingoh "tyclex.type-matcher" "millet" "tyclex.dsl.defdata")
   :components
   ((:file "tyclex.type-matcher"))
   :perform
