@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.conditions"
+  :version "0.0.0"
   :depends-on
   nil
   :pathname
