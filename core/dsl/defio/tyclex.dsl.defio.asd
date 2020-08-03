@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.dsl.defio"
-  :version "0.0.1"
+  :version "0.0.2"
   :depends-on
   (
    "tyclex.objects.io-action"   ; Module for io-action object.
