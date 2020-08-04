@@ -316,3 +316,34 @@
               *macroexpand-hook*)
             (setq *macroexpand-hook* 'infinite-expansion-detecter)
             (warn "TYCLEX could not detect infinite macro expansion."))))
+
+;;;; PRETTY-PRINTER
+
+(defun pprint-define-type-class (stream exp)
+  (funcall
+    (formatter
+     "~:<~W~^ ~1I~@_~W~^ ~@_~:S~^~:@_~/tyclex.dsl.define-type-class::pprint-type-class-signature/~^~:@_~@{~/tyclex.dsl.define-type-class::pprint-type-class-rest/~^ ~_~}~:>")
+    stream exp))
+
+(defun pprint-type-class-signature (stream exp &rest noise)
+  (declare (ignore noise))
+  (if (atom exp)
+      (write exp :stream stream)
+      (pprint-logical-block (stream exp :prefix "(" :suffix ")")
+        (do ((elt (pprint-pop) (pprint-pop)))
+            (nil)
+          (if (atom elt)
+              (write elt :stream stream)
+              (funcall (formatter "~:<~@{~W~^ ~@_~:S~^ ~@_~}~:>") stream elt))
+          (pprint-exit-if-list-exhausted)
+          (pprint-newline :mandatory stream)))))
+
+(defun pprint-type-class-rest (stream exp &rest noise)
+  (declare (ignore noise))
+  (if (atom exp)
+      (write exp :stream stream)
+      (let ((printer (pprint-dispatch '(defun) nil)))
+        (pprint-logical-block (stream exp) (funcall printer stream exp)))))
+
+(set-pprint-dispatch '(cons (member define-type-class))
+                     'pprint-define-type-class)
