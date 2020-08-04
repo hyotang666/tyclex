@@ -104,3 +104,27 @@
     (mapcan (lambda (var) (mapcar (lambda (type) (cons var type)) types))
             type-class-vars)
     (interface-lambda-list name)))
+
+;;;; PRETTY PRINTER
+
+(defun pprint-definstance (stream exp)
+  (funcall
+    (formatter
+     "~:<~W~^ ~1I~@_~W~^~:@_~@{~/tyclex.dsl.definstance::pprint-definstance-definitions/~^ ~}~:>")
+    stream exp))
+
+(defun pprint-definstance-definitions (stream exp &rest noise)
+  (declare (ignore noise))
+  (if (atom exp)
+      (write exp :stream stream)
+      (pprint-logical-block (stream exp :prefix "(" :suffix ")")
+        (do ((elt (pprint-pop) (pprint-pop))
+             (printer (pprint-dispatch '(lambda) nil)))
+            (nil)
+          (if (atom elt)
+              (write elt :stream stream)
+              (funcall printer stream elt))
+          (pprint-exit-if-list-exhausted)
+          (pprint-newline :mandatory stream)))))
+
+(set-pprint-dispatch '(cons (member definstance)) 'pprint-definstance)
