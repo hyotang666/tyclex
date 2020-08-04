@@ -41,6 +41,8 @@
              ,@(append decls (lambda-var-decls lambda-list types env))
              ,@body)))))
 
+(set-pprint-dispatch '(cons (member tcl::defun)) (pprint-dispatch '(defun)))
+
 (defun lambda-var-decls (lambda-list types &optional env)
   (labels ((entry-point (lambda-list types &optional acc)
              (if (endp lambda-list)
@@ -150,6 +152,9 @@
                               bind*))
        ,@body)))
 
+(set-pprint-dispatch '(cons (member tcl::let tcl::let*))
+                     (pprint-dispatch '(let)))
+
 (defun integrate-declares (decls bind-types)
   `(declare
     ,@(reduce
@@ -192,6 +197,8 @@
              :else
                :collect `(declaim ,decl))))
 
+(set-pprint-dispatch '(cons (member tcl::declaim)) (pprint-dispatch '(declaim)))
+
 (defun ftype-function-formp (form)
   (typep form '(cons (eql ftype) (cons (cons (eql function) *) *))))
 
@@ -202,6 +209,9 @@
                     #+sbcl (warning #'muffle-warning))
        (defpackage ,name
          ,@args))))
+
+(set-pprint-dispatch '(cons (member tcl::defpackage))
+                     (pprint-dispatch '(defpackage)))
 
 (defun restart-invoker (restart-name &rest args)
   (lambda (condition)
