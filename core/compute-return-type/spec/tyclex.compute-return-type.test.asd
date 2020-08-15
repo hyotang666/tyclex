@@ -1,8 +1,11 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :tyclex.compute-return-type.test
+  :version "0.0.1"
   :depends-on
-  (:jingoh "tyclex.compute-return-type")
+  (:jingoh "tyclex.compute-return-type"
+           :expander ; Macroexpand-all.
+           )
   :components
   ((:file "tyclex.compute-return-type"))
   :perform

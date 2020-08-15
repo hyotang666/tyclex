@@ -71,6 +71,9 @@
    ((io-action-construct-form-p var)
     (io-action-construct-form-return-type var))
    ((expanded-curry-form-p var) (curry-form-return-type var))
+   #+sbcl
+   ((typep var '(cons (eql sb-impl::make-hash-table-using-defaults)))
+    'hash-table)
    ((and (listp var) (symbolp (car var)))
     (compute-standard-form-return-type var env))
    (t (error 'exhausts-clauses :name 'compute-return-type :datum var))))

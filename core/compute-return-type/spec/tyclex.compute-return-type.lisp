@@ -141,3 +141,7 @@
 			       1.5))
 => REAL
 
+;;;; Corner cases.
+;;; Espaecially in sbcl.
+#?(compute-return-type (expander:expand '(make-hash-table)))
+=> hash-table
