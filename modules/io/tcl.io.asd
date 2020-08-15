@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tcl.io"
+  :version "0.0.1"
   :depends-on
   (
    "tyclex.dsl.defio"
