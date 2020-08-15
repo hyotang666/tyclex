@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tcl.writer"
+  :version "0.0.1"
   :depends-on
   (
    "tcl"
