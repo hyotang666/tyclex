@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.dsl.defdata"
-  :version "0.0.2"
+  :version "0.0.3"
   :depends-on
   (
    "tyclex.objects.adt"         ; Module for adt objects.

@@ -205,7 +205,7 @@
                         :finally (return
                                   (cons
                                     `(definstance (,type-class-name ,type)
-                                                  ,result)
+                                       ,result)
                                     acc))))))
     (rec (list type-class-name))))
 
@@ -217,3 +217,7 @@
               (get-adt
                 (adt-constructor-type-of (nth-value 1 (adt-value-p thing)))))
             :test #'eq))
+
+;;;; PRETTY-PRINTER
+
+(set-pprint-dispatch '(cons (member defdata)) (pprint-dispatch '(deftype)))
