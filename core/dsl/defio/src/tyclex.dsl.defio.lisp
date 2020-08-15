@@ -42,3 +42,23 @@
                  (rec sig-rest (push sig vars) (push sig types))
                  (rec sig-rest (push (car sig) vars) (push (cadr sig) types)))))
     (rec signature)))
+
+;;;; PRETTY-PRINTER
+
+(defun pprint-defio (stream exp)
+  (setf stream (or stream *standard-output*))
+  (funcall
+    (formatter
+     "~:<~W~^ ~3I~@_~/tyclex.dsl.defio::pprint-args/~^~1I ~:_~@{~W~^ ~_~}~:>")
+    stream exp))
+
+(defun pprint-args (stream exp &rest noise)
+  (declare (ignore noise))
+  (setf stream (or stream *standard-output*))
+  (let ((*print-pprint-dispatch* (copy-pprint-dispatch))
+        #+sbcl
+        (sb-pretty:*pprint-quote-with-syntactic-sugar* nil))
+    (set-pprint-dispatch '(cons (member function)) nil)
+    (write exp :stream stream)))
+
+(set-pprint-dispatch '(cons (member defio)) 'pprint-defio)
