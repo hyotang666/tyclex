@@ -62,3 +62,8 @@
                                                   '*)
                                        :into args
                                      :finally (return (dewild args)))))))))))))
+
+;;;; PRETTY-PRINTER
+
+(set-pprint-dispatch '(cons (member define-newtype))
+                     (pprint-dispatch '(deftype)))
