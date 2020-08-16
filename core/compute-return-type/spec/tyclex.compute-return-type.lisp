@@ -107,6 +107,10 @@
 ,:test equal
 #?(compute-return-type '#'+) => (FUNCTION(&REST NUMBER) NUMBER)
 ,:test equal
+; With FUNCTION-TYPEed.
+#?(tyclex.curry:function-type name (args) return)
+=> NAME
+#?(compute-return-type '(name)) => RETURN
 
 ;; (if)
 ; When both then clause and else clause are exists, great common type is returned.

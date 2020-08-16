@@ -332,7 +332,8 @@
    (if (typep (second form) '(cons (eql lambda) (cons * *)))
        (special-operator-return-type (second form) env)
        (canonicalize-ftype
-         (introspect-environment:function-type (second form) env))))
+         (or (function-type-of (second form))
+             (introspect-environment:function-type (second form) env)))))
   (def if (form env)
    (let ((then (compute-return-type (third form) env))
          (else (compute-return-type (fourth form) env)))
