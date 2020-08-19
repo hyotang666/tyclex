@@ -94,12 +94,14 @@
             &optional (env (make-empty-environment))
             &key &allow-other-keys)
   (matrix-case:matrix-etypecase ((car a) (car b))
-    (((satisfies variablep) (eql function)) (setf b (ensure-value b))
+    (((satisfies variablep) (eql function))
+     (setf b (ensure-value b))
      (unify (cdr a)
             (or (cddr b) ; lisp style, e.g. (function(arg)return)
                 (cdr b)) ; probably haskell style, e.g. (function return).
             (extend-environment (car a) (car b) env)))
-    (((eql function) (satisfies variablep)) (setf a (ensure-value a))
+    (((eql function) (satisfies variablep))
+     (setf a (ensure-value a))
      (unify
        (or (cddr a) ; lisp style, e.g. (function(arg)return)
            (cdr a)) ; probably haskell style, e.g. (function return).
@@ -125,12 +127,14 @@
             &key &allow-other-keys)
   #.(macroexpand-1
       '(matrix-case:matrix-etypecase ((car a) (car b))
-         (((satisfies variablep) (eql function)) (setf b (ensure-value b))
+         (((satisfies variablep) (eql function))
+          (setf b (ensure-value b))
           (unify (cdr a)
                  (or (cddr b) ; lisp style, e.g. (function(arg)return)
                      (cdr b)) ; probably haskell style, e.g. (function return).
                  (extend-environment (car a) (car b) env)))
-         (((eql function) (satisfies variablep)) (setf a (ensure-value a))
+         (((eql function) (satisfies variablep))
+          (setf a (ensure-value a))
           (unify
             (or (cddr a) ; lisp style, e.g. (function(arg)return)
                 (cdr a)) ; probably haskell style, e.g. (function return).
@@ -314,9 +318,9 @@
       ((:list :type-specifier) (eq 'null t2))
       ((t :satisfier) (typep t1 t2))
       (otherwise
-        (if reccursivep
-            nil
-            (ignore-unification-failure (unify t1 t2)))))))
+       (if reccursivep
+           nil
+           (ignore-unification-failure (unify t1 t2)))))))
 
 (defun category-of (thing)
   (cond ((newtype-type-specifier-p thing) :newtype)
