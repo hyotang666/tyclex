@@ -31,7 +31,7 @@
 #?(deftype price()'(sum integer))
 => PRICE
 
-#?(declaim(ftype(function(food)(cons food price))add-drink))
+#?(declaim(ftype(function(food)(writer price food))add-drink))
 => implementation-dependent
 
 #?(defun add-drink(x)
@@ -42,22 +42,22 @@
 => ADD-DRINK
 ,:before (fmakunbound 'add-drink)
 
-#?(>>= (cons "beans" (sum 10))
+#?(>>= (writer (cons "beans" (sum 10)))
        #'add-drink)
 => ("milk" . 35)
 ,:test equal
 
-#?(>>= (cons "jerky" (sum 25))
+#?(>>= (writer (cons "jerky" (sum 25)))
        #'add-drink)
 => ("whisky" . 124)
 ,:test equal
 
-#?(>>= (cons "dogmeat" (sum 5))
+#?(>>= (writer (cons "dogmeat" (sum 5)))
        #'add-drink)
 => ("beer" . 35)
 ,:test equal
 
-#?(>>=* (cons "dogmeat" (sum 5))
+#?(>>=* (writer (cons "dogmeat" (sum 5)))
 	#'add-drink
 	#'add-drink)
 => ("beer" . 65)

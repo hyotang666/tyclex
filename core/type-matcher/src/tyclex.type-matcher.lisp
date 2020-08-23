@@ -222,26 +222,37 @@
                 (if (eq value b)
                     new-env
                     (flet ((ensure-wildcard (thing)
-                             (if (trestrul:find-leaf-if #'variable-any-p thing)
-                                 (subst-wildcard-to-var thing)
-                                 thing))
+                             (if (atom thing)
+                                 thing
+                                 (if (trestrul:find-leaf-if #'variable-any-p
+                                                            thing)
+                                     (subst-wildcard-to-var thing)
+                                     thing)))
                            (ensure-var (thing)
-                             (if (trestrul:find-leaf-if #'gensymed-var-p thing)
-                                 (subst-var-to-wildcard thing)
-                                 thing))
+                             (if (atom thing)
+                                 thing
+                                 (if (trestrul:find-leaf-if #'gensymed-var-p
+                                                            thing)
+                                     (subst-var-to-wildcard thing)
+                                     thing)))
                            (apply-subst (env pattern)
                              (handler-bind ((simple-warning #'muffle-warning))
                                (apply-substitution env pattern))))
                       (let* ((b% (ensure-wildcard b))
                              (v (ensure-wildcard value))
+                             (does-not-have-variable-p
+                              (and (eq b% b) (eq v value)))
                              (e
-                              (if (and (eq b% b) (eq v value))
+                              (if does-not-have-variable-p
                                   new-env
                                   (unify b% v))))
                         (replace-bind a
-                                      (great-common-type
-                                        (ensure-var (apply-subst e b%))
-                                        (ensure-var (apply-subst e v)))
+                                      (if (and does-not-have-variable-p
+                                               (eq v (car b)))
+                                          b
+                                          (great-common-type
+                                            (ensure-var (apply-subst e b%))
+                                            (ensure-var (apply-subst e v))))
                                       new-env)))))))
       (if (newtype-type-specifier-p a)
           (if (variablep (car b))
