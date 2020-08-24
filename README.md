@@ -21,6 +21,50 @@ If you need such library, searching another one is strongly recommended.
 This is the core.
 Providing the system for defining type class.
 
+#### Hierarchical systems.
+
+```
+:components
+(;; Bottom
+ (:system "tyclex.curry")
+ (:system "tyclex.unifier")
+ (:system "tyclex.objects.newtype")
+ (:system "tyclex.conditions")
+
+ ;; Level.1
+ (:system "tyclex.objects.instance" :depends-on ("tyclex.conditions"))
+ (:system "tyclex.objects.interface" :depends-on ("tyclex.conditions"))
+ (:system "tyclex.objects.io-action" :depends-on ("tyclex.conditions"))
+ (:system "tyclex.objects.adt-constructor" :depends-on ("tyclex.conditions"))
+
+ ;; Level.2
+ (:system "tyclex.expander" :depends-on ("tyclex.objects.io-action"))
+ (:system "tyclex.objects.adt" :depends-on ("tyclex.objects.adt-constructor" "tyclex.objects.io-action"))
+ (:system "tyclex.objects.type-class" :depends-on ("tyclex.objects.interface"))
+
+ ;; Level.3
+ (:system "tyclex.objects" :depends-on ("tyclex.objects.adt" "tyclex.objects.type-class"))
+ (:system "tyclex.type-matcher" :depends-on ("tyclex.objects.adt"))
+ (:system "tyclex.dsl.definstance" :depends-on ("tyclex.objects.type-class"))
+
+ ;; Level.4
+ (:system "tyclex.dsl.defdata" :depends-on ("tyclex.dsl.definstance"))
+ (:system "tyclex.compute-return-type" :depends-on ("tyclex.type-matcher"))
+
+ ;; Level.5
+ (:system "tyclex.dsl.define-type-class :depends-on ("tyclex.compure-return-type"))
+ (:system "tyclex.newtype" :depends-on ("tyclex.compute-return-type"))
+
+ ;; Level.6
+ (:system "tyclex.dsl.defio" :depends-on ("tyclex.newtype"))
+
+ ;; Level.7
+ (:system "tyclex.dsl" :depends-on ("tyclex.dsl.defio"))
+
+ ;; Top
+ (:system "tyclex" :depends-on ("tyclex.dsl")))
+```
+
 ### TCL
 TYCLEX exports symbol `LIST`.
 For conveniency, TCL is provided.
@@ -33,3 +77,4 @@ It does not provide any type class.
 Some basic type classes are provided as modules.
 If you like "Buttery included", TCL-USER is what you need.
 Please be care about implicit symbol shadowing, e.g. `DO` is shadowed.
+
