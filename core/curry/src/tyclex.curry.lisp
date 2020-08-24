@@ -22,13 +22,12 @@
 ;;;; CURRY data structure.
 
 (defclass curry ()
-  ((function :initarg :function :reader curried-function)
-   (arity :initarg :arity :reader arity)
+  ((arity :initarg :arity :reader arity)
    (return-type :initarg :return-type :reader return-type))
   (:metaclass c2mop:funcallable-standard-class))
 
-(defmethod initialize-instance :after ((c curry) &key)
-  (c2mop:set-funcallable-instance-function c (curried-function c)))
+(defmethod initialize-instance :after ((c curry) &key function)
+  (c2mop:set-funcallable-instance-function c function))
 
 ;;;; CURRY
 
