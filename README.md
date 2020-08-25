@@ -78,3 +78,28 @@ Some basic type classes are provided as modules.
 If you like "Buttery included", TCL-USER is what you need.
 Please be care about implicit symbol shadowing, e.g. `DO` is shadowed.
 
+#### Hierarchical systems.
+```
+:components
+(;; Bottom
+ (:module "tcl.bounded")
+ (:module "tcl.enum")
+ (:module "tcl.io")
+ (:module "tcl.ord")
+ (:module "tcl.eq")
+ (:module "tcl.functor")
+ (:module "tcl.monad")
+ (:module "tcl.monoid")
+
+ ;; Level.1
+ (:module "tcl.compare" :depends-on ("tcl.ord"))
+ (:module "tcl.applicative" :depends-on ("tcl.functor"))
+ (:module "tcl.monad-plus" :depends-on ("tcl.monad"))
+ (:module "tcl.state" :depends-on ("tcl.monad"))
+ (:module "tcl.diff-list" :depends-on ("tcl.monoid"))
+ (:module "tcl.writer" :depends-on ("tcl.monad" "tcl.monoid"))
+
+ ;; Level.2
+ (:module "tcl.zip-list" :depends-on ("tcl.applicative"))
+)
+```
