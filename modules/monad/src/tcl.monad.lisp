@@ -54,15 +54,44 @@
                        (car list))))))
     (rec expression*)))
 
+(defun left-arrow-p (thing) (and (symbolp thing) (string= '#:<- thing)))
+
+(defun pprint-do (stream exp)
+  (pprint-logical-block (stream exp :prefix "(" :suffix ")")
+    (write (pprint-pop) :stream stream)
+    (pprint-exit-if-list-exhausted)
+    (write-char #\Space stream)
+    (pprint-indent :current 0 stream)
+    (pprint-newline :miser stream)
+    (cl:do ((list (cdr exp))
+            (initialp t))
+           (nil)
+      (unless initialp
+        (pprint-newline :mandatory stream))
+      (if (typep list '(cons * (cons (satisfies left-arrow-p) (cons *))))
+          (progn
+           (dotimes (x 3 (setf initialp nil))
+             (write (pprint-pop) :stream stream)
+             (pprint-exit-if-list-exhausted)
+             (write-char #\Space stream)
+             (unless (= 2 x)
+               (pprint-newline :miser stream)))
+           (setf list (cdddr list)))
+          (progn
+           (write (pprint-pop) :stream stream)
+           (pprint-exit-if-list-exhausted)
+           (write-char #\Space stream)
+           (setf list (cdr list)))))))
+
+(set-pprint-dispatch '(cons (member do)) 'pprint-do)
+
 (defmacro lift-m (function &rest monad*)
   (let ((gensyms (alexandria:make-gensym-list (length monad*))))
-    `(do
-      ,@(loop :for monad :in monad*
-              :for gensym :in gensyms
-              :collect gensym
-              :collect '<-
-              :collect monad)
-      (return (funcall ,function ,@gensyms)))))
+    `(do ,@(loop :for monad :in monad*
+                 :for gensym :in gensyms
+                 :collect gensym
+                 :collect '<-
+                 :collect monad) (return (funcall ,function ,@gensyms)))))
 
 (defmacro ap (mf &rest monad*)
   (let ((gensyms (alexandria:make-gensym-list (length monad*)))
@@ -77,7 +106,8 @@
 
 (defmacro join (mm)
   (let ((monad (gensym "MONAD")))
-    `(do ,monad <- ,mm ,monad)))
+    `(do ,monad <- ,mm
+         ,monad)))
 
 ;;;; Instances
 

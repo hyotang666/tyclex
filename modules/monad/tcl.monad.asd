@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tcl.monad"
-  :version "0.0.1"
+  :version "0.1.0"
   :depends-on
   (
    "tcl"
