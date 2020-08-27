@@ -1,9 +1,11 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tcl.bounded"
-  :version "0.0.1"
+  :version "0.0.2"
   :depends-on
-  nil
+  (
+   "tcl"
+   )
   :pathname
   "src/"
   :components
