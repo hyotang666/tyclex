@@ -296,7 +296,7 @@
           (and (car-eq t1 t2)
                (every #'type-match-p (cdr (lflatten t1)) (cdr (lflatten t2)))))
          (otherwise (car-eq t1 t2))))
-      ((:adt (:newtype :type-specifier :function :list)) nil)
+      ((:adt (:newtype :function :list)) nil)
       ((:type-specifier :function) nil)
       ((:type-specifier :newtype)
        (multiple-value-bind (ts expanded?)
@@ -305,7 +305,7 @@
              (type-match-p t1 ts)
              nil)))
       ((:type-specifier :list) (eq 'null t1))
-      ((:type-specifier :type-specifier) (subtypep t1 t2))
+      (((:adt :type-specifier) :type-specifier) (subtypep t1 t2))
       ((:type-specifier :adt)
        (when (millet:type-specifier-p t2)
          (subtypep t1 t2)))
@@ -328,6 +328,7 @@
            nil))
       ((:list :type-specifier) (eq 'null t2))
       ((t :satisfier) (typep t1 t2))
+      ((:number :number) (or (subtypep t1 t2) (subtypep t2 t1)))
       (otherwise
        (if reccursivep
            nil
@@ -348,6 +349,7 @@
                (typep thing '(cons (eql cons) t)))
            :list)
           ((typep thing '(cons (eql satisfies))) :satisfier)
+          ((subtypep thing 'number) :number)
           (t :type-specifier)))
         (t
          (cond ((typep thing '(cons (eql function) t)) :function)

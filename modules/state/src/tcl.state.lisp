@@ -8,7 +8,7 @@
 
 (in-package :tcl.state)
 
-(define-newtype state (&optional state a) `(function (,state) (cons ,a ,state)))
+(define-newtype state (state a) `(function (,state) (cons ,a ,state)))
 
 (definstance (monad (state s))
   ((return (x)

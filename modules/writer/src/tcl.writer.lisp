@@ -6,7 +6,7 @@
 
 (in-package :tcl.writer)
 
-(define-newtype writer (&optional w a) `(cons ,a ,w))
+(define-newtype writer (w a) `(cons ,a ,w))
 
 (definstance (monad (writer w) :constraints (monoid w))
   ((return (x) `(writer (cons ,x (mempty))))

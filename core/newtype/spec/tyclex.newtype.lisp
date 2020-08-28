@@ -32,7 +32,9 @@
 :signals error
 ,:lazy t
 
-; lambda-list := completely same with `CL:DEFTYPE`.
+; lambda-list := lambda-list which has only required vars.
+#?(define-newtype new "not list" t) :signals error
+#?(define-newtype new (&optional a) a) :signals error
 
 ; body := completely same with `CL:DEFTYPE`.
 

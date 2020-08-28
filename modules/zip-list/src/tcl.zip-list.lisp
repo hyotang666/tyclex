@@ -5,7 +5,7 @@
 
 (in-package :tcl.zip-list)
 
-(define-newtype zip-list (&optional a) (declare (ignore a)) 'list)
+(define-newtype zip-list (a) (declare (ignore a)) 'list)
 
 (definstance (functor zip-list)
   ((fmap (f zl) `(zip-list (fmap ,f ,(denew zl))))))

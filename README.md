@@ -28,10 +28,10 @@ Providing the system for defining type class.
 (;; Bottom
  (:system "tyclex.curry")
  (:system "tyclex.unifier")
- (:system "tyclex.objects.newtype")
  (:system "tyclex.conditions")
 
  ;; Level.1
+ (:system "tyclex.objects.newtype" :depends-on ("tyclex.conditions"))
  (:system "tyclex.objects.instance" :depends-on ("tyclex.conditions"))
  (:system "tyclex.objects.interface" :depends-on ("tyclex.conditions"))
  (:system "tyclex.objects.io-action" :depends-on ("tyclex.conditions"))

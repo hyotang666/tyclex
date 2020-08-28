@@ -47,7 +47,7 @@
 
 (define-newtype all () 'boolean)
 
-(define-newtype 1st (&optional a) (declare (ignore a)) '(maybe *))
+(define-newtype 1st (a) (declare (ignore a)) '(maybe *))
 
 ;;;; Instances
 

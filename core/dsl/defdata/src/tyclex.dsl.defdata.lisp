@@ -64,11 +64,7 @@
 ;;; <deftype>
 
 (defun <deftype> (name lambda-list constructor*)
-  (labels ((optional-lambda-list (list)
-             (if (cdr list)
-                 (list* (car list) '&optional (cdr list))
-                 list))
-           (type-name (args constructor)
+  (labels ((type-name (args constructor)
              (cond ((symbolp constructor) `'(eql ,constructor))
                    (args (comma-type-specifier args constructor))
                    ((list-constructor-p constructor)
@@ -82,7 +78,7 @@
                                                (symbol t)
                                                (list
                                                 (getf clause :type t))))))))))
-    `(deftype ,name ,(optional-lambda-list lambda-list)
+    `(deftype ,name (&optional ,@lambda-list)
        (list 'or
              ,@(mapcar
                  (lambda (constructor) (type-name lambda-list constructor))

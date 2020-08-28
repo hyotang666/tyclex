@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.type-matcher"
-  :version "0.0.4"
+  :version "0.0.5"
   :depends-on
   (
    "tyclex.objects.newtype"     ; Module for newtype.

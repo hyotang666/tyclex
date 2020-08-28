@@ -20,11 +20,12 @@
   ;; trivial-syntax-check.
   (assert (typep name '(and symbol (not (or keyword boolean)))))
   (assert (listp lambda-list))
+  (assert (null (intersection lambda-fiddle:*lambda-keywords* lambda-list)))
   ;; body
   (let ((arg (gensym "ARG")) (env (gensym "ENV")))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (add-newtype ',name)
-       (deftype ,name ,lambda-list ,@body)
+       (add-newtype ',name :lambda-list ',lambda-list)
+       (deftype ,name (&optional ,@lambda-list) ,@body)
        ,(<rewinder> name lambda-list)
        (defmacro ,name (,arg &environment ,env)
          ,@(if (null lambda-list)
@@ -44,24 +45,22 @@
     `(defun ,(intern (format nil "REWIND-~A" name)) (,type-specifier)
        ,@(if (null lambda-list)
              `((declare (ignore ,type-specifier)) ',name)
-             (let ((required (lambda-fiddle:required-lambda-vars lambda-list)))
-               (if (null required)
-                   `((declare (ignore ,type-specifier)) ',name)
-                   (let* ((variables (make-variable-list (length required)))
-                          (expanded (millet:type-expand `(,name ,@variables))))
-                     `(`(,',name
-                         ,@(if (equal ',expanded ,type-specifier)
-                               `(,,type-specifier)
-                               (loop :for variable :in ',variables
-                                     :collect (or (find-variable-value variable
-                                                                       (unify
-                                                                         ',(enwild
-                                                                             expanded)
-                                                                         (enwild
-                                                                           ,type-specifier)))
-                                                  '*)
-                                       :into args
-                                     :finally (return (dewild args)))))))))))))
+             (let* ((variables (make-variable-list (length lambda-list)))
+                    (expanded (millet:type-expand `(,name ,@variables))))
+               `(`(,',name
+                   ,@(if (equal ',expanded ,type-specifier)
+                         `(,,type-specifier)
+                         (loop :for variable :in ',variables
+                               :with environment
+                                     := (unify ',(enwild expanded)
+                                               (enwild
+                                                 (millet:type-expand
+                                                   ,type-specifier)))
+                               :collect (or (find-variable-value variable
+                                                                 environment)
+                                            '*)
+                                 :into args
+                               :finally (return (dewild args)))))))))))
 
 ;;;; PRETTY-PRINTER
 
