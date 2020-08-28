@@ -4,6 +4,7 @@
   (:use :cl)
   (:import-from :tyclex.objects.adt-constructor
                 #:first-atom
+                #:adt-constructor
                 #:adt-constructor-makunbound
                 #:get-adt-constructor
                 #:adt-constructor-arg-types
@@ -40,14 +41,22 @@
 
 (defstruct (adt (:copier nil) (:predicate nil))
   (constructors
-   (error 'tyclex.conditions:slot-uninitialized :name 'constructors) :type list
-   :read-only t)
+    (error 'tyclex.conditions:slot-uninitialized :name 'constructors)
+    :type list
+    :read-only t)
   (lambda-list (error 'tyclex.conditions:slot-uninitialized :name 'lambda-list)
-   :type list :read-only t)) ; underlying database.
+               :type list
+               :read-only t)) ; underlying database.
 
 (defvar *adts* (make-hash-table :test #'eq))
 
 ;; Trivial helpers
+;;;; GET-ADT
+
+(declaim
+ (ftype (function ((or symbol list) &optional boolean)
+         (values (or null adt) &optional))
+        get-adt))
 
 (defun get-adt (name &optional (errorp t))
   (or (gethash (first-atom name) *adts*)
@@ -62,19 +71,31 @@
     (warn 'tyclex.conditions:redefinition-warning :name name))
   (setf (gethash name *adts*) new-value))
 
+;;;; ADD-ADT
+
+(declaim
+ (ftype (function ((or symbol list) &rest t) (values adt &optional)) add-adt))
+
 (defun add-adt (name &rest args) (setf (get-adt name) (apply #'make-adt args)))
 
 (push 'tyclex.conditions:redefinition-warning uiop:*uninteresting-conditions*)
 
+;;;; REMOVE-ADT
+
+(declaim (ftype (function (symbol) (values boolean &optional)) remove-adt))
+
 (defun remove-adt (name)
-  (check-type name symbol)
   (let ((adt (get-adt name nil)))
     (when adt
       (mapc #'adt-constructor-makunbound (adt-constructors adt))
       (remhash name *adts*))))
 
+;;;; ADT-TYPE-SPECIFIER-P
+
+(declaim (ftype (function (*) (values boolean &optional)) adt-type-specifier-p))
+
 (defun adt-type-specifier-p (thing)
-  (let ((adt (get-adt thing nil)))
+  (let ((adt (and (typep thing '(or symbol list)) (get-adt thing nil))))
     (when adt
       (let* ((form
               (cdr
@@ -84,6 +105,11 @@
                       thing))))
              (lambda-list (adt-lambda-list adt)))
         (<= (length form) (length lambda-list))))))
+
+;;;; LFLATTEN
+
+(declaim
+ (ftype (function ((or atom list)) (values (or atom list) &optional)) lflatten))
 
 (defun lflatten (thing)
   (labels ((rec (list &optional acc)
@@ -95,16 +121,28 @@
         thing
         (rec thing))))
 
+;;;; ADT-VALUE-P
+
+(declaim
+ (ftype (function (*)
+         (values (or null tyclex.unifier::environment)
+                 (or null adt-constructor) &optional))
+        adt-value-p))
+
 (defun adt-value-p (thing)
   (let ((adt-constructor (get-adt-constructor thing nil)))
-    (when adt-constructor
-      (values
+    (values
+      (when adt-constructor
         (if (symbolp thing) ; nullary constructor.
             (tyclex.unifier:make-empty-environment)
             (tyclex.unifier:ignore-unification-failure
              (tyclex.unifier:unify (adt-constructor-arg-types adt-constructor)
-                                   (mapcar #'data-type-of (cdr thing)))))
-        adt-constructor))))
+                                   (mapcar #'data-type-of (cdr thing))))))
+      adt-constructor)))
+
+;;;; DATA-TYPE-OF
+
+(declaim (ftype (function (*) (values t &optional)) data-type-of))
 
 (defun data-type-of (thing)
   (multiple-value-bind (env adt-constructor)
@@ -129,6 +167,10 @@
                  'function)))
           (t (class-name-of thing))))))
 
+;;;; CLASS-NAME-OF
+
+(declaim (ftype (function (*) (values symbol &optional)) class-name-of))
+
 (defun class-name-of (thing)
   (let ((name (class-name (class-of thing))))
     ;; Canonicalize.
@@ -146,6 +188,11 @@
              (setf name 'symbol))))
     ;; Return value.
     name))
+
+;;;; CONS-TYPE-SPECIFIER
+
+(declaim
+ (ftype (function ((or atom list)) (values t &optional)) cons-type-specifier))
 
 (defun cons-type-specifier (types)
   (if (atom types)

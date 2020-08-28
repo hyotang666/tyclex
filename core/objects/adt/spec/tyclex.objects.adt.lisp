@@ -181,8 +181,8 @@
 
 ;;;; Arguments and Values:
 
-; name := (and symbol (not (or keyword boolean))), otherwise error.
-#?(add-adt "not symbol") :signals error
+; name := (and symbol (not (or keyword boolean))), otherwise condition.
+#?(add-adt "not symbol") :signals condition
 
 ; args := Keyword parameters for `MAKE-ADT`, when not supported parameter comes, an error is signalsed.
 #?(add-adt '#:dummy :not-supported-parameter nil) :signals error
