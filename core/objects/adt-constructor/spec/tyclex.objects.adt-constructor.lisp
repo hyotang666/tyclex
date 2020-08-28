@@ -177,8 +177,8 @@
 
 ;;;; Arguments and Values:
 
-; name := symbol, otherwise error.
-#?(add-adt-constructor "not symbol" :type-of nil :arg-types nil) :signals error
+; name := symbol, otherwise condition.
+#?(add-adt-constructor "not symbol" :type-of nil :arg-types nil) :signals condition
 
 ; args := Keyword parameters for `MAKE-ADT-CONSTRUCTOR`.
 ; When not supported keyword parameter comes, an error is signaled.
@@ -283,8 +283,8 @@
 
 ;;;; Arguments and Values:
 
-; name := symbol, otherwise error.
-#?(adt-constructor-makunbound "not symbol") :signals error
+; name := symbol, otherwise condition.
+#?(adt-constructor-makunbound "not symbol") :signals condition
 
 ; result := generalized boolean. True when name is exist as `ADT-CONSTRUCTOR`.
 
