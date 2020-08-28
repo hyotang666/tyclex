@@ -53,6 +53,15 @@
 (defvar *interfaces* (make-hash-table :test #'eq))
 
 ;; helper
+;;;; FIND-ITNERFACE
+
+(deftype interface-designator ()
+  '(or interface (and symbol (not (or keyword boolean)))))
+
+(declaim
+ (ftype (function (interface-designator &optional boolean)
+         (values (or null interface) &optional))
+        find-interface))
 
 (defun find-interface (interface &optional (errorp t))
   (if (interfacep interface)
@@ -61,11 +70,33 @@
           (when errorp
             (error 'missing-interface :name interface)))))
 
+;;;; ADD-INTERFACE
+
+(declaim
+ (ftype (function
+         ((and symbol (not (or keyword boolean))) &rest (or symbol list)))
+        add-interface))
+
 (defun add-interface (interface &rest args)
-  (check-type interface (and symbol (not (or keyword boolean))))
   (setf (gethash interface *interfaces*) (apply #'make-interface args)))
 
+;;;; REMOVE-INTERFACE
+
+(declaim
+ (ftype (function ((and symbol (not (or keyword boolean))))
+         (values boolean &optional))
+        remove-interface))
+
 (defun remove-interface (interface) (remhash interface *interfaces*))
+
+;;;; AUGMENT-INSTANCES
+
+(declaim
+ (ftype (function
+         (interface-designator tyclex.objects.instance:instance &key
+          (:test function))
+         (values list &optional))
+        augment-instances))
 
 (defun augment-instances (interface cell &key (test #'eql))
   (let ((exists? (find cell (interface-instances interface) :test test)))
@@ -79,20 +110,44 @@
                                :test test
                                :count 1)))))))
 
-(defun interface-boundp (symbol)
-  (check-type symbol (and symbol (not (or keyword boolean))))
-  (find-interface symbol nil))
+;;;; INTERFACE-BOUNDP
+
+(declaim
+ (ftype (function ((and symbol (not (or keyword boolean))))
+         (values (or null interface) &optional))
+        interface-boundp))
+
+(defun interface-boundp (symbol) (find-interface symbol nil))
+
+;;;; INTERFACE-FORM-P
+
+(declaim
+ (ftype (function (*) (values (or null interface) &optional)) interface-form-p))
 
 (defun interface-form-p (thing)
   (and (listp thing) (symbolp (car thing)) (find-interface (car thing) nil)))
 
+;;;; INTERFACE-MAKUNBOUND
+
+(declaim
+ (ftype (function (symbol) (values symbol &optional)) interface-makunbound))
+
 (defun interface-makunbound (symbol)
-  (check-type symbol symbol)
   (when (find-interface symbol nil)
     (remove-interface symbol)
     (fmakunbound symbol)))
 
 ;;;; EASY READERS
+
+(declaim
+ (ftype (function (interface-designator) (values list &optional))
+        interface-lambda-list
+        interface-default
+        interface-instances)
+ (ftype (function (interface-designator) (values symbol &optional))
+        interface-type-class)
+ (ftype (function (interface-designator) (values (or symbol list) &optional))
+        interface-return-type))
 
 (defun interface-lambda-list (interface)
   (lambda-list (find-interface interface)))

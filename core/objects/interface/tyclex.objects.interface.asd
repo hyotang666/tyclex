@@ -5,6 +5,7 @@
   :depends-on
   (
    "tyclex.conditions"
+   "tyclex.objects.instance"
    )
   :pathname
   "src/"

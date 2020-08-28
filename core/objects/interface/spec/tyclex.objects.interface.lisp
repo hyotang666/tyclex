@@ -341,8 +341,8 @@
 
 ;;;; Arguments and Values:
 
-; interface := (and symbol (not (or keyword boolean))), otherwise error.
-#?(add-interface "not-symbol" :type-class '#:dummy) :signals error
+; interface := (and symbol (not (or keyword boolean))), otherwise condition.
+#?(add-interface "not-symbol" :type-class '#:dummy) :signals condition
 
 ; args := keyword parameters for MAKE-INTERFACE, otherwise error.
 #?(add-interface 'interface-name :not-supported-parameter '#:dummy)
@@ -407,8 +407,16 @@
 
 ;;;; Description:
 ; Augment interface instances.
-#?(augment-instances 'interface-name 0) => (0)
-,:test equal
+#?(augment-instances 'interface-name (tyclex.objects.instance:make-type-class-instance
+                                       :signature nil
+                                       :definitions nil
+                                       :types nil
+                                       :constraints nil))
+:satisfies (lambda (result)
+             (& (listp result)
+                (= 1 (length result))
+                (every (lambda (x) (typep x 'tyclex.objects.instance:instance))
+                       result)))
 
 #+syntax
 (AUGMENT-INSTANCES interface instance) ; => result
@@ -416,10 +424,26 @@
 ;;;; Arguments and Values:
 
 ; interface := interface designator, i.e. interface object is acceptable.
-#?(augment-instances (make-interface :type-class '#:dummy :instances '(1 2 3))
-		     0)
-=> (0 1 2 3)
-,:test equal
+#?(augment-instances
+    (make-interface :type-class '#:dummy
+                    :instances (list (tyclex.objects.instance:make-type-class-instance
+                                       :signature '(first)
+                                       :definitions nil
+                                       :types nil
+                                       :constraints nil)))
+    (tyclex.objects.instance:make-type-class-instance
+      :signature '(second)
+      :definitions nil
+      :types nil
+      :constraints nil))
+:satisfies (lambda (result)
+             (& (listp result)
+                (= 2 (length result))
+                (every (lambda (x) (typep x 'tyclex.objects.instance:instance))
+                       result)
+                (equal '((second) (first))
+                       (mapcar #'tyclex.objects.instance:instance-signature
+                               result))))
 
 ; instance := instance object, otherwise unspecified.
 
@@ -430,17 +454,30 @@
 ;;;; Side-Effects:
 ; interface instances is modified.
 #?(values (interface-instances 'interface-name)
-	  (augment-instances 'interface-name 0)
+	  (augment-instances 'interface-name (tyclex.objects.instance:make-type-class-instance
+                                               :signature nil
+                                               :definitions nil
+                                               :types nil
+                                               :constraints nil))
 	  (interface-instances 'interface-name))
 :multiple-value-satisfies
 (lambda($first $second $third)
   (& (null $first)
-     (equal '(0) $second)
-     (equal '(0) $third)))
+     (listp $second)
+     (= 1  (length $second))
+     (every (lambda (x) (typep x 'tyclex.objects.instance:instance)) $second)
+     (listp $third)
+     (= 1  (length $third))
+     (every (lambda (x) (typep x 'tyclex.objects.instance:instance)) $third)))
 
 ;;;; Notes:
 
 ;;;; Exceptional-Situations:
 ; When specified interface is not found, an error is signaled.
-#?(augment-instances '#:not-exist '#:dummy) :signals error
+#?(augment-instances '#:not-exist (tyclex.objects.instance:make-type-class-instance
+                                    :signature nil
+                                    :definitions nil
+                                    :types nil
+                                    :constraints nil))
+:signals error
 
