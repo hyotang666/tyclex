@@ -329,8 +329,8 @@
 
 ;;;; Arguments and Values:
 
-; name := (and symbol (not (or keyword boolean))), otherwise signals an error.
-#?(add-type-class "not-symbol" :vars nil) :signals error
+; name := (and symbol (not (or keyword boolean))), otherwise signals an condition.
+#?(add-type-class "not-symbol" :vars nil) :signals condition
 
 ; args := keyword parameters for `MAKE-TYPE-CLASS` except `:NAME`.
 ; When unsupported keyword parameter comes, an error is signaled.
