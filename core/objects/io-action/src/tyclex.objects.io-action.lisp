@@ -56,7 +56,7 @@
 ;;;; IO-ACTION-CONSTRUCT-FORM-RETURN-TYPE
 
 (declaim
- (ftype (function (symbol) (values t &optional))
+ (ftype (function (list) (values t &optional))
         io-action-construct-form-return-type))
 
 (defun io-action-construct-form-return-type (io-action-construct-form)
@@ -66,7 +66,7 @@
 ;;;; IO-ACTION-CONSTRUCT-FORM-FUNCTION-FORM
 
 (declaim
- (ftype (function (symbol) (values t &optional))
+ (ftype (function (list) (values t &optional))
         io-action-construct-form-function-form))
 
 (defun io-action-construct-form-function-form (io-action-construct-form)
@@ -127,7 +127,6 @@
 (declaim (ftype (function (symbol) (values symbol &optional)) io-makunbound))
 
 (defun io-makunbound (symbol)
-  (check-type symbol symbol)
   (if (get-io symbol nil)
       (progn (remove-io symbol) (fmakunbound symbol))
       symbol))
