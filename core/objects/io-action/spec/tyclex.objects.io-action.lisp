@@ -140,7 +140,7 @@
 
 ;;;; Description:
 ; Adding name to lisp environemnt as io.
-#?(add-io 'name :type '(io "dummy"):body '("dummy") :lambda-list nil)
+#?(add-io 'name :type '(io "dummy") :body '("dummy") :lambda-list nil)
 :be-the action
 
 #+syntax
@@ -148,12 +148,12 @@
 
 ;;;; Arguments and Values:
 
-; name := (and symbol (not (or keyword boolean))), otherwise error.
-#?(add-io "invalid type") :signals error
+; name := (and symbol (not (or keyword boolean))), otherwise condition.
+#?(add-io "invalid type") :signals condition
 
 ; args := keyword parameters for `MAKE-ACTION`.
-; When not supported keyword parameter comes, an error is signaled.
-#?(add-io '#:dummy :not-supported-keyword "dummy") :signals error
+; When not supported keyword parameter comes, an condition is signaled.
+#?(add-io '#:dummy :not-supported-keyword "dummy") :signals condition
 
 ; result := action
 
@@ -208,8 +208,8 @@
 
 ;;;; Arguments and Values:
 
-; symbol := symbol, otherwise error.
-#?(io-boundp "not symbol") :signals error
+; symbol := symbol, otherwise condition.
+#?(io-boundp "not symbol") :signals condition
 
 ; result := BOOLEAN
 
@@ -233,8 +233,8 @@
 
 ;;;; Arguments and Values:
 
-; symbol := symbol, otherwise error.
-#?(io-makunbound "not symbol") :signals error
+; symbol := symbol, otherwise condition.
+#?(io-makunbound "not symbol") :signals condition
 
 ; result := symbol
 
