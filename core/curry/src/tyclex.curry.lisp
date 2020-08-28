@@ -105,6 +105,8 @@
 
 ;;;; DECURRY
 
+(declaim (ftype (function (list list) (values list &optional)) decurry))
+
 (defun decurry (form actual-args)
   (labels ((rec (if count)
              (if (zerop count)
@@ -117,6 +119,8 @@
             :for arg :in actual-args
             :collect `(,(car var) ,arg))
       (rec (third (first (second form))) (length actual-args)))))
+
+(declaim (ftype (function (list list) (values list &optional)) recurry))
 
 (defun recurry (curry-form actual-args)
   (if (null actual-args)
@@ -134,7 +138,12 @@
               (error "Too much args. ~S ~S" curry-form actual-args)
               (underscore-to-actual-arg curry-form actual-args))))))
 
+(declaim (ftype (function (*) (values boolean &optional)) curry-form-p))
+
 (defun curry-form-p (form) (typep form '(cons (eql curry) *)))
+
+(declaim
+ (ftype (function (*) (values boolean &optional)) expanded-curry-form-p))
 
 (defun expanded-curry-form-p (form)
   (and (listp form)
@@ -145,15 +154,25 @@
               (eq 'make-instance (caadr body))
               (equal (cadadr body) ''curry)))))
 
+(declaim
+ (ftype (function (list) (values (or fixnum null) &optional))
+        expanded-curry-form-arity))
+
 (defun expanded-curry-form-arity (form)
   (let* ((make-instance (fourth form)) (arity (getf make-instance :arity)))
     (introspect-environment:constant-form-value arity)))
+
+(declaim
+ (ftype (function (list) (values (or symbol list) &optional))
+        expanded-curry-form-return-type))
 
 (defun expanded-curry-form-return-type (form)
   (let* ((make-instance (fourth form))
          (return-type (getf make-instance :return-type)))
     (canonicalize-return-type
       (introspect-environment:constant-form-value return-type))))
+
+(declaim (ftype (function (list) (values list &optional)) first-promised-curry))
 
 (defun first-promised-curry (expanded)
   (destructuring-bind
@@ -163,6 +182,10 @@
       ,(getf main :function))))
 
 ;;;; CANONICALIZE-RETURN-TYPE
+
+(declaim
+ (ftype (function ((or list atom)) (values (or list atom) &optional))
+        canonicalize-return-type))
 
 (defun canonicalize-return-type (return-type)
   (flet ((ensure-t (thing)
@@ -185,5 +208,11 @@
   (check-type return (or symbol list))
   ;; body
   `(progn (setf (get ',name 'ftype) '(function ,args ,return)) ',name))
+
+(declaim
+ (ftype (function (symbol)
+         (values (or null (cons (eql function) (cons * (cons * null))))
+                 &optional))
+        function-type-of))
 
 (defun function-type-of (name) (get name 'ftype))

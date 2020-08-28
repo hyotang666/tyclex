@@ -74,9 +74,9 @@
 
 ;;;; Arguments and Values:
 
-; name := Symbol, otherwise error.
+; name := Symbol, otherwise condition.
 #?(function-type-of "not symbol")
-:signals error
+:signals condition
 ; When NAME is not set, return NIL.
 #?(function-type-of '#:dummy) => NIL
 
