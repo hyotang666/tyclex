@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :tyclex.dsl.defio.test
+  :version "0.0.1"
   :depends-on
   (:jingoh "tyclex.dsl.defio")
   :components

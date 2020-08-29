@@ -29,10 +29,10 @@
 
 ;;;; Arguments and Values:
 
-; name := Symbol, otherwise error.
+; name := Symbol, otherwise condition.
 #?(defio("not symbol"((string string))null)
     (write-string string)(force-output)(values))
-:signals error
+:signals condition
 
 ; signature := ([var type]*)
 ; var := symbol, otherwise error.
