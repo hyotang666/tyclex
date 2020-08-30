@@ -159,6 +159,8 @@
             :collect `(,(car var) ,arg))
       (rec (body (first (binds (body form)))) (length actual-args)))))
 
+;;;; RECURRY
+
 (declaim (ftype (function (list list) (values list &optional)) recurry))
 
 (defun recurry (curry-form actual-args)
@@ -181,10 +183,14 @@
 
 (defun curry-form-p (form) (typep form '(cons (eql curry) *)))
 
+;;;; EXPANDED-CURRY-FORM-P
+
 (declaim
  (ftype (function (*) (values boolean &optional)) expanded-curry-form-p))
 
 (defun expanded-curry-form-p (form) (typep form 'expanded-curry-form))
+
+;;;; EXPANDED-CURRY-FORM-ARITY
 
 (declaim
  (ftype (function (expanded-curry-form) (values (or fixnum null) &optional))
@@ -194,6 +200,8 @@
   (let* ((make-instance (init-form (car (binds form))))
          (arity (getf make-instance :arity)))
     (introspect-environment:constant-form-value arity)))
+
+;;;; EXPANDED-CURRY-FORM-RETURN-TYPE
 
 (declaim
  (ftype (function (expanded-curry-form) (values (or symbol list) &optional))
