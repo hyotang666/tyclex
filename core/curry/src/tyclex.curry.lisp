@@ -26,9 +26,6 @@
    (return-type :initarg :return-type :reader return-type))
   (:metaclass c2mop:funcallable-standard-class))
 
-(defmethod initialize-instance :after ((c curry) &key function)
-  (c2mop:set-funcallable-instance-function c function))
-
 ;;;; CURRY
 
 (defmacro curry (&whole whole op &rest args)
@@ -75,22 +72,23 @@
 ;;; <Curry-Form>
 
 (defun <curry-form> (body optional-lambda-list return-type whole)
-  (let ((curry (gensym "CURRY")))
+  (let ((curry (gensym "CURRY")) (curry-instance (gensym "CURRY-INSTANCE")))
     (labels ((entry-point (list)
                (if (endp list)
                    (<body-form> body)
-                   `(labels ((,curry (&optional ,@list)
-                               (if ,(caddar list)
-                                   ,(rec (cdr list))
-                                   (make-instance 'curry
-                                                  :function #',curry
-                                                  :arity ,(length list)
-                                                  :return-type ',return-type))))
-                      ',whole ; for decurry.
-                      (make-instance 'curry
-                                     :function #',curry
-                                     :arity ,(length list)
-                                     :return-type ',return-type))))
+                   `(let ((,curry-instance
+                           (make-instance 'curry
+                                          :arity ,(length list)
+                                          :return-type ',return-type)))
+                      (labels ((,curry (&optional ,@list)
+                                 (if ,(caddar list)
+                                     ,(rec (cdr list))
+                                     ,curry-instance)))
+                        ',whole ; for decurry.
+                        (c2mop:set-funcallable-instance-function
+                         ,curry-instance
+                         #',curry)
+                        ,curry-instance))))
              (rec (list)
                (if (endp list)
                    (<body-form> body)
@@ -105,6 +103,15 @@
 
 ;;;; DECURRY
 
+(eval-when ; To muffle compiler warnings which says "undefined functions".
+  (:compile-toplevel :load-toplevel :execute)
+  ;; To reduce function call.
+  (setf (symbol-function 'binds) #'second
+        (symbol-function 'lambda-list) #'second
+        (symbol-function 'but-&optional) #'cdr
+        (symbol-function 'body) #'third
+        (symbol-function 'init-form) #'second))
+
 (declaim (ftype (function (list list) (values list &optional)) decurry))
 
 (defun decurry (form actual-args)
@@ -115,10 +122,11 @@
                      if)
                  (rec (third if) (1- count)))))
     (expander:walk-sublis
-      (loop :for var :in (cdr (second (first (second form))))
+      (loop :for var
+                 :in (but-&optional (lambda-list (first (binds (body form)))))
             :for arg :in actual-args
             :collect `(,(car var) ,arg))
-      (rec (third (first (second form))) (length actual-args)))))
+      (rec (body (first (binds (body form)))) (length actual-args)))))
 
 (declaim (ftype (function (list list) (values list &optional)) recurry))
 
@@ -146,20 +154,46 @@
  (ftype (function (*) (values boolean &optional)) expanded-curry-form-p))
 
 (defun expanded-curry-form-p (form)
-  (and (listp form)
-       (eq 'labels (car form))
-       (let ((body (cddr form)))
-         (and (every #'listp body)
-              (= 2 (length body))
-              (eq 'make-instance (caadr body))
-              (equal (cadadr body) ''curry)))))
+  (typep form
+         ;; See <curry-form>.
+         (symbol-macrolet ((%let
+                            `(cons (eql let)
+                                   (cons ,binds (cons ,%labels null))))
+                           (binds `(cons ,bind null))
+                           (bind `(cons symbol (cons ,%make-instance null)))
+                           (%make-instance
+                            `(cons (eql make-instance)
+                                   (cons ,%class
+                                         (cons ,arity
+                                               (cons *
+                                                     (cons ,return-type
+                                                           (cons * null)))))))
+                           (%class `(cons (eql quote) (cons (eql curry) null)))
+                           (arity '(eql :arity))
+                           (return-type '(eql :return-type))
+                           (%labels
+                            `(cons (eql labels)
+                                   (cons ,defs
+                                         (cons *
+                                               (cons ,setter
+                                                     (cons symbol null))))))
+                           (defs `(cons ,def null))
+                           (def
+                            `(cons symbol (cons ,lambda-list (cons * null))))
+                           (lambda-list `(cons (eql &optional) *))
+                           (setter
+                            `(cons
+                               (eql c2mop:set-funcallable-instance-function)
+                               (cons * (cons * null)))))
+           %let)))
 
 (declaim
  (ftype (function (list) (values (or fixnum null) &optional))
         expanded-curry-form-arity))
 
 (defun expanded-curry-form-arity (form)
-  (let* ((make-instance (fourth form)) (arity (getf make-instance :arity)))
+  (let* ((make-instance (init-form (car (binds form))))
+         (arity (getf make-instance :arity)))
     (introspect-environment:constant-form-value arity)))
 
 (declaim
@@ -167,7 +201,7 @@
         expanded-curry-form-return-type))
 
 (defun expanded-curry-form-return-type (form)
-  (let* ((make-instance (fourth form))
+  (let* ((make-instance (init-form (car (binds form))))
          (return-type (getf make-instance :return-type)))
     (canonicalize-return-type
       (introspect-environment:constant-form-value return-type))))
@@ -176,10 +210,13 @@
 
 (defun first-promised-curry (expanded)
   (destructuring-bind
-      (op ((name (key first . rest) body)) origin main)
+      (let binds
+       (labels ((name (optional first . rest) body)) origin setter main))
       expanded
-    `(,op ((,name (,(car first) ,key ,@rest) ,(third body))) ,origin
-      ,(getf main :function))))
+    (declare (ignore main))
+    `(,let ,binds
+      (,labels ((,name (,(car first) ,optional ,@rest) ,(third body))) ,origin
+       ,setter ,(third setter)))))
 
 ;;;; CANONICALIZE-RETURN-TYPE
 

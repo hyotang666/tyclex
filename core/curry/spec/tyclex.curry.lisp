@@ -137,16 +137,17 @@
 => (+ 1 2)
 ,:test equal
 #?(decurry (macroexpand-1 '(curry + _ _ _)) '(1 2))
-=> (labels((curry(&optional (var nil var-p))
-	     (if var-p
-	       (+ 1 2 var)
-	       (make-instance 'curry :function #'curry
-			      :arity 1
-			      :return-type '(values number &optional)))))
-     '(curry + _ _ _)
-     (make-instance 'curry :function #'curry
-		    :arity 1
-		    :return-type '(values number &optional)))
+=> (let ((instance
+           (make-instance 'curry
+                          :arity 1
+                          :return-type '(values number &optional))))
+     (labels ((curry (&optional (var nil var-p))
+                (if var-p
+	            (+ 1 2 var)
+	            instance)))
+       '(curry + _ _ _)
+       (c2mop:set-funcallable-instance-function instance #'curry)
+       instance))
 ,:test jingoh::sexp=
 
 #+syntax
