@@ -4,7 +4,6 @@
   :version "0.1.0"
   :depends-on
   (
-   "tyclex.unifier"             ; Module for Unification.
    "tyclex.objects.type-class"  ; Module for type-class object.
    "tyclex.objects.interface"   ; Module for interface object.
    "tyclex.objects.instance"    ; Module for cell object.
