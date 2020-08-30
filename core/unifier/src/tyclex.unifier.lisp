@@ -27,14 +27,18 @@
 
 ;;;; ENVAR
 
+(declaim (ftype (function (t) (values t &optional)) envar))
+
 (defun envar (thing)
-  (trestrul:asubst-if (lambda (x) (intern (format nil "?~A" x)))
+  (trestrul:asubst-if (lambda (x) (values (intern (format nil "?~A" x))))
                       (lambda (x)
                         (and (typep x '(and symbol (not (or keyword boolean))))
                              (not (char= #\? (char (string x) 0)))))
                       thing))
 
 ;;;; PATTERNIZE
+
+(declaim (ftype (function (t) (values t &optional)) patternize))
 
 (defun patternize (thing)
   (if (millet:type-specifier-p thing)
@@ -45,9 +49,13 @@
 
 ;;;; ENWILD
 
+(declaim (ftype (function (t) (values t &optional)) enwild))
+
 (defun enwild (type-spec) (sublis '((* . _) (t . _)) type-spec))
 
 ;;;; DEWILD
+
+(declaim (ftype (function (t) (values t &optional)) dewild))
 
 (defun dewild (pattern) (subst t '_ pattern))
 
@@ -60,8 +68,12 @@
 
 ;;;; FIND-VALUE-VARIABLE
 
+(declaim
+ (ftype (function (t environment &key (:test function))
+         (values symbol &optional))
+        find-value-variable))
+
 (defun find-value-variable (value env &key (test #'eql))
-  (declare (type environment env))
   (labels ((find-value-var (frames)
              (unless (endp frames)
                (or (let ((binding
@@ -75,11 +87,18 @@
 
 ;;;; REPLACE-BIND
 
+(declaim
+ (ftype (function (symbol t environment) (values environment &optional))
+        replace-bind))
+
 (defun replace-bind (variable value env)
   (setf (binding-value (find-variable-binding variable env)) value)
   env)
 
 ;;;; SUBSTITUTE-PATTERN
+
+(declaim
+ (ftype (function (t environment) (values t &optional)) substitute-pattern))
 
 (defun substitute-pattern (pattern environment)
   (let ((type-spec
@@ -98,11 +117,16 @@
 
 ;;;; MAKE-VARIABLE-LIST
 
+(declaim
+ (ftype (function ((integer 0 *)) (values list &optional)) make-variable-list))
+
 (defun make-variable-list (fixnum)
   (loop :repeat fixnum
         :collect (intern (format nil "?~A" (gensym)))))
 
 ;;;; SUBST-WILDCARD-TO-VAR
+
+(declaim (ftype (function (t) (values t &optional)) subst-wildcard-to-var))
 
 (defun subst-wildcard-to-var (thing)
   (trestrul:asubst-if (lambda (x) (declare (ignore x)) (envar (gensym)))
@@ -110,9 +134,13 @@
 
 ;;;; SUBST-VAR-TO-WILDCARD
 
+(declaim (ftype (function (t) (values t &optional)) subst-var-to-wildcard))
+
 (defun subst-var-to-wildcard (thing) (subst-if '_ #'gensymed-var-p thing))
 
 ;;;; GENSYMED-VAR-P
+
+(declaim (ftype (function (t) (values boolean &optional)) gensymed-var-p))
 
 (defun gensymed-var-p (x)
   (and (symbolp x)
