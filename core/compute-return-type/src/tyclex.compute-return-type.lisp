@@ -164,19 +164,13 @@
 ;; setup.
 
 (macrolet ((def (name &body body)
-             (if (symbolp name)
-                 (let ((n (make-symbol (symbol-name name))))
-                   `(setf (gethash ',name *cl-strict-return-type-computers*)
-                            (flet ((,n ,@body
-                                     ))
-                              #',n)))
-                 `(setf ,@(loop :for name :in name
-                                :for n = (make-symbol (symbol-name name))
-                                :collect `(gethash ',name
-                                                   *cl-strict-return-type-computers*)
-                                :collect `(flet ((,n ,@body
-                                                   ))
-                                            #',n))))))
+             `(setf ,@(loop :for name :in (uiop:ensure-list name)
+                            :for n = (make-symbol (symbol-name name))
+                            :collect `(gethash ',name
+                                               *cl-strict-return-type-computers*)
+                            :collect `(flet ((,n ,@body
+                                               ))
+                                        #',n)))))
   (def coerce (form env)
    (when (constantp (third form) env)
      (introspect-environment:constant-form-value (third form) env)))
@@ -234,14 +228,10 @@
 ;; setup.
 
 (macrolet ((def (name &body body)
-             (if (symbolp name)
-                 `(setf (gethash ',name
-                                 *special-operator-return-type-computers*)
-                          (lambda ,@body))
-                 `(setf ,@(loop :for name :in name
-                                :collect `(gethash ',name
-                                                   *special-operator-return-type-computers*)
-                                :collect `(lambda ,@body))))))
+             `(setf ,@(loop :for name :in (uiop:ensure-list name)
+                            :collect `(gethash ',name
+                                               *special-operator-return-type-computers*)
+                            :collect `(lambda ,@body)))))
   (def (let let*) (form env)
    (multiple-value-bind (body decls)
        (alexandria:parse-body (cddr form))
