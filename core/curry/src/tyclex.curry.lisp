@@ -113,7 +113,37 @@
         (symbol-function 'body) #'third
         (symbol-function 'init-form) #'second))
 
-(declaim (ftype (function (list list) (values list &optional)) decurry))
+(deftype expanded-curry-form ()
+  ;; See <curry-form>.
+  (symbol-macrolet ((%let `(cons (eql let) (cons ,binds (cons ,%labels null))))
+                    (binds `(cons ,bind null))
+                    (bind `(cons symbol (cons ,%make-instance null)))
+                    (%make-instance
+                     `(cons (eql make-instance)
+                            (cons ,%class
+                                  (cons ,arity
+                                        (cons *
+                                              (cons ,return-type
+                                                    (cons * null)))))))
+                    (%class `(cons (eql quote) (cons (eql curry) null)))
+                    (arity '(eql :arity))
+                    (return-type '(eql :return-type))
+                    (%labels
+                     `(cons (eql labels)
+                            (cons ,defs
+                                  (cons * (cons ,setter (cons symbol null))))))
+                    (defs `(cons ,def null))
+                    (def `(cons symbol (cons ,lambda-list (cons * null))))
+                    (lambda-list `(cons (eql &optional) *))
+                    (setter
+                     `(cons (eql c2mop:set-funcallable-instance-function)
+                            (cons * (cons * null)))))
+    %let))
+
+;;;; DECURRY
+
+(declaim
+ (ftype (function (expanded-curry-form list) (values list &optional)) decurry))
 
 (defun decurry (form actual-args)
   (labels ((rec (if count)
@@ -154,42 +184,10 @@
 (declaim
  (ftype (function (*) (values boolean &optional)) expanded-curry-form-p))
 
-(defun expanded-curry-form-p (form)
-  (typep form
-         ;; See <curry-form>.
-         (symbol-macrolet ((%let
-                            `(cons (eql let)
-                                   (cons ,binds (cons ,%labels null))))
-                           (binds `(cons ,bind null))
-                           (bind `(cons symbol (cons ,%make-instance null)))
-                           (%make-instance
-                            `(cons (eql make-instance)
-                                   (cons ,%class
-                                         (cons ,arity
-                                               (cons *
-                                                     (cons ,return-type
-                                                           (cons * null)))))))
-                           (%class `(cons (eql quote) (cons (eql curry) null)))
-                           (arity '(eql :arity))
-                           (return-type '(eql :return-type))
-                           (%labels
-                            `(cons (eql labels)
-                                   (cons ,defs
-                                         (cons *
-                                               (cons ,setter
-                                                     (cons symbol null))))))
-                           (defs `(cons ,def null))
-                           (def
-                            `(cons symbol (cons ,lambda-list (cons * null))))
-                           (lambda-list `(cons (eql &optional) *))
-                           (setter
-                            `(cons
-                               (eql c2mop:set-funcallable-instance-function)
-                               (cons * (cons * null)))))
-           %let)))
+(defun expanded-curry-form-p (form) (typep form 'expanded-curry-form))
 
 (declaim
- (ftype (function (list) (values (or fixnum null) &optional))
+ (ftype (function (expanded-curry-form) (values (or fixnum null) &optional))
         expanded-curry-form-arity))
 
 (defun expanded-curry-form-arity (form)
@@ -198,7 +196,7 @@
     (introspect-environment:constant-form-value arity)))
 
 (declaim
- (ftype (function (list) (values (or symbol list) &optional))
+ (ftype (function (expanded-curry-form) (values (or symbol list) &optional))
         expanded-curry-form-return-type))
 
 (defun expanded-curry-form-return-type (form)
@@ -222,7 +220,7 @@
 ;;;; N-ARG-PROMISED-CURRY
 
 (declaim
- (ftype (function ((integer 0 *) list) (values list &optional))
+ (ftype (function ((integer 0 *) expanded-curry-form) (values list &optional))
         n-arg-promised-curry))
 
 (defun n-arg-promised-curry (n expanded)
