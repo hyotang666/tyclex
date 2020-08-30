@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.expander"
+  :version "0.0.1"
   :depends-on
   (
    "tyclex.curry"

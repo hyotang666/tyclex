@@ -6,7 +6,7 @@
                 #:decurry
                 #:curry-form-p
                 #:recurry
-                #:first-promised-curry)
+                #:n-arg-promised-curry)
   (:import-from :tyclex.objects.io-action
                 #:action-body
                 #:action-lambda-list
@@ -149,7 +149,8 @@
     (setf args (expander:expand* args env))
     (cond
      ((expanded-curry-form-p fun)
-      `(,op ,(first-promised-curry fun) ,@(expander:expand* args env)))
+      `(,op ,(n-arg-promised-curry (length args) fun)
+        ,@(expander:expand* args env)))
      ((loop :for form :in args
             :thereis (and (constantp form env)
                           (null
@@ -166,7 +167,7 @@
      (t `(,op ,fun ,@args)))))
 
 (handler-bind ((expander:expander-conflict #'expander:use-next))
-  (expander:defexpandtable :tyclex (:use optimize)
-                           (:add |funcall-expander| funcall)
-                           (:add |mapcar-expander| mapcar mapcan maplist
-                            mapcon)))
+  (expander:defexpandtable :tyclex
+    (:use optimize)
+    (:add |funcall-expander| funcall)
+    (:add |mapcar-expander| mapcar mapcan maplist mapcon)))
