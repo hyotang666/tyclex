@@ -7,8 +7,8 @@
 		    :around
 		    (let((tyclex.objects.type-class::*type-classes*(make-hash-table))
 			 (tyclex.objects.interface::*interfaces*(make-hash-table)))
-		      (tyclex.objects:add-type-class 'dummy :vars nil :interfaces '(face))
-		      (tyclex.objects:add-interface 'face :type-class 'dummy :lambda-list '(v))
+		      (tyclex.objects.type-class:add-type-class 'dummy :vars nil :interfaces '(face))
+		      (tyclex.objects.interface:add-interface 'face :type-class 'dummy :lambda-list '(v))
 		      (call-body)))
 
 ;;;; Description:
