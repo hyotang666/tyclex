@@ -2,6 +2,9 @@
 (in-package :asdf)
 (defsystem "tyclex.curry"
   :version "1.0.0"
+  :description "Currying system for tyclex."
+  :author "SATO Shinichi"
+  :license "MIT"
   :depends-on
   (
    "closer-mop"                 ; Wrapper for meta object protocols.
