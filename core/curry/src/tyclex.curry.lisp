@@ -130,7 +130,7 @@
              (diff (- underscore-num arg-num)))
         (flet ((underscore-to-actual-arg (whole gensyms)
                  (loop :for elt :in whole
-                       :when (and (symbolp elt) (string= "_" elt))
+                       :when (underscorep elt)
                          :collect (or (pop gensyms) elt)
                        :else
                          :collect elt)))
