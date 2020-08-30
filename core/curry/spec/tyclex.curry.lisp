@@ -322,3 +322,84 @@
 
 ;;;; Exceptional-Situations:
 
+(requirements-about N-ARG-PROMISED-CURRY :doc-type function)
+
+;;;; Description:
+
+#+syntax (N-ARG-PROMISED-CURRY n expanded) ; => result
+
+;;;; Arguments and Values:
+
+; n := (integer 0 *)
+#?(N-ARG-PROMISED-CURRY "not integer" (MACROEXPAND-1 '(CURRY + _))) :signals condition
+#?(N-ARG-PROMISED-CURRY -1 (MACROEXPAND-1 '(CURRY + _))) :signals condition
+
+; expanded := curry-expanded-form, otherwise unspecified.
+#?(n-arg-promised-curry 1 '(not curry expanded form)) => unspecified
+
+; result := form which generate function.
+
+;;;; Affected By:
+; none
+
+;;;; Side-Effects:
+; none
+
+;;;; Notes:
+
+;;;; Exceptional-Situations:
+
+#?(N-ARG-PROMISED-CURRY 1 (MACROEXPAND-1 '(CURRY + _)))
+=> (LAMBDA (x) (+ x))
+, :test jingoh.tester:sexp=
+
+#?(N-ARG-PROMISED-CURRY 1 (MACROEXPAND-1 '(CURRY + _ _)))
+=> (LET ((curry-instance
+          (MAKE-INSTANCE 'CURRY :ARITY 1 :RETURN-TYPE
+                         '(VALUES NUMBER &OPTIONAL))))
+     (LABELS ((curry (required &OPTIONAL (optional NIL optionalp))
+                (IF optionalp
+                    (+ required optional)
+                    curry-instance)))
+       '(CURRY + _ _)
+       (SB-MOP:SET-FUNCALLABLE-INSTANCE-FUNCTION
+        curry-instance
+        #'curry)
+       #'curry))
+, :test jingoh.tester:sexp=
+
+#?(N-ARG-PROMISED-CURRY 2 (MACROEXPAND-1 '(CURRY + _ _)))
+=> (LAMBDA (x y) (+ x y))
+, :test jingoh.tester:sexp=
+
+#?(N-ARG-PROMISED-CURRY 1 (MACROEXPAND-1 '(CURRY + _ _ _)))
+=> (LET ((curry-instance
+          (MAKE-INSTANCE 'CURRY :ARITY 2 :RETURN-TYPE
+                         '(VALUES NUMBER &OPTIONAL))))
+     (LABELS ((curry
+                  (x
+                   &OPTIONAL (y NIL y-p)
+                   (z NIL z-p))
+                (IF y-p
+                    (IF z-p
+                        (+ x y z)
+                        (LET ((curry-instance
+                               (MAKE-INSTANCE 'CURRY :ARITY 1 :RETURN-TYPE
+                                              '(VALUES NUMBER &OPTIONAL))))
+                          (LABELS ((curry
+                                       (&OPTIONAL (z NIL z-p))
+                                     (IF z-p
+                                         (+ x y z)
+                                         curry-instance)))
+                            '(CURRY + _ _ _)
+                            (SB-MOP:SET-FUNCALLABLE-INSTANCE-FUNCTION
+                             curry-instance
+                             #'curry)
+                            curry-instance)))
+                    curry-instance)))
+       '(CURRY + _ _ _)
+       (SB-MOP:SET-FUNCALLABLE-INSTANCE-FUNCTION
+        curry-instance
+        #'curry)
+       #'curry))
+, :test jingoh.tester:sexp=

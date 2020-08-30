@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tyclex.curry"
-  :version "0.0.6"
+  :version "0.1.0"
   :depends-on
   (
    "closer-mop"                 ; Wrapper for meta object protocols.

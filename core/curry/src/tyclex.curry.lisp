@@ -15,7 +15,8 @@
            #:expanded-curry-form-p
            #:expanded-curry-form-arity
            #:expanded-curry-form-return-type
-           #:first-promised-curry))
+           #:first-promised-curry
+           #:n-arg-promised-curry))
 
 (in-package :tyclex.curry)
 
@@ -217,6 +218,49 @@
     `(,let ,binds
       (,labels ((,name (,(car first) ,optional ,@rest) ,(third body))) ,origin
        ,setter ,(third setter)))))
+
+;;;; N-ARG-PROMISED-CURRY
+
+(declaim
+ (ftype (function ((integer 0 *) list) (values list &optional))
+        n-arg-promised-curry))
+
+(defun n-arg-promised-curry (n expanded)
+  (destructuring-bind
+      (let ((var make-instance))
+       (labels ((name (optional . args) body)) origin setter main))
+      expanded
+    (decf (getf make-instance :arity) n)
+    (labels ((nth-then (n if-form)
+               (if (not (= 0 n))
+                   (nth-then (1- n) (third if-form))
+                   (if (not
+                         (and (typep if-form '(cons (eql if) *))
+                              (= (getf make-instance :arity)
+                                 (getf (second (car (second (fourth if-form))))
+                                       :arity))))
+                       if-form
+                       (destructuring-bind
+                           (if pred then else)
+                           if-form
+                         (declare (ignore else))
+                         `(,if ,pred ,then ,main))))))
+      (if (= 0 (getf make-instance :arity))
+          `(lambda ,(mapcar #'car args) ,(nth-then n body))
+          `(,let ((,var ,make-instance))
+            (,labels
+             ((,name
+               ,(loop :for i :upfrom 0
+                      :for arg :in args
+                      :when (< i n)
+                        :collect (car arg)
+                      :else :if (= i n)
+                        :collect optional
+                        :and :collect arg
+                      :else
+                        :collect arg)
+               ,(nth-then n body)))
+             ,origin ,setter ,(third setter)))))))
 
 ;;;; CANONICALIZE-RETURN-TYPE
 

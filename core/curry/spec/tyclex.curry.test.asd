@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :tyclex.curry.test
-  :version "0.0.2"
+  :version "0.1.0"
   :depends-on
   (:jingoh "tyclex.curry")
   :components
