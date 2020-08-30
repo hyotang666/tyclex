@@ -15,7 +15,6 @@
            #:expanded-curry-form-p
            #:expanded-curry-form-arity
            #:expanded-curry-form-return-type
-           #:first-promised-curry
            #:n-arg-promised-curry))
 
 (in-package :tyclex.curry)
@@ -212,18 +211,6 @@
          (return-type (getf make-instance :return-type)))
     (canonicalize-return-type
       (introspect-environment:constant-form-value return-type))))
-
-(declaim (ftype (function (list) (values list &optional)) first-promised-curry))
-
-(defun first-promised-curry (expanded)
-  (destructuring-bind
-      (let binds
-       (labels ((name (optional first . rest) body)) origin setter main))
-      expanded
-    (declare (ignore main))
-    `(,let ,binds
-      (,labels ((,name (,(car first) ,optional ,@rest) ,(third body))) ,origin
-       ,setter ,(third setter)))))
 
 ;;;; N-ARG-PROMISED-CURRY
 
