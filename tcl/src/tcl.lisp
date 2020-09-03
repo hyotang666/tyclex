@@ -210,6 +210,8 @@
        (defpackage ,name
          ,@args))))
 
+(push 'tcl::defpackage asdf/package-inferred-system:*defpackage-forms*)
+
 (set-pprint-dispatch '(cons (member tcl::defpackage))
                      (pprint-dispatch '(defpackage)))
 
