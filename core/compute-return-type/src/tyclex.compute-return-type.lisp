@@ -319,11 +319,15 @@
    (compute-function-form-return-type (second form) env))
   (def tagbody (form env) (declare (ignore form env)) 'null)
   (def function (form env)
-   (if (typep (second form) '(cons (eql lambda) (cons * *)))
+   (if (typep (second form)
+              '(cons (member lambda #+sbcl sb-int:named-lambda) (cons * *)))
        (special-operator-return-type (second form) env)
        (canonicalize-ftype
          (or (function-type-of (second form))
              (introspect-environment:function-type (second form) env)))))
+  #+sbcl
+  (def sb-int:named-lambda (form env)
+   (special-operator-return-type `(lambda ,@(cddr form)) env))
   (def if (form env)
    (let ((then (compute-return-type (third form) env))
          (else (compute-return-type (fourth form) env)))
