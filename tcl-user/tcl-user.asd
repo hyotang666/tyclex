@@ -1,10 +1,11 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem "tcl-user"
-  :version "0.0.0"
+  :version "1.0.0"
   :depends-on
   (
    "tcl"
+   "tcl.data"
    "tcl.applicative"
    "tcl.compare"
    "tcl.eq"
