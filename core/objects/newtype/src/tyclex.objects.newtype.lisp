@@ -35,6 +35,10 @@
 
 (setf (symbol-function 'list) #'cl:list)
 
+(trivia:defpattern list
+    (&rest args)
+  `(cl:list ,@args))
+
 ;;; as type.
 
 (deftype list (&optional a) (declare (ignore a)) 'cl:list)
