@@ -111,6 +111,9 @@
 #?(tyclex.curry:function-type name (args) return)
 => NAME
 #?(compute-return-type '(name)) => RETURN
+#?(tyclex.curry:function-type name (args) (values return &optional))
+=> NAME
+#?(compute-return-type '(name)) => RETURN
 
 ;; (if)
 ; When both then clause and else clause are exists, great common type is returned.

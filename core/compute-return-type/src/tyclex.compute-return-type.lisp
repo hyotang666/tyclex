@@ -196,25 +196,26 @@
   (def cons (form env) `(cons ,@(compute-return-types (cdr form) env))))
 
 (defun compute-standard-form-return-type (form env)
-  (cond ((function-type-of (car form)) (third (function-type-of (car form))))
-        ((funcall
-           (gethash (car form) *cl-strict-return-type-computers*
-                    (constantly nil))
-           form env))
-        (t
-         (multiple-value-bind (type localp declaration)
-             (introspect-environment:function-information (car form) env)
-           (declare (ignore localp))
-           (case type
-             ((nil) t) ; undefined function.
-             (:special-form (special-operator-return-type form env))
-             (:macro
-              (compute-return-type (expander:expand (copy-tree form) env) env))
-             (:function
-              (let ((ftype (assoc 'ftype declaration)))
-                (if ftype
-                    (ftype-return-type (cdr ftype))
-                    t))))))))
+  (cond
+   ((function-type-of (car form))
+    (ftype-return-type (function-type-of (car form))))
+   ((funcall
+      (gethash (car form) *cl-strict-return-type-computers* (constantly nil))
+      form env))
+   (t
+    (multiple-value-bind (type localp declaration)
+        (introspect-environment:function-information (car form) env)
+      (declare (ignore localp))
+      (case type
+        ((nil) t) ; undefined function.
+        (:special-form (special-operator-return-type form env))
+        (:macro
+         (compute-return-type (expander:expand (copy-tree form) env) env))
+        (:function
+         (let ((ftype (assoc 'ftype declaration)))
+           (if ftype
+               (ftype-return-type (cdr ftype))
+               t))))))))
 
 (defun ftype-return-type (form)
   (if (symbolp form)
